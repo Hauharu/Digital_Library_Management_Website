@@ -88,11 +88,10 @@ class History(db.Model):
     user_id = db.Column(db.Integer)
     book_id = db.Column(db.Integer)
 
-    action = db.Column(db.String(50))  # view, borrow
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    action = db.Column(db.String(50))
+    timestamp = db.Column(db.DateTime, default=datetime.now)
 
 
-# ================= FAVORITE =================
 class Favorite(db.Model):
     __tablename__ = 'favorites'
 
