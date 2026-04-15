@@ -13,7 +13,6 @@ class Role(db.Model):
     users = db.relationship('User', backref='role', lazy=True)
 
 
-
 class User(db.Model):
     __tablename__ = 'users'
 
@@ -41,6 +40,9 @@ class Book(db.Model):
     __tablename__ = 'books'
 
     id = db.Column(db.Integer, primary_key=True)
+    isbn = db.Column(db.String(20))
+    publication_info = db.Column(db.String(255))
+    language = db.Column(db.String(50))
     title = db.Column(db.String(255))
     author = db.Column(db.String(100))
     description = db.Column(db.Text)
