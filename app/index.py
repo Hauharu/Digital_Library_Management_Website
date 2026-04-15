@@ -5,7 +5,17 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    featured_books = [
+        {"title": "Fundamentals of database systems", "author": "Elmasri, Ramez", "image": "/static/images/sachmau.png"},
+        {"title": "Computer networks : a systems approach", "author": "Peterson, Larry L.", "image": "/static/images/sachmau.png"},
+        {"title": "Mining of massive datasets", "author": "Leskovec, Jure", "image": "/static/images/sachmau.png"},
+        {"title": "Quản trị mạng", "author": "Lưu Quang Phương", "image": "/static/images/sachmau.png"},
+        {"title": "Java how to program : early objects", "author": "Deitel, Paul", "image": "/static/images/sachmau.png"},
+        {"title": "Mathematics for computer graphics", "author": "Vince, John", "image": "/static/images/sachmau.png"},
+        {"title": "The Road to React", "author": "Wieruch, Robin", "image": "/static/images/sachmau.png"},
+        {"title": "Giáo trình thiết kế web", "author": "Lê Viết Tuấn", "image": "/static/images/sachmau.png"},
+    ]
+    return render_template('index.html', featured_books=featured_books)
 
 @app.route('/login')
 def login():
@@ -31,7 +41,7 @@ class MockCategory:
 class MockBook:
     book_id = 1
     title = "Mắt Biếc (Bản Demo)"
-    image = "/static/images/74784.jpg"
+    image = "/static/images/sachmau.png"
     status = "available"
     author = MockAuthor()
     category = MockCategory()
@@ -52,14 +62,14 @@ class MockUser:
 @app.route('/demo-book')
 def demo_book():
     related_books = [
-        {"title": "Đắc Nhân Tâm", "image": "/static/images/74784.jpg"},
-        {"title": "Nhà Giả Kim", "image": "/static/images/74784.jpg"},
-        {"title": "Tuổi trẻ đáng giá bao nhiêu", "image": "/static/images/74784.jpg"},
-        {"title": "Tôi thấy hoa vàng trên cỏ xanh", "image": "/static/images/74784.jpg"},
-        {"title": "Cây chuối non đi giày xanh", "image": "/static/images/74784.jpg"},
-        {"title": "Làm bạn với bầu trời", "image": "/static/images/74784.jpg"},
-        {"title": "Cho tôi xin một vé đi tuổi thơ", "image": "/static/images/74784.jpg"},
-        {"title": "Có hai con mèo ngồi bên cửa sổ", "image": "/static/images/74784.jpg"},
+        {"title": "Đắc Nhân Tâm", "image": "/static/images/sachmau.png"},
+        {"title": "Nhà Giả Kim", "image": "/static/images/sachmau.png"},
+        {"title": "Tuổi trẻ đáng giá bao nhiêu", "image": "/static/images/sachmau.png"},
+        {"title": "Tôi thấy hoa vàng trên cỏ xanh", "image": "/static/images/sachmau.png"},
+        {"title": "Cây chuối non đi giày xanh", "image": "/static/images/sachmau.png"},
+        {"title": "Làm bạn với bầu trời", "image": "/static/images/sachmau.png"},
+        {"title": "Cho tôi xin một vé đi tuổi thơ", "image": "/static/images/sachmau.png"},
+        {"title": "Có hai con mèo ngồi bên cửa sổ", "image": "/static/images/sachmau.png"},
     ]
     return render_template('book_detail.html', book=MockBook(), current_user=MockUser(), user_state=None, related_books=related_books)
 
