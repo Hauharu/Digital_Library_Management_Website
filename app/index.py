@@ -7,6 +7,14 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
+@app.route('/login')
+def login():
+    return render_template('login.html')
+
+@app.route('/register')
+def register():
+    return render_template('login.html')
+
 # Mock data để xem thử giao diện chi tiết sách
 class MockAuthor:
     name = "Nguyễn Nhật Ánh"
@@ -61,9 +69,6 @@ def request_borrow(book_id): pass
 
 @app.route('/request_list', endpoint='user.request_list')
 def request_list(): pass
-
-@app.route('/login', endpoint='auth.login')
-def login(): pass
 
 if __name__ == '__main__':
     app.run(debug=True)
