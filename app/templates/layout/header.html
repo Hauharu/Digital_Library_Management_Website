@@ -30,8 +30,7 @@
         <!-- Các thành phần bên phải: Account Actions -->
         <div class="header-actions ms-4 flex-shrink-0">
             <!-- Chưa login -->
-            {% if request.endpoint != 'register' %}
-            <a href="/register" class="btn me-2 fw-bold text-white btn-register" style="background-color: #22c55e;">
+            <a href="{{ url_for('auth.register') }}"class="btn me-2 fw-bold text-white btn-register" style="background-color: #22c55e;">
                 <i class="fa-solid fa-user-plus"></i> Đăng ký
             </a>
             {% endif %}
