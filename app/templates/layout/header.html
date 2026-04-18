@@ -33,9 +33,12 @@
             <a href="{{ url_for('auth.register') }}"class="btn me-2 fw-bold text-white btn-register" style="background-color: #22c55e;">
                 <i class="fa-solid fa-user-plus"></i> Đăng ký
             </a>
-            <a href="#" class="btn fw-bold text-white btn-login" style="background-color: #2563eb;">
+            {% endif %}
+            {% if request.endpoint != 'login' %}
+            <a href="/login" class="btn fw-bold text-white btn-login" style="background-color: #2563eb;">
                 <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
             </a>
+            {% endif %}
         </div>
 
     </div>
