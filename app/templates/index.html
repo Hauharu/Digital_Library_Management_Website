@@ -1,0 +1,42 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}OU BOOK - Thư viện số{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>CHÀO MỪNG BẠN ĐẾN VỚI THƯ VIỆN SỐ OU BOOK!</h1>
+</section>
+
+<section class="feature-grid">
+    <article class="feature-card">
+        <i class="fa-solid fa-pen"></i>
+        <h3>DANH MỤC SÁCH</h3>
+    </article>
+    <article class="feature-card">
+        <i class="fa-solid fa-book"></i>
+        <h3>DANH SÁCH SÁCH</h3>
+    </article>
+    <article class="feature-card">
+        <i class="fa-solid fa-square-plus"></i>
+        <h3>SÁCH MỚI</h3>
+    </article>
+    <article class="feature-card">
+        <i class="fa-solid fa-star"></i>
+        <h3>SÁCH NỔI BẬT</h3>
+    </article>
+</section>
+
+<section class="books-section">
+    <h2>SÁCH NỔI BẬT</h2>
+    <div class="book-grid">
+        {% for book in featured_books %}
+        <article class="book-card">
+            <img src="{{ book.image }}" alt="{{ book.title }}">
+            <h3>{{ book.title }}</h3>
+            <p>{{ book.author }}</p>
+            <button type="button" onclick="window.location.href='/demo-book'">CHI TIẾT</button>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

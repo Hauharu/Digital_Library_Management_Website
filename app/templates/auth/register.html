@@ -1,0 +1,80 @@
+{% extends "layout/base.html" %}
+{% block title %}Đăng ký Tài khoản - Hệ thống{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
+
+<div class="container-fluid register-page-container">
+    <div class="row min-vh-100">
+        <div class="col-lg-6 d-none d-lg-flex justify-content-center align-items-center p-0 visual-showcase-static-success">
+            <div class="visual-bg-static-gradient-success"></div>
+            <div class="abstract-static-shapes-success">
+                <div class="static-shape static-shape-1"></div>
+                <div class="static-shape static-shape-2"></div>
+            </div>
+            <div class="icon-focus-center-success">
+                <i class="fas fa-seedling fa-6x"></i>
+            </div>
+        </div>
+
+        <div class="col-lg-6 col-md-12 d-flex justify-content-center align-items-center p-4">
+            <div class="card border-0 shadow-lg rounded-5 register-card w-100">
+                <div class="card-body p-5 p-md-4 p-lg-5">
+                    <h2 class="card-title text-center mb-4 fw-bold text-success">Tạo Tài Khoản Mới</h2>
+
+                    <form method="POST" action="{{ url_for('auth.register') }}" class="needs-validation" novalidate>
+                        <div class="mb-4 form-floating">
+                            <input type="text" class="form-control shadow-none" id="username" name="username" placeholder="Tên người dùng" required>
+                            <label for="username">Tên người dùng</label>
+                            <div class="invalid-feedback">Vui lòng nhập Tên người dùng.</div>
+                        </div>
+
+                        <div class="mb-4 form-floating">
+                            <input type="email" class="form-control shadow-none" id="email" name="email" placeholder="Địa chỉ Email" required>
+                            <label for="email">Địa chỉ Email</label>
+                             <div class="invalid-feedback">Vui lòng nhập Email hợp lệ.</div>
+                        </div>
+
+                         <div class="mb-4 form-floating">
+                            <input type="tel" class="form-control shadow-none" id="phone" name="phone" placeholder="Số Điện Thoại" required>
+                            <label for="phone">Số Điện Thoại</label>
+                            <div class="invalid-feedback">Vui lòng nhập Số Điện Thoại.</div>
+                        </div>
+
+                        <div class="mb-4 form-floating position-relative">
+                            <input type="password" class="form-control shadow-none" id="password" name="password" placeholder="Mật khẩu" required>
+                            <label for="password">Mật khẩu</label>
+                            <span class="password-toggle" onclick="togglePassword('password')">
+                                <i id="eye-icon-password" class="fas fa-eye"></i>
+                            </span>
+                            <div class="invalid-feedback">Vui lòng tạo Mật khẩu.</div>
+                        </div>
+
+                        <div class="mb-4 form-floating position-relative">
+                            <input type="password" class="form-control shadow-none" id="confirm_password" name="confirm_password" placeholder="Xác nhận mật khẩu" required>
+                            <label for="confirm_password">Xác nhận mật khẩu</label>
+                            <span class="password-toggle" onclick="togglePassword('confirm_password')">
+                                <i id="eye-icon-confirm_password" class="fas fa-eye"></i>
+                            </span>
+                            <div class="invalid-feedback">Vui lòng xác nhận Mật khẩu.</div>
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-success w-100 py-2 fw-bold rounded-pill shadow-sm register-button-effect">
+                                ĐĂNG KÝ
+                            </button>
+                        </div>
+                    </form>
+
+                    <p class="text-center mt-4 text-muted small">
+                        Bạn đã có tài khoản?
+                     <a href="{{ url_for('auth.register') }}" class="text-decoration-none fw-bold text-success login-link-hover">Đăng nhập ngay</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/register.js') }}"></script>
+{% endblock %}
