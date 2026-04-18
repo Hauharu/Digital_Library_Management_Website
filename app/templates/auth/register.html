@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "layout/base.html" %}
 {% block title %}Đăng ký Tài khoản - Hệ thống{% endblock %}
 
 {% block content %}
@@ -68,7 +68,7 @@
 
                     <p class="text-center mt-4 text-muted small">
                         Bạn đã có tài khoản?
-                        <a href="{{ url_for('auth.login') }}" class="text-decoration-none fw-bold text-success login-link-hover">Đăng nhập ngay</a>
+                     <a href="{{ url_for('auth.register') }}" class="text-decoration-none fw-bold text-success login-link-hover">Đăng nhập ngay</a>
                     </p>
                 </div>
             </div>
