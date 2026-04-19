@@ -54,8 +54,6 @@ def create_app(config_name=None):
             **google_config
         )
 
-    from app.models import Role
-
     from app.routes.auth_routes import auth_bp
     from app.routes.main_routes import main_bp
     from app.routes.user_routes import user_bp

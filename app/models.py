@@ -1,162 +1,206 @@
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+import enum
 from app import db
+from datetime import datetime
 from flask_login import UserMixin
 
-class Role(db.Model):
-    __tablename__ = 'roles'
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True)
+# ================= ENUM =================
+class RoleEnum(enum.Enum):
+    ADMIN = "ADMIN"
+    STAFF = "STAFF"
+    READER = "READER"
 
-    users = db.relationship('User', backref='role', lazy=True)
+
+class GenderEnum(enum.Enum):
+    MALE = "MALE"
+    FEMALE = "FEMALE"
+    OTHER = "OTHER"
 
 
-class User(db.Model,UserMixin):
-    __tablename__ = 'users'
+class RequestStatusEnum(enum.Enum):
+    Pending = "Chờ xét duyệt"
+    Approved = "Đã duyệt"
+    Rejected = "Bị từ chối"
+    Completed = "Đã nhận sách"
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+
+class BorrowStatusEnum(enum.Enum):
+    Borrowing = "Đang mượn"
+    Returned = "Đã trả"
+    Overdue = "Quá hạn"
+
+
+class InvoiceStatusEnum(enum.Enum):
+    Pending = "Chưa thanh toán"
+    Paid = "Đã thanh toán"
+    Cancelled = "Đã hủy"
+    Overdue = "Quá hạn nộp"
+
+
+class PaymentStatusEnum(enum.Enum):
+    Pending = "Đang xử lý"
+    Completed = "Thành công"
+    Failed = "Thất bại"
+    Refunded = "Đã hoàn tiền"
+
+
+class PaymentMethodEnum(enum.Enum):
+    Cash = "Tiền mặt"
+    MoMo = "MoMo"
+    ZaloPay = "ZaloPay"
+    VNPay = "VNPay"
+
+
+# ================= BASE =================
+class Base(db.Model):
+    __abstract__ = True
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
+
+# ================= MODEL =================
+
+# ================= USER =================
+class User(Base, UserMixin):
+    __tablename__ = 'user'
+
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+
+    username = db.Column(db.String(100), unique=True, nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
+    phone_number = db.Column(db.String(20), unique=True)
     password = db.Column(db.String(255), nullable=False)
-    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False)
+    gender = db.Column(db.Enum(GenderEnum), default=GenderEnum.OTHER)
+    role = db.Column(db.Enum(RoleEnum), default=RoleEnum.READER, nullable=False)
+    avatar = db.Column(db.String(255),
+                       default="https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png")
+    is_active = db.Column(db.Boolean, default=True)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    reader_profile = db.relationship('ReaderProfile', backref='user', uselist=False)
-    staff_profile = db.relationship('StaffProfile', backref='user', uselist=False)
-
-    reviews = db.relationship('Review', backref='user', lazy=True)
-
-    borrowed_requests = db.relationship(
-        'BorrowRequest',
-        foreign_keys='BorrowRequest.user_id',
-        backref='reader',
-        lazy=True
-    )
-
-    processed_requests = db.relationship(
-        'BorrowRequest',
-        foreign_keys='BorrowRequest.staff_id',
-        backref='staff',
-        lazy=True
-    )
-
-class ReaderProfile(db.Model):
-    __tablename__ = 'reader_profiles'
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), unique=True)
-
-    phone = db.Column(db.String(20))
-    address = db.Column(db.String(255))
-    date_of_birth = db.Column(db.Date)
-    gender = db.Column(db.String(10))
-
-    created_at = db.Column(db.DateTime, default=datetime.now)
+    reviews = db.relationship('Review', backref='user', cascade="all, delete-orphan", lazy='selectin')
+    borrow_requests = db.relationship('BorrowRequest', backref='reader', cascade="all, delete-orphan", lazy='selectin')
+    borrow_slips = db.relationship('BorrowSlip', backref='user', cascade="all, delete-orphan", lazy='selectin')
+    notifications = db.relationship('Notification', backref='user', cascade="all, delete-orphan", lazy='selectin')
 
 
-class StaffProfile(db.Model):
-    __tablename__ = 'staff_profiles'
+# ================= CATEGORY =================
+class Category(Base):
+    __tablename__ = 'category'
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), unique=True)
-
-    salary = db.Column(db.Integer)
-    position = db.Column(db.String(100))
-
-    created_at = db.Column(db.DateTime, default=datetime.now)
-
-
-class Category(db.Model):
-    __tablename__ = 'categories'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-
+    name = db.Column(db.String(100), nullable=False, unique=True)
     books = db.relationship('Book', backref='category', lazy=True)
 
 
-class Book(db.Model):
-    __tablename__ = 'books'
-
-    id = db.Column(db.Integer, primary_key=True)
+# ================= BOOK =================
+class Book(Base):
+    __tablename__ = 'book'
+    __table_args__ = (
+        db.CheckConstraint('total_quantity >= 0'),
+        db.CheckConstraint('available_quantity >= 0'),
+        db.CheckConstraint('total_quantity >= available_quantity'),
+    )
     title = db.Column(db.String(255), nullable=False)
     author = db.Column(db.String(100))
     description = db.Column(db.Text)
-    quantity = db.Column(db.Integer, default=0)
+    total_quantity = db.Column(db.Integer, default=0)
+    available_quantity = db.Column(db.Integer, default=0)
+    price = db.Column(db.Float, default=0.0)
     image = db.Column(db.String(255))
-
-    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
 
     reviews = db.relationship('Review', backref='book', lazy=True)
+    borrow_slips = db.relationship('BorrowSlip', backref='book', lazy=True)
 
 
-class BorrowRequest(db.Model):
-    __tablename__ = 'borrow_requests'
+# ================= BORROW REQUEST =================
+class BorrowRequest(Base):
+    __tablename__ = 'borrow_request'
 
-    id = db.Column(db.Integer, primary_key=True)
+    request_date = db.Column(db.Date, default=lambda: datetime.now().date())
+    status = db.Column(db.Enum(RequestStatusEnum), default=RequestStatusEnum.Pending)
+    reject_reason = db.Column(db.String(255))
 
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    staff_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-
-    status = db.Column(db.String(50), default='pending')
-
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    return_date = db.Column(db.DateTime)
-
-    details = db.relationship('BorrowDetail', backref='request', lazy=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey("book.id"), nullable=False)
 
 
-class BorrowDetail(db.Model):
-    __tablename__ = 'borrow_details'
+class BorrowSlip(Base):
+    __tablename__ = "borrow_slip"
 
-    id = db.Column(db.Integer, primary_key=True)
+    borrow_date = db.Column(db.Date, default=lambda: datetime.now().date())
+    due_date = db.Column(db.Date, nullable=False)
+    return_date = db.Column(db.Date)
+    status = db.Column(db.Enum(BorrowStatusEnum), default=BorrowStatusEnum.Borrowing)
 
-    request_id = db.Column(db.Integer, db.ForeignKey('borrow_requests.id'), nullable=False)
-    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey("book.id"), nullable=False)
 
-    quantity = db.Column(db.Integer, default=1)
-
-    book = db.relationship('Book')
-
-
-class Review(db.Model):
-    __tablename__ = 'reviews'
-
-    id = db.Column(db.Integer, primary_key=True)
-
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
-
-    rating = db.Column(db.Integer)
-    comment = db.Column(db.Text)
-
-    created_at = db.Column(db.DateTime, default=datetime.now)
+    borrow_request_id = db.Column(db.Integer, db.ForeignKey("borrow_request.id"))
+    borrow_request = db.relationship("BorrowRequest", backref="borrow_slip", uselist=False)
 
 
-class History(db.Model):
-    __tablename__ = 'history'
+# ================= INVOICE =================
+class Invoice(Base):
+    __tablename__ = 'invoice'
 
-    id = db.Column(db.Integer, primary_key=True)
+    amount = db.Column(db.Float, nullable=False, default=0.0)
+    issue_date = db.Column(db.DateTime, default=datetime.now)
+    due_date = db.Column(db.Date)
+    status = db.Column(db.Enum(InvoiceStatusEnum), default=InvoiceStatusEnum.Pending)
 
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
-
-    action = db.Column(db.String(50))
-    timestamp = db.Column(db.DateTime, default=datetime.now)
-
-    user = db.relationship('User')
-    book = db.relationship('Book')
+    # Kết nối với phiếu mượn (để biết phạt cho lần mượn nào)
+    borrow_slip_id = db.Column(db.Integer, db.ForeignKey('borrow_slip.id'), unique=True)
+    borrow_slip = db.relationship("BorrowSlip", backref="invoices")
+    # Quan hệ 1-n với Payment (Một hóa đơn được thanh toán nhiều lần)
+    payments = db.relationship('Payment', backref='invoice')
 
 
-class Favorite(db.Model):
-    __tablename__ = 'favorites'
+# ================= PAYMENT =================
+class Payment(Base):
+    __tablename__ = 'payment'
 
-    id = db.Column(db.Integer, primary_key=True)
+    amount_paid = db.Column(db.Float, nullable=False)
+    method = db.Column(db.Enum(PaymentMethodEnum), nullable=False)
+    status = db.Column(db.Enum(PaymentStatusEnum), default=PaymentStatusEnum.Pending)
+    transaction_id = db.Column(db.String(255), unique=True)
+    payment_date = db.Column(db.DateTime, default=datetime.now)
+    notes = db.Column(db.Text)
 
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'), nullable=False)
 
-    user = db.relationship('User')
-    category = db.relationship('Category')
+
+# ================= REVIEW =================
+class Review(Base):
+    __tablename__ = 'review'
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'book_id', name='unique_review'),
+        db.CheckConstraint('rating >= 1 AND rating <= 5', name='valid_rating')
+    )
+    content = db.Column(db.Text, nullable=False)
+    rating = db.Column(db.Integer, default=5)
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+
+
+# ================= FAVORITE =================
+class Favorite(Base):
+    __tablename__ = 'favorite'
+
+    __table_args__ = (db.UniqueConstraint('user_id', 'book_id', name='unique_favorite'),)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+
+
+# ================= NOTIFICATION =================
+class Notification(Base):
+    __tablename__ = "notification"
+    content = db.Column(db.String(255), nullable=False)
+    sent_date = db.Column(db.DateTime, default=datetime.now)
+    type = db.Column(db.String(50))
+    is_read = db.Column(db.Boolean, default=False)
+
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
