@@ -18,3 +18,10 @@ def register():
         return jsonify(result), 400
 
     return jsonify(result), 201
+
+@auth_bp.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'GET':
+        return render_template('auth/login.html')
+    # For now, just a placeholder for POST login
+    return jsonify({"message": "Login not implemented yet"}), 501

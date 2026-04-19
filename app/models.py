@@ -51,6 +51,7 @@ class ReaderProfile(db.Model):
     phone = db.Column(db.String(20))
     address = db.Column(db.String(255))
     date_of_birth = db.Column(db.Date)
+    gender = db.Column(db.String(10))
 
     created_at = db.Column(db.DateTime, default=datetime.now)
 

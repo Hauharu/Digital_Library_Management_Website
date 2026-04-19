@@ -1,0 +1,40 @@
+-- ====== ROLE (3 quyền) ======
+INSERT IGNORE INTO roles (id, name) VALUES
+(1, 'admin'),
+(2, 'staff'),
+(3, 'reader');
+
+-- ====== CATEGORY (5 thể loại) ======
+INSERT IGNORE INTO categories (id, name) VALUES
+(1, 'Văn học'),
+(2, 'Khoa học - Viễn tưởng'),
+(3, 'Kinh tế - Kinh doanh'),
+(4, 'Triết học'),
+(5, 'Thiếu nhi');
+
+-- ====== USER (3 user) ======
+-- Lưu ý: Mật khẩu dưới đây đều là '123456' đã được mã hóa bằng bcrypt
+INSERT IGNORE INTO users (id, name, email, password, role_id, created_at) VALUES
+(1, 'Admin User', 'admin@library.com', '$2a$10$5X9k5N1sTc1/CjVH5XJoje3QMYijH3ETpgkox00R0MdPaJPPrf7wO', 1, NOW()),
+(2, 'Library Staff', 'staff@library.com', '$2a$10$5X9k5N1sTc1/CjVH5XJoje3QMYijH3ETpgkox00R0MdPaJPPrf7wO', 2, NOW()),
+(3, 'Normal Reader', 'user@library.com', '$2a$10$5X9k5N1sTc1/CjVH5XJoje3QMYijH3ETpgkox00R0MdPaJPPrf7wO', 3, NOW());
+
+-- ====== PROFILES (Hồ sơ cho Staff và Reader) ======
+INSERT IGNORE INTO staff_profiles (id, user_id, salary, position, created_at) VALUES
+(1, 2, 12000000, 'Thủ thư chính', NOW());
+
+INSERT IGNORE INTO reader_profiles (id, user_id, phone, address, date_of_birth, gender, created_at) VALUES
+(1, 3, '0901234567', 'Hà Nội', '2000-01-01', 'Nam', NOW());
+
+-- ====== BOOK (10 cuốn sách mẫu kèm hình ảnh) ======
+INSERT IGNORE INTO books (id, title, author, description, quantity, category_id, image) VALUES
+(1, 'Tôi Thấy Hoa Vàng Trên Cỏ Xanh', 'Nguyễn Nhật Ánh', 'Truyện dài về tuổi thơ', 10, 1, '/static/images/sachmau.png'),
+(2, 'Mắt Biếc', 'Nguyễn Nhật Ánh', 'Tiểu thuyết tình cảm', 5, 1, '/static/images/sachmau.png'),
+(3, 'Dế Mèn Phiêu Lưu Ký', 'Tô Hoài', 'Tác phẩm kinh điển thiếu nhi', 15, 5, '/static/images/sachmau.png'),
+(4, 'Đất Rừng Phương Nam', 'Đoàn Giỏi', 'Truyện thiếu nhi Việt Nam', 8, 5, '/static/images/sachmau.png'),
+(5, 'Harry Potter và Hòn Đá Phù Thủy', 'J.K. Rowling', 'Truyện kỳ ảo', 20, 2, '/static/images/sachmau.png'),
+(6, 'Harry Potter và Phòng Chứa Bí Mật', 'J.K. Rowling', 'Truyện kỳ ảo phần 2', 20, 2, '/static/images/sachmau.png'),
+(7, 'Nhà Giả Kim', 'Paulo Coelho', 'Sách triết lý cuộc sống', 12, 4, '/static/images/sachmau.png'),
+(8, 'Mật mã Da Vinci', 'Dan Brown', 'Tiểu thuyết trinh thám', 6, 2, '/static/images/sachmau.png'),
+(9, 'Những Người Khốn Khổ', 'Victor Hugo', 'Tiểu thuyết lịch sử Pháp', 4, 1, '/static/images/sachmau.png'),
+(10, 'Rich Dad Poor Dad', 'Robert Kiyosaki', 'Sách kỹ năng tài chính', 15, 3, '/static/images/sachmau.png');
