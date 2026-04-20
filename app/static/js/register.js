@@ -1,92 +1,68 @@
-:root {
-    --bs-primary: #198754;
-    --bs-danger: #db4437;
-    --bs-secondary: #6c757d;
-    --artistic-green-dark: #004d40;
-    --artistic-green-light: #26a69a;
-    --artistic-green-highlight: #b2dfdb;
+/* 1. ĐỊNH NGHĨA HÀM TRƯỚC (Để HTML gọi được ngay) */
+function togglePassword(inputId) {
+    const passwordInput = document.getElementById(inputId);
+    const eyeIcon = document.getElementById('eye-icon-' + inputId);
+
+    if (!passwordInput || !eyeIcon) {
+        console.warn(`Không tìm thấy: ${inputId} hoặc eye-icon-${inputId}`);
+        return;
+    }
+
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        passwordInput.type = "password";
+        eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
 }
 
-.register-page-container {
-    padding: 0;
-}
+/* 2. CÁC LOGIC CHẠY SAU KHI LOAD TRANG */
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("OU BOOK: Register JS Ready!");
 
-.register-card {
-    max-width: 450px;
-    border-radius: 1.5rem !important;
-    transition: box-shadow 0.3s ease;
-}
+    // --- Xử lý Alert ---
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            if (typeof bootstrap !== 'undefined' && bootstrap.Alert) {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            } else {
+                alert.style.opacity = "0";
+                setTimeout(() => alert.remove(), 500);
+            }
+        }, 5000);
+    });
 
-.register-card:hover {
-    box-shadow: 0 1rem 3rem rgba(0,0,0,0.175) !important;
-}
+    // --- Kiểm tra mật khẩu khớp nhau khi Submit ---
+    const registerForm = document.querySelector('.needs-validation');
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
 
-.visual-showcase-static-success {
-    background: linear-gradient(145deg, var(--artistic-green-dark) 0%, var(--artistic-green-light) 100%);
-    position: relative;
-    overflow: hidden;
-}
+    if (registerForm && password && confirmPassword) {
+        registerForm.addEventListener('submit', function(event) {
+            // Kiểm tra khớp mật khẩu
+            if (password.value !== confirmPassword.value) {
+                event.preventDefault();
+                event.stopPropagation();
 
-.visual-bg-static-gradient-success {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 50%);
-    z-index: 0;
-}
+                confirmPassword.setCustomValidity("Mật khẩu không khớp");
+                confirmPassword.classList.add('is-invalid');
+            } else {
+                confirmPassword.setCustomValidity("");
+                confirmPassword.classList.remove('is-invalid');
+            }
 
-.abstract-static-shapes-success .static-shape {
-    position: absolute;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-    filter: blur(40px);
-}
+            registerForm.classList.add('was-validated');
+        }, false);
 
-.abstract-static-shapes-success .static-shape-1 {
-    width: 300px; height: 300px; top: -50px; left: -100px;
-}
-
-.abstract-static-shapes-success .static-shape-2 {
-    width: 200px; height: 200px; bottom: 10%; right: -50px;
-}
-
-.icon-focus-center-success {
-    position: relative;
-    z-index: 2;
-    color: var(--artistic-green-highlight);
-    text-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
-}
-
-.form-control:focus {
-    border-color: var(--bs-primary);
-    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
-}
-
-.password-toggle {
-    position: absolute; top: 0; right: 15px; height: 100%;
-    display: flex; align-items: center; cursor: pointer;
-    color: var(--bs-secondary); z-index: 10;
-}
-
-.password-toggle:hover {
-    color: var(--bs-primary);
-}
-
-.register-button-effect {
-    background-color: var(--bs-primary);
-    border-color: var(--bs-primary);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.register-button-effect:hover {
-    background-color: #157347;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(25, 135, 84, 0.4);
-}
-
-.text-success {
-    color: var(--bs-primary) !important;
-}
-
-.login-link-hover:hover {
-    opacity: 0.8;
-}
+        // Xóa thông báo lỗi khi người dùng đang gõ lại
+        confirmPassword.addEventListener('input', function() {
+            if (password.value === password.value) {
+                confirmPassword.setCustomValidity("");
+                confirmPassword.classList.remove('is-invalid');
+            }
+        });
+    }
+});

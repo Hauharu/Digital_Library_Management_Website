@@ -1,13 +1,21 @@
 import os
 from dotenv import load_dotenv
 import stripe
+from urllib.parse import quote_plus
 load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', '12b23b02a8ceeb2cf3386bb33d4d8f31')
+    
+    _db_user = os.getenv('DB_USER', 'root')
+    _db_pass = quote_plus(os.getenv('DB_PASSWORD', 'admin'))
+    _db_host = os.getenv('DB_HOST', 'localhost')
+    _db_port = os.getenv('DB_PORT', '3306')
+    _db_name = os.getenv('DB_NAME', 'library_db')
+    
     SQLALCHEMY_DATABASE_URI = os.getenv(
         'DATABASE_URI',
-        'mysql+pymysql://root:admin@localhost:3306/thu_vien_so'
+        f'mysql+pymysql://{_db_user}:{_db_pass}@{_db_host}:{_db_port}/{_db_name}'
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
