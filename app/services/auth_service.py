@@ -1,9 +1,11 @@
-from werkzeug.security import generate_password_hash
+from app import bcrypt
+from flask_login import login_user as flask_login_user
 import re
 
 from app.models import User, RoleEnum
 from app.dao.auth_dao import (
     get_user_by_email,
+    get_user_by_username,
     create_user,
     commit,
     rollback
@@ -44,7 +46,7 @@ def register_user(data):
             last_name=last_name,
             username=username,
             email=email,
-            password=generate_password_hash(password),
+            password=bcrypt.generate_password_hash(password).decode('utf-8'),
             role=role_enum,
             phone_number=data.get("phone")
         )
@@ -65,3 +67,37 @@ def register_user(data):
     except Exception as e:
         rollback()
         return {"error": str(e)}
+
+
+def login_user_logic(data):
+    username = data.get("username", "").strip()
+    password = data.get("password", "").strip()
+
+    if not username or not password:
+        return {"error": "Username và password không được để trống"}
+
+    user = get_user_by_username(username)
+    if not user:
+        user = get_user_by_email(username)
+
+    if user and bcrypt.check_password_hash(user.password, password):
+        if not user.is_active:
+            return {"error": "Tài khoản của bạn đã bị khóa"}
+        
+        flask_login_user(user)
+        return {
+            "message": "Đăng nhập thành công",
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "role": user.role.value
+            }
+        }
+
+    return {"error": "Username hoặc password không chính xác"}
+
+
+def logout_user():
+    from flask_login import logout_user as flask_logout_user
+    flask_logout_user()
+    return {"message": "Đăng xuất thành công"}
