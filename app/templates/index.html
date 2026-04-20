@@ -34,7 +34,7 @@
             <img src="{{ book.image }}" alt="{{ book.title }}">
             <h3>{{ book.title }}</h3>
             <p>{{ book.author }}</p>
-            <button type="button" onclick="window.location.href='/demo-book'">CHI TIẾT</button>
+            <button type="button" onclick="window.location.href='/book-detail/{{ book.id }}'">CHI TIẾT</button>
         </article>
         {% endfor %}
     </div>

@@ -101,13 +101,16 @@ class Book(Base):
         db.CheckConstraint('available_quantity >= 0'),
         db.CheckConstraint('total_quantity >= available_quantity'),
     )
+    isbn = db.Column(db.String(20))
     title = db.Column(db.String(255), nullable=False)
     author = db.Column(db.String(100))
     description = db.Column(db.Text)
+    language = db.Column(db.String(50))
     total_quantity = db.Column(db.Integer, default=0)
     available_quantity = db.Column(db.Integer, default=0)
     price = db.Column(db.Float, default=0.0)
     image = db.Column(db.String(255))
+    publication_info = db.Column(db.String(255))
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
 
     reviews = db.relationship('Review', backref='book', lazy=True)

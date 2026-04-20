@@ -1,10 +1,9 @@
 from werkzeug.security import generate_password_hash
 import re
 
-from app.models import User, ReaderProfile, StaffProfile
+from app.models import User, RoleEnum
 from app.dao.auth_dao import (
     get_user_by_email,
-    get_role_by_name,
     create_user,
     commit,
     rollback
@@ -15,7 +14,7 @@ def register_user(data):
     name = data.get("name", "").strip()
     email = data.get("email", "").strip()
     password = data.get("password", "").strip()
-    role_name = data.get("role", "reader").lower()
+    role_name = data.get("role", "reader").upper()
 
     if not name:
         return {"error": "Tên không được để trống"}
@@ -29,41 +28,28 @@ def register_user(data):
     if get_user_by_email(email):
         return {"error": "Email đã tồn tại"}
 
-    role = get_role_by_name(role_name)
-    if not role:
+    try:
+        role_enum = RoleEnum[role_name]
+    except KeyError:
         return {"error": "Role không tồn tại"}
 
     try:
+        parts = name.split(" ", 1)
+        first_name = parts[-1]
+        last_name = parts[0] if len(parts) > 1 else ""
+        username = data.get("username") or email.split("@")[0]
 
         user = User(
-            name=name,
+            first_name=first_name,
+            last_name=last_name,
+            username=username,
             email=email,
             password=generate_password_hash(password),
-            role_id=role.id
+            role=role_enum,
+            phone_number=data.get("phone")
         )
 
         create_user(user)
-
-        if role.name == "reader":
-            profile = ReaderProfile(
-                user_id=user.id,
-                phone=data.get("phone"),
-                address=data.get("address")
-            )
-
-        elif role.name == "staff":
-            profile = StaffProfile(
-                user_id=user.id,
-                salary=data.get("salary", 0),
-                position=data.get("position", "Nhân viên")
-            )
-
-        else:
-            profile = None
-
-        if profile:
-            from app.models import db
-            db.session.add(profile)
 
         commit()
 
@@ -72,7 +58,7 @@ def register_user(data):
             "user": {
                 "id": user.id,
                 "email": user.email,
-                "role": role.name
+                "role": role_enum.value
             }
         }
 
