@@ -11,7 +11,7 @@ class Config:
     _db_pass = quote_plus(os.getenv('DB_PASSWORD', 'admin'))
     _db_host = os.getenv('DB_HOST', 'localhost')
     _db_port = os.getenv('DB_PORT', '3306')
-    _db_name = os.getenv('DB_NAME', 'thu_vien_so')
+    _db_name = os.getenv('DB_NAME', 'library_db')
     
     SQLALCHEMY_DATABASE_URI = os.getenv(
         'DATABASE_URI',

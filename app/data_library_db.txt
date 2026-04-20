@@ -2,7 +2,7 @@
 -- password: 123456 (bcrypt)
 INSERT INTO user (id, first_name, last_name, username, email, password, role, created_at) VALUES
 (1, 'Admin', 'User', 'admin', 'admin@library.com',
-'$2a$10$5X9k5N1sTc1/CjVH5XJoje3QMYijH3ETpgkox00R0MdPaJPPrf7wO', 'ADMIN', NOW()),
+'$2b$12$VZW8WvhZuk8xftM5QQ8AuuMRAoxAb9w0MiRDmDT7aw34NjxBIKL6i', 'ADMIN', NOW()),
 
 (2, 'Staff', 'User', 'staff', 'staff@library.com',
 '$2a$10$5X9k5N1sTc1/CjVH5XJoje3QMYijH3ETpgkox00R0MdPaJPPrf7wO', 'STAFF', NOW()),

@@ -125,6 +125,8 @@ class BorrowRequest(Base):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey("book.id"), nullable=False)
 
+    book = db.relationship('Book', backref='borrow_requests_list')
+
 
 class BorrowSlip(Base):
     __tablename__ = "borrow_slip"
