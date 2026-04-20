@@ -2,154 +2,164 @@
 {% block title %}{{ book.title }}{% endblock %}
 
 {% block content %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/book_detail.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/book_detail.css') }}">
 
-    <div class="book-detail-wrapper">
-        <div class="book-left">
-            <div class="cover-box">
-                {% if book.image %}
-                    <img id="main-book-cover" src="{{ book.image }}" alt="Bìa sách {{ book.title }}"
-                         style="cursor: zoom-in;">
-                {% else %}
-                    <img id="main-book-cover" src="{{ url_for('static', filename='img/placeholder-cover.svg') }}"
-                         alt="Bìa sách" style="cursor: zoom-in;">
-                {% endif %}
-            </div>
+<div style="margin-bottom: 20px;">
+    <div class="breadcrumb" style="box-shadow: none; padding: 0; background: transparent; font-size: 16px; font-weight: 500; margin-bottom: 10px;">
+        <a href="{{ url_for('main.index') }}" style="color: #6b7280; text-decoration: none;">Trang chủ</a>
+        <i class="fa-solid fa-chevron-right separator" style="font-size: 12px; margin: 0 8px; color: #d1d5db;"></i>
+        {% if source == 'featured' %}
+        <a href="{{ url_for('main.index') }}" style="color: #6b7280; text-decoration: none;">Sách nổi bật</a>
+        {% else %}
+        <a href="{{ url_for('main.book_list') }}" style="color: #6b7280; text-decoration: none;">Danh sách</a>
+        {% endif %}
+        <i class="fa-solid fa-chevron-right separator" style="font-size: 12px; margin: 0 8px; color: #d1d5db;"></i>
+        <span style="color: #111827; font-weight: 600;">Chi tiết sách</span>
+    </div>
+</div>
 
-            <div class="book-actions-icons">
-                <div class="icon-item">
-                    <i class="fa-solid fa-star"></i>
-                    <span>4.8/5</span>
-                </div>
-                <div class="icon-item">
-                    <i class="fa-solid fa-comment"></i>
-                    <span>128</span>
-                </div>
-                <div class="icon-item">
-                    <i class="fa-solid fa-share-nodes"></i>
-                    <span>Chia sẻ</span>
-                </div>
-            </div>
-
-            {% if current_user.is_authenticated %}
-                {% set st = user_state %}
-
-                {% if st and st.is_borrowing %}
-                    <button class="btn-borrow borrowing disabled" disabled>Đang mượn</button>
-
-                {% elif st and st.request_status == 'pending' %}
-                    <button class="btn-borrow disabled" disabled>Đang chờ duyệt</button>
-
-                {% elif st and st.request_status == 'approved' %}
-                    <a class="btn-borrow approved" href="{{ url_for('user.request_list') }}">Đã duyệt - Xem</a>
-
-                {% else %}
-                    {% if book.quantity is not none and book.quantity <= 0 %}
-                        <button class="btn-borrow disabled" disabled>Hết sách</button>
-                    {% else %}
-                        <form method="post" action="{{ url_for('main.request_borrow', book_id=book.book_id) }}">
-                            <button type="submit" class="btn-borrow">Đăng ký mượn sách</button>
-                        </form>
-                    {% endif %}
-                {% endif %}
+<div class="book-detail-wrapper">
+    <div class="book-left">
+        <div class="cover-box">
+            {% if book.image %}
+            <img id="main-book-cover" src="{{ book.image }}" alt="Bìa sách {{ book.title }}" style="cursor: zoom-in;">
             {% else %}
-                <div class="auth-alert-box">
-                    <h4><i class="fa-solid fa-triangle-exclamation"></i> Yêu cầu</h4>
-                    <p>Bạn cần phải đăng nhập vào hệ thống thư viện để mượn sách</p>
-                </div>
+            <img id="main-book-cover" src="{{ url_for('static', filename='img/placeholder-cover.svg') }}" alt="Bìa sách"
+                style="cursor: zoom-in;">
             {% endif %}
         </div>
 
-        <div class="book-right">
-            <h1 class="book-main-title">
-                {{ book.title }}
-                {% if book.quantity is not none %}
-                    <span class="badge-status {{ 'available' if book.quantity > 0 else '' }}">
-                {{ 'Có sẵn' if book.quantity > 0 else 'Hết sách' }}
-            </span>
-                {% endif %}
-            </h1>
+        <div class="book-actions-icons">
+            <div class="icon-item">
+                <i class="fa-solid fa-star"></i>
+                <span>4.8/5</span>
+            </div>
+            <div class="icon-item">
+                <i class="fa-solid fa-comment"></i>
+                <span>128</span>
+            </div>
+            <div class="icon-item">
+                <i class="fa-solid fa-share-nodes"></i>
+                <span>Chia sẻ</span>
+            </div>
+        </div>
 
-            <table class="spec-table">
-                <thead>
+        {% if current_user.is_authenticated %}
+        {% set st = user_state %}
+
+        {% if st and st.is_borrowing %}
+        <button class="btn-borrow borrowing disabled" disabled>Đang mượn</button>
+
+        {% elif st and st.request_status == 'pending' %}
+        <button class="btn-borrow disabled" disabled>Đang chờ duyệt</button>
+
+        {% elif st and st.request_status == 'approved' %}
+        <a class="btn-borrow approved" href="{{ url_for('user.request_list') }}">Đã duyệt - Xem</a>
+
+        {% else %}
+        {% if book.quantity is not none and book.quantity <= 0 %} <button class="btn-borrow disabled" disabled>Hết
+            sách</button>
+            {% else %}
+            <form method="post" action="{{ url_for('main.request_borrow', book_id=book.book_id) }}">
+                <button type="submit" class="btn-borrow">Đăng ký mượn sách</button>
+            </form>
+            {% endif %}
+            {% endif %}
+            {% else %}
+            <div class="auth-alert-box">
+                <h4><i class="fa-solid fa-triangle-exclamation"></i> Yêu cầu</h4>
+                <p>Bạn cần phải đăng nhập vào hệ thống thư viện để mượn sách</p>
+            </div>
+            {% endif %}
+    </div>
+
+    <div class="book-right">
+        <h1 style="font-size: 28px; font-weight: 700; color: #111827; margin-bottom: 20px;">{{ book.title }}</h1>
+        <table class="spec-table">
+            <thead>
                 <tr>
                     <th>Thông tin</th>
                     <th>Chi tiết</th>
                 </tr>
-                </thead>
-                <tbody>
+            </thead>
+            <tbody>
                 <tr>
-                    <td>Tác giả</td>
-                    <td>{{ book.author or '—' }}</td>
+                    <td><i class="fa-solid fa-user-pen"></i> Tác giả</td>
+                    <td><strong>{{ book.author or '—' }}</strong></td>
                 </tr>
                 <tr>
-                    <td>Danh mục</td>
+                    <td><i class="fa-solid fa-tags"></i> Danh mục</td>
                     <td>{{ book.category.name if book.category else '—' }}</td>
                 </tr>
                 <tr>
-                    <td>Ngôn ngữ</td>
-                    <td>{{ book.language or '—' }}</td>
-                </tr>
-                <tr>
-                    <td>Thông tin xuất bản</td>
+                    <td><i class="fa-solid fa-building"></i> Thông tin xuất bản</td>
                     <td>{{ book.publication_info or '—' }}</td>
                 </tr>
                 <tr>
-                    <td>ISBN</td>
+                    <td><i class="fa-solid fa-language"></i> Ngôn ngữ</td>
+                    <td>{{ book.language or '—' }}</td>
+                </tr>
+                <tr>
+                    <td><i class="fa-solid fa-barcode"></i> ISBN</td>
                     <td>{{ book.isbn or '—' }}</td>
                 </tr>
                 <tr>
-                    <td>Trạng thái</td>
-                    <td>{{ 'Có sẵn' if book.quantity and book.quantity > 0 else 'Hết sách' }}</td>
+                    <td><i class="fa-solid fa-circle-check"></i> Trạng thái</td>
+                    <td>
+                        <span class="badge {{ 'bg-success' if book.quantity and book.quantity > 0 else 'bg-danger' }}">
+                            {{ 'Còn sách' if book.quantity and book.quantity > 0 else 'Hết sách' }}
+                        </span>
+                    </td>
                 </tr>
                 <tr>
-                    <td>Số lượng còn</td>
-                    <td>{{ book.quantity if book.quantity is not none else '—' }}</td>
+                    <td><i class="fa-solid fa-boxes-stacked"></i> Số lượng còn</td>
+                    <td>{{ book.quantity if book.quantity is not none else '—' }} cuốn</td>
                 </tr>
-                </tbody>
-            </table>
+            </tbody>
+        </table>
 
-            <div style="margin-top: 25px;">
-                <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 15px; color: #111827;">Mô tả nội dung</h3>
-                <div style="line-height: 1.8; color: #4b5563; text-align: justify;">
-                    {% if book.description %}
-                        {{ book.description }}
-                    {% else %}
-                        Chưa có mô tả cho sách này.
-                    {% endif %}
-                </div>
+        <div class="description-frame">
+            <h3 class="description-title"><i class="fa-solid fa-align-left"></i> Mô tả nội dung</h3>
+            <div class="description-content">
+                {% if book.description %}
+                {{ book.description }}
+                {% else %}
+                <p style="font-style: italic; color: #9ca3af;">Chưa có mô tả chi tiết cho cuốn sách này.</p>
+                {% endif %}
             </div>
         </div>
     </div>
+</div>
 
-    {% if related_books %}
-        <div class="related-books-section">
-            <h3 class="related-books-title">Sách có thể bạn quan tâm</h3>
-            <div class="slider-container" id="draggable-slider">
-                <div class="slide-track">
-                    {% for rb in related_books %}
-                        <div class="slide">
-                            <img src="{{ rb.image }}" alt="{{ rb.title }}">
-                            <div class="slide-title" title="{{ rb.title }}">{{ rb.title }}</div>
-                        </div>
-                    {% endfor %}
-                    {% for rb in related_books %}
-                        <div class="slide">
-                            <img src="{{ rb.image }}" alt="{{ rb.title }}">
-                            <div class="slide-title" title="{{ rb.title }}">{{ rb.title }}</div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
+{% if related_books %}
+<div class="related-books-section">
+    <h3 class="related-books-title">Sách có thể bạn quan tâm</h3>
+    <div class="slider-container" id="draggable-slider">
+        <div class="slide-track">
+            {% for rb in related_books %}
+            <a href="{{ url_for('main.book_detail', book_id=rb.id) }}?from=list" class="slide">
+                <img src="{{ rb.image }}" alt="{{ rb.title }}">
+                <div class="slide-title" title="{{ rb.title }}">{{ rb.title }}</div>
+            </a>
+            {% endfor %}
+            {# Bản sao để tạo hiệu ứng chạy vô tận #}
+            {% for rb in related_books %}
+            <a href="{{ url_for('main.book_detail', book_id=rb.id) }}?from=list" class="slide">
+                <img src="{{ rb.image }}" alt="{{ rb.title }}">
+                <div class="slide-title" title="{{ rb.title }}">{{ rb.title }}</div>
+            </a>
+            {% endfor %}
         </div>
-
-        <script src="{{ url_for('static', filename='js/book_detail.js') }}"></script>
-    {% endif %}
-
-    <!-- Modal Zoom Ảnh -->
-    <div id="image-modal" class="image-zoom-modal">
-        <span class="close-modal"><i class="fa-solid fa-xmark"></i></span>
-        <img class="modal-content" id="zoomed-image">
     </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/book_detail.js') }}"></script>
+{% endif %}
+
+<!-- Modal Zoom Ảnh -->
+<div id="image-modal" class="image-zoom-modal">
+    <span class="close-modal"><i class="fa-solid fa-xmark"></i></span>
+    <img class="modal-content" id="zoomed-image">
+</div>
 
 {% endblock %}

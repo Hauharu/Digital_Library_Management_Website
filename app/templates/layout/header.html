@@ -34,11 +34,11 @@
                 <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
                    href="#" role="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
 
-                    <img src="{{ current_user.avatar if current_user.avatar else url_for('static', filename='images/default-avatar.png') }}"
+                    <img src="{{ current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}"
                          alt="{{ current_user.username }}"
                          width="38" height="38"
                          class="rounded-circle me-2 border border-2 border-light"
-                         onerror="this.src='/static/images/default-avatar.png';">
+                         onerror="this.src='https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png';">
 
                     <span class="fw-bold d-none d-sm-inline">{{ current_user.username }}</span>
                 </a>

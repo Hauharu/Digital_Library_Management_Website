@@ -1,0 +1,31 @@
+<section class="feature-grid">
+    <!-- SÁCH NỔI BẬT (Trang chủ) -->
+    <a href="{{ url_for('main.index') }}" class="feature-card-link">
+        <article class="feature-card {{ 'active' if request.endpoint == 'main.index' or (request.endpoint == 'main.book_detail' and request.args.get('from') == 'featured') }}">
+            <i class="fa-solid fa-star"></i>
+            <h3>SÁCH NỔI BẬT</h3>
+        </article>
+    </a>
+
+    <!-- SÁCH MỚI -->
+    <article class="feature-card">
+        <i class="fa-solid fa-square-plus"></i>
+        <h3>SÁCH MỚI</h3>
+    </article>
+
+    <!-- DANH SÁCH SÁCH -->
+    <a href="{{ url_for('main.book_list') }}" class="feature-card-link">
+        <article class="feature-card {{ 'active' if (request.endpoint == 'main.book_list' and not request.args.get('category_id')) or (request.endpoint == 'main.book_detail' and request.args.get('from') == 'list') }}">
+            <i class="fa-solid fa-book"></i>
+            <h3>DANH SÁCH SÁCH</h3>
+        </article>
+    </a>
+
+    <!-- DANH MỤC SÁCH -->
+    <a href="{{ url_for('main.categories') }}" class="feature-card-link">
+        <article class="feature-card {{ 'active' if request.endpoint == 'main.categories' or request.args.get('category_id') or (request.endpoint == 'main.book_detail' and request.args.get('from') == 'category') }}">
+            <i class="fa-solid fa-pen"></i>
+            <h3>DANH MỤC SÁCH</h3>
+        </article>
+    </a>
+</section>

@@ -1,0 +1,38 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}Danh mục sách - OU BOOK{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/categories.css') }}">
+
+<section class="categories-section">
+    <div style="margin-bottom: 30px;">
+        <div class="breadcrumb" style="box-shadow: none; padding: 0; background: transparent; font-size: 16px; font-weight: 500; margin-bottom: 10px;">
+            <a href="{{ url_for('main.index') }}" style="color: #6b7280; text-decoration: none;">Trang chủ</a>
+            <i class="fa-solid fa-chevron-right separator" style="font-size: 12px; margin: 0 8px; color: #d1d5db;"></i>
+            <span style="color: #111827; font-weight: 600;">Danh mục sách</span>
+        </div>
+        <h1 style="font-size: 22px; font-weight: 700; color: #111827; margin: 0;">DANH MỤC SÁCH</h1>
+    </div>
+
+    <div class="category-grid">
+        {% for cat in categories %}
+        <a href="{{ url_for('main.book_list', category_id=cat.id) }}" class="category-card">
+            <div class="category-icon">
+                <i class="fa-solid fa-folder-open"></i>
+            </div>
+            <div class="category-info">
+                <h3>{{ cat.name }}</h3>
+                <p>{{ cat.books|length }} cuốn sách</p>
+            </div>
+            <div class="category-arrow">
+                <i class="fa-solid fa-arrow-right"></i>
+            </div>
+        </a>
+        {% else %}
+        <p style="text-align: center; color: #6b7280; grid-column: 1/-1; padding: 40px;">Chưa có danh mục nào được cập nhật.</p>
+        {% endfor %}
+    </div>
+</section>
+
+{% endblock %}
