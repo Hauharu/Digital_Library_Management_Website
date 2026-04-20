@@ -83,7 +83,7 @@ def login_user_logic(data):
     if user and bcrypt.check_password_hash(user.password, password):
         if not user.is_active:
             return {"error": "Tài khoản của bạn đã bị khóa"}
-        
+
         flask_login_user(user)
         return {
             "message": "Đăng nhập thành công",

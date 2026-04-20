@@ -8,6 +8,8 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from authlib.integrations.flask_client import OAuth
 
+
+
 db = SQLAlchemy()
 login_manager = LoginManager()
 bcrypt = Bcrypt()
@@ -66,12 +68,5 @@ def create_app(config_name=None):
 
     with app.app_context():
         db.create_all()
-
-        # roles = ["admin", "staff", "reader"]
-        # for r in roles:
-        #     if not Role.query.filter_by(name=r).first():
-        #         db.session.add(Role(name=r))
-        # db.session.commit()
-
 
     return app

@@ -1,0 +1,56 @@
+{% extends "layout/base.html" %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar vh-100 p-3 text-white">
+            <h5 class="mb-4 text-warning"><i class="fas fa-user-shield"></i> ADMIN PANEL</h5>
+            <ul class="nav flex-column">
+                <li class="nav-item mb-2"><a href="#" class="nav-link text-white active bg-primary rounded"><i class="fas fa-chart-line"></i> Tổng quan</a></li>
+                <li class="nav-item mb-2"><a href="#" class="nav-link text-white"><i class="fas fa-users-cog"></i> Quản lý nhân viên</a></li>
+                <li class="nav-item mb-2"><a href="#" class="nav-link text-white"><i class="fas fa-database"></i> Thống kê báo cáo</a></li>
+            </ul>
+        </nav>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+            <h2 class="mb-4">Bảng điều khiển hệ thống</h2>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-primary text-white shadow">
+                        <div class="card-body">
+                            <h6>Tổng Độc Giả</h6>
+                            <h3>{{ stats.total_users }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white shadow">
+                        <div class="card-body">
+                            <h6>Đầu Sách Trong Kho</h6>
+                            <h3>{{ stats.total_books }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-danger text-white shadow">
+                        <div class="card-body">
+                            <h6>Yêu Cầu Chờ Duyệt</h6>
+                            <h3>{{ stats.pending_requests }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow">
+                <div class="card-header bg-white fw-bold">Dự đoán nhu cầu mượn sách tuần tới</div>
+                <div class="card-body text-center py-5">
+                    <p class="text-muted italic">Tính năng AI đang phân tích dữ liệu lịch sử...</p>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 75%"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

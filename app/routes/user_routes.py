@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
-from app.models import User, RequestStatusEnum, BorrowStatusEnum
+from app.models import User
 
 user_bp = Blueprint('user', __name__, url_prefix='/user')
 
@@ -23,20 +23,21 @@ def user_profile():
         }
         return render_template("user/user_profile.html", current_user=user_data)
 
+    profile = user.reader_profile or ReaderProfile(user_id=user.id)
 
-    active_requests = sum(1 for r in user.borrow_requests if r.status in (RequestStatusEnum.Pending, RequestStatusEnum.Approved))
-    borrow_count = sum(1 for r in user.borrow_slips if r.status == BorrowStatusEnum.Borrowing)
+    active_requests = sum(1 for r in user.borrowed_requests if r.status in ('pending', 'approved'))
+    borrow_count = sum(1 for r in user.borrowed_requests if r.status == 'borrowed')
 
     # Mapping cho view để dùng đúng biến
     user_data = {
         "id": user.id,
-        "username": user.username,
-        "name": f"{user.last_name} {user.first_name}".strip(),
+        "username": user.email.split('@')[0],
+        "name": user.name,
         "borrow_count": borrow_count,
         "pending_books": active_requests,
         "email": user.email,
-        "phone_number": user.phone_number if user.phone_number else "",
-        "gender": user.gender.value if user.gender else ""
+        "phone_number": profile.phone if profile.phone else "",
+        "gender": profile.gender if profile.gender else ""
     }
     
     return render_template("user/user_profile.html", current_user=user_data)

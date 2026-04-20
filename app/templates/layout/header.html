@@ -1,53 +1,97 @@
-<header class="shadow-sm">
-    <div class="container-fluid px-4 d-flex align-items-center justify-content-between py-2">
+<header class="shadow-sm" style="background-color: #1e293b;"> <div class="container-fluid px-4 d-flex align-items-center justify-content-between py-2">
 
-        <!-- Các thành phần bên trái: Logo + Search + Filter -->
         <div class="d-flex align-items-center flex-grow-1 gap-4">
-            <!-- Logo -->
             <div class="d-flex align-items-center header-logo flex-shrink-0">
-                <a href="/" class="text-white fs-3 me-3">
+                <a href="{{ url_for('main.index') }}" class="text-white fs-3 me-2 text-decoration-none">
                     <i class="fa-solid fa-house"></i>
                 </a>
                 <span class="fw-bold fs-4 text-white">OU BOOK</span>
             </div>
 
-            <!-- Search -->
-            <form class="header-search flex-grow-1" style="max-width: 500px;">
+            <form action="/search" method="GET" class="header-search flex-grow-1 d-none d-md-block" style="max-width: 500px;">
                 <div class="input-group">
-                    <input class="form-control fs-6 border-0" type="search" placeholder="Tìm kiếm sách...">
-                    <button class="btn px-4 fw-bold text-white search-btn" type="submit">
+                    <input class="form-control fs-6 border-0 shadow-none"
+                           type="search"
+                           name="q"
+                           placeholder="Tìm kiếm sách theo tên, tác giả...">
+                    <button class="btn px-4 fw-bold text-white search-btn"
+                            type="submit"
+                            style="background-color: #3b82f6;">
                         <i class="fa-solid fa-magnifying-glass"></i>
                     </button>
                 </div>
             </form>
 
-            <!-- Lọc -->
-            <button class="btn btn-outline-light fw-bold flex-shrink-0 px-3 btn-filter ms-2">
+            <button class="btn btn-outline-light fw-bold flex-shrink-0 px-3 btn-filter ms-2 d-none d-lg-block">
                 <i class="fa-solid fa-filter"></i> Lọc nâng cao
             </button>
         </div>
 
-        <div class="header-actions ms-4 flex-shrink-0">
-            {% if current_user.is_authenticated %}
-            <span class="text-white me-3">Chào, <strong>{{ current_user.username }}</strong></span>
-            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light fw-bold">
-                <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
-            </a>
-            {% else %}
-            {% if request.endpoint != 'auth.register' %}
-            <a href="{{ url_for('auth.register') }}" class="btn me-2 fw-bold text-white btn-register"
-                style="background-color: #22c55e;">
-                <i class="fa-solid fa-user-plus"></i> Đăng ký
-            </a>
-            {% endif %}
-            {% if request.endpoint != 'auth.login' %}
-            <a href="{{ url_for('auth.login') }}" class="btn fw-bold text-white btn-login"
-                style="background-color: #2563eb;">
-                <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
-            </a>
-            {% endif %}
-            {% endif %}
-        </div>
+        <div class="header-actions ms-4 flex-shrink-0 d-flex align-items-center">
 
+            {% if current_user.is_authenticated %}
+            <div class="dropdown">
+                <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
+                   href="#" role="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+
+                    <img src="{{ current_user.avatar if current_user.avatar else url_for('static', filename='images/default-avatar.png') }}"
+                         alt="{{ current_user.username }}"
+                         width="38" height="38"
+                         class="rounded-circle me-2 border border-2 border-light"
+                         onerror="this.src='/static/images/default-avatar.png';">
+
+                    <span class="fw-bold d-none d-sm-inline">{{ current_user.username }}</span>
+                </a>
+
+                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userMenu">
+                    <li>
+                        <a class="dropdown-item py-2" href="{{ url_for('user.user_profile') }}">
+                            <i class="fa-solid fa-user me-2 text-primary"></i> Thông tin cá nhân
+                        </a>
+                    </li>
+
+                    {% if current_user.role.name == 'ADMIN' %}
+                    <li>
+                        <a class="dropdown-item py-2" href="/admin">
+                            <i class="fa-solid fa-crown me-2 text-warning"></i> Quản trị hệ thống
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% if current_user.role.name == 'STAFF' %}
+                    <li>
+                        <a class="dropdown-item py-2" href="/staff">
+                            <i class="fa-solid fa-briefcase me-2 text-info"></i> Trang nhân viên
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    <li><hr class="dropdown-divider"></li>
+
+                    <li>
+                        <a class="dropdown-item text-danger py-2" href="{{ url_for('auth.logout') }}">
+                            <i class="fa-solid fa-right-from-bracket me-2"></i> Đăng xuất
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            {% else %}
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('auth.register') }}"
+                   class="btn fw-bold text-white border-0 px-3 d-none d-sm-block"
+                   style="background-color: #22c55e;">
+                    <i class="fa-solid fa-user-plus"></i> Đăng ký
+                </a>
+
+                <a href="{{ url_for('auth.login') }}"
+                   class="btn fw-bold text-white border-0 px-3"
+                   style="background-color: #2563eb;">
+                    <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
+                </a>
+            </div>
+            {% endif %}
+
+        </div>
     </div>
 </header>
