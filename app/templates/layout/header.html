@@ -27,19 +27,25 @@
             </button>
         </div>
 
-        <!-- Các thành phần bên phải: Account Actions -->
         <div class="header-actions ms-4 flex-shrink-0">
-            <!-- Chưa login -->
+            {% if current_user.is_authenticated %}
+            <span class="text-white me-3">Chào, <strong>{{ current_user.username }}</strong></span>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light fw-bold">
+                <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+            </a>
+            {% else %}
             {% if request.endpoint != 'auth.register' %}
-            <a href="{{ url_for('auth.register') }}" class="btn me-2 fw-bold text-white btn-register" style="background-color: #22c55e;">
+            <a href="{{ url_for('auth.register') }}" class="btn me-2 fw-bold text-white btn-register"
+                style="background-color: #22c55e;">
                 <i class="fa-solid fa-user-plus"></i> Đăng ký
             </a>
             {% endif %}
-
             {% if request.endpoint != 'auth.login' %}
-            <a href="{{ url_for('auth.login') }}" class="btn fw-bold text-white btn-login" style="background-color: #2563eb;">
+            <a href="{{ url_for('auth.login') }}" class="btn fw-bold text-white btn-login"
+                style="background-color: #2563eb;">
                 <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
             </a>
+            {% endif %}
             {% endif %}
         </div>
 

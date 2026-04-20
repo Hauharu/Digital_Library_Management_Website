@@ -11,21 +11,29 @@
           <h4 class="mb-0 fw-bold">Đăng Nhập</h4>
         </div>
         <div class="card-body p-4">
-          <form method="post" action="/login">
+          {% if error %}
+          <div class="alert alert-danger py-2 text-center" role="alert">
+            {{ error }}
+          </div>
+          {% endif %}
+          <form method="post" action="{{ url_for('auth.login') }}">
             <div class="mb-3">
               <label for="username" class="form-label fw-bold">Tên đăng nhập</label>
-              <input type="text" class="form-control p-2" id="username" name="username" placeholder="Nhập tên đăng nhập" required />
+              <input type="text" class="form-control p-2" id="username" name="username" placeholder="Nhập tên đăng nhập"
+                required />
             </div>
 
             <div class="mb-3">
               <label for="password" class="form-label fw-bold">Mật khẩu</label>
-              <input type="password" class="form-control p-2" id="password" name="password" placeholder="Nhập mật khẩu" required />
+              <input type="password" class="form-control p-2" id="password" name="password" placeholder="Nhập mật khẩu"
+                required />
             </div>
 
             <button type="submit" class="btn btn-success w-100 fw-bold py-2 mt-3 fs-5">Đăng nhập</button>
           </form>
           <div class="mt-4 text-center">
-            <small class="fs-6">Bạn chưa có tài khoản? <a href="/register" class="text-decoration-none fw-bold text-primary">Đăng ký ngay</a></small>
+            <small class="fs-6">Bạn chưa có tài khoản? <a href="{{ url_for('auth.register') }}"
+                class="text-decoration-none fw-bold text-primary">Đăng ký ngay</a></small>
           </div>
         </div>
       </div>
@@ -33,4 +41,3 @@
   </div>
 </div>
 {% endblock %}
-
