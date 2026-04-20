@@ -13,17 +13,17 @@
                             <path d="M4 20a8 8 0 0 1 16 0" stroke="#555" stroke-width="1.5"/>
                         </svg>
                     </div>
-                    <h3 class="card-title fw-bold">{{ current_user.name | default('Người Dùng') }}</h3>
-                    <p class="text-muted">{{ current_user.email | default('Chưa có email') }}</p>
+                    <h3 class="card-title fw-bold">{{ user_info.name | default('Người Dùng') }}</h3>
+                    <p class="text-muted">{{ user_info.email | default('Chưa có email') }}</p>
                     <hr class="w-100">
                     <ul class="list-unstyled text-start w-100 px-3 mt-3">
                         <li class="mb-3 d-flex justify-content-between align-items-center">
                             <span><i class="fa-solid fa-book text-primary me-2"></i> Lượt mượn sách:</span>
-                            <strong class="fs-5">{{ current_user.borrow_count | default(0) }}</strong>
+                            <strong class="fs-5">{{ user_info.borrow_count | default(0) }}</strong>
                         </li>
                         <li class="mb-3 d-flex justify-content-between align-items-center">
                             <span><i class="fa-solid fa-clock-rotate-left text-warning me-2"></i> Đang chờ duyệt:</span>
-                            <strong class="fs-5">{{ current_user.pending_books | default(0) }}</strong>
+                            <strong class="fs-5">{{ user_info.pending_books | default(0) }}</strong>
                         </li>
                     </ul>
                 </div>
@@ -48,26 +48,26 @@
                     <form method="post" action="{{ url_for('user.update_profile') }}">
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Họ và tên</label>
-                            <input class="form-control" type="text" name="full_name" value="{{ current_user.name }}">
+                            <input class="form-control" type="text" name="full_name" value="{{ user_info.name }}">
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Số điện thoại</label>
-                            <input class="form-control" type="text" name="phone_number" value="{{ current_user.phone_number | default('') }}" pattern="0\d{9,10}" title="Số điện thoại phải bắt đầu bằng 0 và có 10 hoặc 11 chữ số" required placeholder="Ví dụ: 0912345678">
+                            <input class="form-control" type="text" name="phone_number" value="{{ user_info.phone_number | default('') }}" pattern="0\d{9,10}" title="Số điện thoại phải bắt đầu bằng 0 và có 10 hoặc 11 chữ số" required placeholder="Ví dụ: 0912345678">
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold d-block">Giới tính</label>
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="gender" id="g1" value="Nam" {% if current_user.gender == 'Nam' %}checked{% endif %}>
+                                <input class="form-check-input" type="radio" name="gender" id="g1" value="Nam" {% if user_info.gender == 'Nam' %}checked{% endif %}>
                                 <label class="form-check-label" for="g1">Nam</label>
                             </div>
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="gender" id="g2" value="Nữ" {% if current_user.gender == 'Nữ' %}checked{% endif %}>
+                                <input class="form-check-input" type="radio" name="gender" id="g2" value="Nữ" {% if user_info.gender == 'Nữ' %}checked{% endif %}>
                                 <label class="form-check-label" for="g2">Nữ</label>
                             </div>
                         </div>
                         <div class="mb-4">
                             <label class="form-label fw-semibold">Email</label>
-                            <input class="form-control bg-light" type="email" name="email" value="{{ current_user.email }}" readonly>
+                            <input class="form-control bg-light" type="email" name="email" value="{{ user_info.email }}" readonly>
                         </div>
                         <button class="btn btn-primary px-4 shadow-sm" type="submit">
                             <i class="fa-regular fa-floppy-disk me-2"></i> Cập nhật thông tin
@@ -85,7 +85,7 @@
                     <form method="post" action="{{ url_for('user.update_password') }}">
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Tên tài khoản hiển thị</label>
-                            <input class="form-control-plaintext px-3 bg-light rounded" type="text" value="{{ current_user.username | default(current_user.email) }}" readonly tabindex="-1">
+                            <input class="form-control-plaintext px-3 bg-light rounded" type="text" value="{{ user_info.username | default(user_info.email) }}" readonly tabindex="-1">
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Mật khẩu cũ</label>

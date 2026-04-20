@@ -1,46 +1,33 @@
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
-from app.models import User
+from app.models import User, RequestStatusEnum, BorrowStatusEnum
 
 user_bp = Blueprint('user', __name__, url_prefix='/user')
 
 @user_bp.route("/profile")
-# @login_required  # Tạm thời tắt để test giao diện
+@login_required
 def user_profile():
-    # Tạm thời vô hiệu hóa current_user.id và lấy cứng User có id = 3 để test
-    user = User.query.get(3) 
-    if not user:
-        # Nếu chưa có user 3, tạo mock data tạm để render được HTML dựa trên thông tin trong data_library_db.txt
-        user_data = {
-            "id": 3,
-            "username": "user",
-            "name": "Normal Reader",
-            "borrow_count": 0,
-            "pending_books": 0,
-            "email": "user@library.com",
-            "phone_number": "0901234567",
-            "gender": "Nam"
-        }
-        return render_template("user/user_profile.html", current_user=user_data)
+    user = current_user 
 
-    profile = user.reader_profile or ReaderProfile(user_id=user.id)
+    # Đếm số yêu cầu đang chờ hoặc đã duyệt
+    active_requests = sum(1 for r in user.borrow_requests if r.status in (RequestStatusEnum.Pending, RequestStatusEnum.Approved))
+    
+    # Đếm số sách đang mượn từ borrow_slips
+    borrow_count = sum(1 for s in user.borrow_slips if s.status == BorrowStatusEnum.Borrowing)
 
-    active_requests = sum(1 for r in user.borrowed_requests if r.status in ('pending', 'approved'))
-    borrow_count = sum(1 for r in user.borrowed_requests if r.status == 'borrowed')
-
-    # Mapping cho view để dùng đúng biến
+    # Mapping cho view
     user_data = {
         "id": user.id,
-        "username": user.email.split('@')[0],
-        "name": user.name,
+        "username": user.username,
+        "name": f"{user.last_name} {user.first_name}",
         "borrow_count": borrow_count,
         "pending_books": active_requests,
         "email": user.email,
-        "phone_number": profile.phone if profile.phone else "",
-        "gender": profile.gender if profile.gender else ""
+        "phone_number": user.phone_number or "",
+        "gender": "Nam" if user.gender and user.gender.name == "MALE" else ("Nữ" if user.gender and user.gender.name == "FEMALE" else "Khác")
     }
     
-    return render_template("user/user_profile.html", current_user=user_data)
+    return render_template("user/user_profile.html", user_info=user_data)
 
 
 @user_bp.route("/profile/update", methods=["POST"])

@@ -1,23 +1,4 @@
-/* 1. ĐỊNH NGHĨA HÀM TRƯỚC (Để HTML gọi được ngay) */
-function togglePassword(inputId) {
-    const passwordInput = document.getElementById(inputId);
-    const eyeIcon = document.getElementById('eye-icon-' + inputId);
-
-    if (!passwordInput || !eyeIcon) {
-        console.warn(`Không tìm thấy: ${inputId} hoặc eye-icon-${inputId}`);
-        return;
-    }
-
-    if (passwordInput.type === "password") {
-        passwordInput.type = "text";
-        eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
-    } else {
-        passwordInput.type = "password";
-        eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
-    }
-}
-
-/* 2. CÁC LOGIC CHẠY SAU KHI LOAD TRANG */
+/* LOGIC CHẠY SAU KHI LOAD TRANG */
 document.addEventListener('DOMContentLoaded', function() {
     console.log("OU BOOK: Register JS Ready!");
 

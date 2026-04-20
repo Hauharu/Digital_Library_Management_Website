@@ -250,3 +250,21 @@
     text-overflow: ellipsis;
     white-space: normal;
 }
+
+/* Password Toggle */
+.password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    color: #6c757d;
+    z-index: 10;
+}
+
+.password-toggle:hover {
+    color: #881642; /* ou-primary */
+}
+

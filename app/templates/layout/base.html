@@ -43,7 +43,7 @@
         
         {% block hero %}{% endblock %}
 
-        {% if request.blueprint != 'auth' %}
+        {% if request.blueprint not in ['auth', 'user'] %}
         {% include 'layout/feature_cards.html' %}
         {% endif %}
 
