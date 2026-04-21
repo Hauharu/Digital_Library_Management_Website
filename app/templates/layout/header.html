@@ -1,6 +1,5 @@
 <header class="main-header sticky-top">
     <div class="container-fluid px-lg-5 d-flex align-items-center justify-content-between py-2">
-
         <div class="header-left d-flex align-items-center gap-4 flex-grow-1">
             <a href="{{ url_for('main.index') }}" class="header-logo d-flex align-items-center text-decoration-none">
                 <div class="logo-icon me-2">
@@ -9,53 +8,63 @@
                 <span class="logo-text fw-bold fs-4">OU<span class="text-accent">BOOK</span></span>
             </a>
 
-            <form action="/search" method="GET" class="header-search flex-grow-1 d-none d-md-block" style="max-width: 480px;">
+            <form action="/search" method="GET" class="header-search flex-grow-1 d-none d-md-block"
+                  style="max-width: 480px;">
                 <div class="search-input-group">
                     <i class="fa-solid fa-magnifying-glass ms-3 text-muted"></i>
                     <input type="search" name="q" class="form-control border-0 bg-transparent shadow-none"
                            placeholder="Tìm tên sách, tác giả..." required>
-                    <button class="btn btn-search-submit me-1" type="submit">Tìm kiếm</button>
+                    <button class="btn btn-search-submit" type="submit">Tìm kiếm</button>
                 </div>
             </form>
 
-            <button class="btn btn-filter-light d-none d-lg-block shadow-sm">
-                <i class="fa-solid fa-sliders me-1"></i> Lọc nâng cao
+            <button class="btn btn-filter-light d-none d-lg-flex shadow-sm">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Lọc nâng cao</span>
             </button>
         </div>
 
         <div class="header-right ms-4 flex-shrink-0">
             {% if current_user.is_authenticated %}
             <div class="dropdown">
-                <button class="btn user-dropdown-btn dropdown-toggle shadow-none" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                <button class="btn user-dropdown-btn dropdown-toggle d-flex align-items-center shadow-none"
+                        type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
                     <img src="{{ current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}"
                          alt="avatar" class="user-avatar me-2">
                     <span class="username-text fw-semibold d-none d-sm-inline">{{ current_user.username }}</span>
                 </button>
 
-                <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-3 p-2 rounded-4" aria-labelledby="userMenu">
-                    <li><div class="dropdown-header text-uppercase small fw-bold text-muted">Tài khoản cá nhân</div></li>
-                    <li><a class="dropdown-item rounded-3 py-2" href="{{ url_for('main.borrow_history') }}">
+                <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-3 p-2 rounded-4"
+                    aria-labelledby="userMenu">
+                    <li>
+                        <div class="dropdown-header text-uppercase small fw-bold text-muted">Tài khoản</div>
+                    </li>
+                    <li><a class="dropdown-item" href="{{ url_for('main.borrow_history') }}">
                         <i class="fas fa-clock-rotate-left me-2 text-primary"></i> Lịch sử mượn
                     </a></li>
-                    <li><a class="dropdown-item rounded-3 py-2" href="{{ url_for('user.user_profile') }}">
+                    <li><a class="dropdown-item" href="{{ url_for('user.user_profile') }}">
                         <i class="fa-solid fa-circle-user me-2 text-primary"></i> Thông tin cá nhân
                     </a></li>
 
                     {% if current_user.role.name == 'ADMIN' %}
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item rounded-3 py-2 text-primary fw-bold" href="/admin">
-                        <i class="fa-solid fa-gauge-high me-2"></i> Quản trị hệ thống
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item text-primary fw-bold" href="/admin">
+                        <i class="fa-solid fa-gauge-high me-2"></i> Quản trị
                     </a></li>
                     {% endif %}
 
                     {% if current_user.role.name == 'STAFF' %}
-                    <li><a class="dropdown-item rounded-3 py-2 text-info fw-bold" href="/staff">
-                        <i class="fa-solid fa-clipboard-check me-2"></i> Trang nhân viên
+                    <li><a class="dropdown-item text-info fw-bold" href="/staff">
+                        <i class="fa-solid fa-clipboard-check me-2"></i> Nhân viên
                     </a></li>
                     {% endif %}
 
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger rounded-3 py-2" href="{{ url_for('auth.logout') }}">
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
                         <i class="fa-solid fa-power-off me-2"></i> Đăng xuất
                     </a></li>
                 </ul>

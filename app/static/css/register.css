@@ -1,17 +1,14 @@
-/* register.css */
 :root {
     --primary-blue: #3b82f6;
     --dark-blue: #1d4ed8;
     --light-blue-bg: #eff6ff;
 }
 
-/* Card chính */
 .register-main-card {
     border-radius: 24px !important;
     min-height: 600px;
 }
 
-/* Khối Visual bên trái */
 .visual-showcase {
     background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue)) !important;
     position: relative;
@@ -32,7 +29,6 @@
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* Form Styles */
 .text-primary-blue {
     color: var(--primary-blue);
 }
@@ -49,7 +45,6 @@
     box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
 }
 
-/* Nút Submit đồng bộ */
 .btn-register-submit {
     background-color: var(--primary-blue) !important;
     color: white !important;
@@ -66,18 +61,32 @@
     box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
 }
 
-/* Alert tùy chỉnh */
+.password-wrapper {
+    position: relative;
+    display: block;
+}
+
+.password-wrapper .form-control {
+    padding-right: 45px !important;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    cursor: pointer;
+    color: #94a3b8;
+    padding: 5px;
+}
+
+.toggle-password:hover {
+    color: var(--primary-blue);
+}
+
 .alert-danger {
     background-color: #fef2f2;
     color: #b91c1c;
     border-radius: 12px;
-    font-size: 0.9rem;
-}
-
-/* Responsive */
-@media (max-width: 991px) {
-    .register-main-card {
-        border-radius: 0 !important;
-        box-shadow: none !important;
-    }
 }
