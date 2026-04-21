@@ -8,6 +8,8 @@ from app.models import (
 )
 from app.services.book_service import BookService
 from flask import jsonify
+from datetime import datetime
+from sqlalchemy import func
 
 main_bp = Blueprint('main', __name__)
 
@@ -108,8 +110,38 @@ def book_detail(book_id):
 @login_required
 @role_required(RoleEnum.STAFF)
 def staff_dashboard():
-    pending_list = BorrowRequest.query.filter_by(status='pending').all()
-    return render_template('staff/dashboard.html', requests=pending_list)
+    total_books = Book.query.count()
+
+    pending_count = BorrowRequest.query.filter_by(status=RequestStatusEnum.Pending).count()
+
+    borrowing_count = BorrowSlip.query.filter_by(status=BorrowStatusEnum.Borrowing).count()
+
+    overdue_count = BorrowSlip.query.filter(
+        BorrowSlip.due_date < datetime.now().date(),
+        BorrowSlip.status == BorrowStatusEnum.Borrowing
+    ).count()
+
+    now = datetime.now().strftime('%H:%M - %d/%m/%Y')
+
+    recent_requests = BorrowRequest.query.filter_by(status=RequestStatusEnum.Pending) \
+        .order_by(BorrowRequest.created_at.desc()).limit(5).all()
+
+    low_stock_books = Book.query.filter(Book.available_quantity < 3).limit(5).all()
+
+    top_books = db.session.query(Book.title, func.count(BorrowSlip.id).label('total')) \
+        .join(BorrowSlip, Book.id == BorrowSlip.book_id) \
+        .group_by(Book.id).order_by(func.count(BorrowSlip.id).desc()).limit(5).all()
+
+    return render_template('staff/dashboard.html',
+                           total_books=total_books,
+                           pending_count=pending_count,
+                           borrowing_count=borrowing_count,
+                           overdue_count=overdue_count,
+                           requests=recent_requests,
+                           current_time=now,
+                           low_stock_books=low_stock_books,
+                           top_books=top_books,
+                           now=datetime.now())
 
 
 @main_bp.route('/request-borrow/<int:book_id>', methods=['POST'])
