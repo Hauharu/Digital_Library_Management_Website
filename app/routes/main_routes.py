@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 from app.decorators import role_required
 from app.models import (
     RoleEnum, User, Book, BorrowRequest,
-    BorrowSlip, RequestStatusEnum, BorrowStatusEnum, Category
+    BorrowSlip, RequestStatusEnum, BorrowStatusEnum, Category, Invoice
 )
 from app.services.book_service import BookService
 from flask import jsonify
@@ -42,17 +42,6 @@ def categories():
     categories_list = Category.query.all()
     return render_template('book/categories.html', categories=categories_list)
 
-
-@main_bp.route('/admin')
-@login_required
-@role_required(RoleEnum.ADMIN)
-def admin_dashboard():
-    stats = {
-        'total_users': User.query.count(),
-        'total_books': Book.query.count(),
-        'pending_requests': BorrowRequest.query.filter_by(status='pending').count()
-    }
-    return render_template('admin/dashboard.html', stats=stats)
 
 
 @main_bp.route('/book-detail/<int:book_id>')
