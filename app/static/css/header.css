@@ -1,30 +1,24 @@
-/* ===== RESET & VARIABLES ===== */
 :root {
-    --primary-blue: #3b82f6;      /* Xanh dương chính */
-    --hover-blue: #2563eb;        /* Xanh dương đậm khi hover */
-    --light-blue: #f0f7ff;        /* Nền xanh nhạt */
-    --header-height: 70px;
+    --primary-blue: #3b82f6;
+    --hover-blue: #2563eb;
+    --light-blue: #f0f7ff;
+    --border-color: #e2e8f0;
     --text-dark: #1e293b;
-    --text-muted: #64748b;
-    --white: #ffffff;
+    --header-height: 72px;
 }
 
-/* ===== MAIN HEADER HOÀN CHỈNH ===== */
 .main-header {
-    background-color: var(--white);
+    background-color: #ffffff;
     height: var(--header-height);
     display: flex;
     align-items: center;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--border-color);
     box-shadow: 0 2px 15px rgba(0, 0, 0, 0.04);
     z-index: 1050;
 }
 
-/* Logo */
 .header-logo {
-    display: flex;
-    align-items: center;
-    transition: transform 0.2s;
+    transition: transform 0.2s ease;
 }
 
 .header-logo:hover {
@@ -33,121 +27,102 @@
 
 .logo-icon i {
     color: var(--primary-blue);
-    font-size: 1.8rem;
-}
-
-.logo-text {
-    font-family: 'Inter', sans-serif;
-    color: var(--text-dark);
-    letter-spacing: -0.5px;
 }
 
 .text-accent {
     color: var(--primary-blue);
 }
 
-/* Search Bar (Kiểu Apple/SaaS hiện đại) */
-.header-search .search-input-group {
+.search-input-group {
     background-color: #f1f5f9;
     border-radius: 50px;
     display: flex;
     align-items: center;
     padding: 4px;
     border: 1px solid transparent;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s ease;
 }
 
-.header-search .search-input-group:focus-within {
-    background-color: var(--white);
+.search-input-group:focus-within {
+    background-color: #ffffff;
     border-color: var(--primary-blue);
     box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
 }
 
-.header-search input::placeholder {
-    color: #94a3b8;
-    font-size: 0.9rem;
-}
-
 .btn-search-submit {
     background-color: var(--primary-blue);
-    color: var(--white);
+    color: #ffffff;
     border: none;
     border-radius: 50px;
-    padding: 6px 20px;
+    padding: 6px 18px;
     font-weight: 600;
-    transition: all 0.2s;
+    transition: background 0.2s;
 }
 
 .btn-search-submit:hover {
     background-color: var(--hover-blue);
-    color: var(--white);
+    color: #ffffff;
 }
 
 .btn-filter-light {
-    background-color: #f0f7ff !important; /* Màu nền xanh nhạt rõ ràng */
-    color: #3b82f6 !important;           /* Chữ xanh đậm */
-    border: 1.5px solid #bfdbfe !important; /* Viền xanh để định hình nút */
-    font-weight: 600 !important;
-    opacity: 1 !important;               /* Đảm bảo không bị mờ */
+    background-color: var(--light-blue) !important;
+    color: var(--primary-blue) !important;
+    border: 1.5px solid #bfdbfe !important;
+    font-weight: 600;
+    border-radius: 50px;
+    padding: 8px 16px;
     display: flex;
     align-items: center;
     gap: 8px;
+    transition: all 0.2s;
 }
 
 .btn-filter-light:hover {
-    background-color: #3b82f6 !important;
+    background-color: var(--primary-blue) !important;
     color: #ffffff !important;
 }
 
 .user-dropdown-btn {
-    padding: 5px 12px;
+    padding: 4px 12px;
     border-radius: 50px;
-    border: 1px solid #e2e8f0;
-    background: transparent;
+    border: 1px solid var(--border-color);
     transition: all 0.2s;
 }
 
 .user-dropdown-btn:hover {
-    background-color: #f8fafc;
     border-color: var(--primary-blue);
+    background-color: #f8fafc;
 }
 
 .user-avatar {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     object-fit: cover;
     border-radius: 50%;
     border: 2px solid var(--primary-blue);
 }
 
-.username-text {
-    color: var(--text-dark);
-    font-size: 0.95rem;
-}
-
 .btn-auth-login {
-    background-color: transparent !important;
     color: var(--primary-blue) !important;
     font-weight: 600;
-    padding: 8px 24px;
+    padding: 8px 22px;
     border-radius: 50px;
     border: 1.5px solid var(--primary-blue);
-    transition: all 0.3s ease;
+    transition: all 0.2s;
 }
 
 .btn-auth-login:hover {
     background-color: var(--light-blue) !important;
-    transform: translateY(-1px);
 }
 
 .btn-auth-register {
     background-color: var(--primary-blue);
-    color: var(--white) !important;
-    border-radius: 50px;
-    padding: 8px 22px;
+    color: #ffffff !important;
     font-weight: 600;
+    padding: 8px 22px;
+    border-radius: 50px;
     border: none;
-    transition: 0.2s;
+    transition: all 0.2s;
 }
 
 .btn-auth-register:hover {
@@ -156,34 +131,68 @@
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
 }
 
-
 .dropdown-menu {
-    border: none !important;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.08) !important;
-    border-radius: 16px !important;
-    padding: 10px !important;
-    margin-top: 15px !important;
+    min-width: 220px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
 }
 
 .dropdown-item {
-    padding: 10px 15px !important;
-    border-radius: 10px !important;
-    font-size: 0.9rem;
-    color: var(--text-dark);
+    padding: 10px 16px;
+    border-radius: 10px;
     font-weight: 500;
+    transition: all 0.2s;
 }
 
 .dropdown-item:hover {
-    background-color: var(--light-blue) !important;
-    color: var(--primary-blue) !important;
-}
-
-.dropdown-item i {
-    width: 20px;
-    text-align: center;
+    background-color: var(--light-blue);
+    color: var(--primary-blue);
 }
 
 @media (max-width: 768px) {
-    .main-header { height: auto; padding: 10px 0; }
-    .header-search { display: none; }
+    .main-header { height: auto; }
+}
+
+.header-search .search-input-group {
+    background-color: #f1f5f9;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    padding: 4px 4px 4px 0; /* Padding phải bằng 4px để nút cách mép đều */
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+    height: 46px; /* Cố định chiều cao để đồng bộ */
+}
+
+.header-search .search-input-group:focus-within {
+    background-color: #ffffff;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.header-search input {
+    height: 100%;
+    font-size: 0.95rem;
+    padding-left: 10px;
+}
+
+.btn-search-submit {
+    background-color: var(--primary-blue) !important;
+    color: #ffffff !important;
+    border: none;
+    border-radius: 50px !important;
+    padding: 0 20px !important;
+    height: 38px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.btn-search-submit:hover {
+    background-color: var(--hover-blue) !important;
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
 }

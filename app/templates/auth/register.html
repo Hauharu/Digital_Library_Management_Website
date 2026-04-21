@@ -34,10 +34,10 @@
                     </div>
                     {% endif %}
 
-                    <form method="POST" action="{{ url_for('auth.register') }}">
+                    <form method="POST" action="{{ url_for('auth.register') }}" id="registerForm">
                         <div class="mb-3 form-floating">
                             <input type="text" class="form-control" id="name" name="name" placeholder="Họ tên" required>
-                            <label for="name">Họ và tên khách hàng</label>
+                            <label for="name">Họ và tên độc giả</label>
                         </div>
 
                         <div class="row g-2 mb-3">
@@ -57,13 +57,23 @@
                         </div>
 
                         <div class="row g-2 mb-4">
-                            <div class="col-md-6 form-floating position-relative">
-                                <input type="password" class="form-control" id="password" name="password" placeholder="Mật khẩu" required>
-                                <label for="password">Mật khẩu</label>
+                            <div class="col-md-6">
+                                <div class="password-wrapper">
+                                    <div class="form-floating">
+                                        <input type="password" class="form-control" id="password" name="password" placeholder="Mật khẩu" required>
+                                        <label for="password">Mật khẩu</label>
+                                    </div>
+                                    <i class="fas fa-eye toggle-password"></i>
+                                </div>
                             </div>
-                            <div class="col-md-6 form-floating">
-                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Xác nhận" required>
-                                <label for="confirm_password">Xác nhận mật khẩu</label>
+                            <div class="col-md-6">
+                                <div class="password-wrapper">
+                                    <div class="form-floating">
+                                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Xác nhận" required>
+                                        <label for="confirm_password">Xác nhận mật khẩu</label>
+                                    </div>
+                                    <i class="fas fa-eye toggle-password"></i>
+                                </div>
                             </div>
                         </div>
 
@@ -83,4 +93,6 @@
         </div>
     </div>
 </div>
+
+<script src="{{ url_for('static', filename='js/register.js') }}"></script>
 {% endblock %}
