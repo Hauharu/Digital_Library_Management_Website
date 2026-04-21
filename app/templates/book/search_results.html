@@ -1,0 +1,183 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}Tìm kiếm: {{ search_query or 'Tất cả sách' }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/search.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Sidebar Filter -->
+        <div class="col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top: 90px;">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4 d-flex align-items-center">
+                        <i class="fa-solid fa-filter me-2 text-primary"></i> Bộ lọc nâng cao
+                    </h5>
+
+                    <form action="{{ url_for('main.search') }}" method="GET">
+                        <input type="hidden" name="q" value="{{ search_query }}">
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small text-uppercase text-muted">Danh mục</label>
+                            <select name="category" class="form-select border-0 bg-light rounded-3">
+                                <option value="">Tất cả danh mục</option>
+                                {% for cat in filter_options.categories %}
+                                <option value="{{ cat.id }}" {{ 'selected' if filters.category==cat.id else '' }}>
+                                    {{ cat.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small text-uppercase text-muted">Ngôn ngữ</label>
+                            <select name="language" class="form-select border-0 bg-light rounded-3">
+                                <option value="">Tất cả ngôn ngữ</option>
+                                {% for lang in filter_options.languages %}
+                                <option value="{{ lang }}" {{ 'selected' if filters.language==lang else '' }}>
+                                    {{ lang }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary fw-bold rounded-3 py-2">
+                                Áp dụng bộ lọc
+                            </button>
+                            <a href="{{ url_for('main.search') }}" class="btn btn-outline-secondary btn-sm border-0">
+                                <i class="fa-solid fa-eraser me-1"></i> Xóa bộ lọc
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded-4 shadow-sm">
+                <div>
+                    {% if search_query %}
+                    <h4 class="mb-0 fw-bold">Kết quả cho: <span class="text-primary">"{{ search_query }}"</span></h4>
+                    {% else %}
+                    <h4 class="mb-0 fw-bold">Tất cả sách</h4>
+                    {% endif %}
+                    <p class="text-muted small mb-0 mt-1">Tìm thấy {{ pagination.total }} kết quả</p>
+                </div>
+
+                {% if filters.category or filters.language %}
+                <div class="d-flex gap-2">
+                    {% if filters.category %}
+                    <span
+                        class="badge bg-light text-primary border border-primary-subtle py-2 px-3 rounded-pill d-flex align-items-center">
+                        Danh mục ID: {{ filters.category }}
+                    </span>
+                    {% endif %}
+                    {% if filters.language %}
+                    <span
+                        class="badge bg-light text-primary border border-primary-subtle py-2 px-3 rounded-pill d-flex align-items-center">
+                        Ngôn ngữ: {{ filters.language }}
+                    </span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            {% if books %}
+            <div class="row g-4">
+                {% for book in books %}
+                <div class="col-md-4 col-sm-6">
+                    <div
+                        class="card h-100 border-0 shadow-sm book-card rounded-4 overflow-hidden transition-all hover-lift">
+                        <div class="position-relative">
+                            {% if book.image %}
+                            <img src="{{ book.image }}" class="card-img-top" alt="{{ book.title }}"
+                                style="height: 280px; object-fit: cover;">
+                            {% else %}
+                            <div class="bg-light d-flex align-items-center justify-content-center"
+                                style="height: 280px;">
+                                <i class="fa-solid fa-book fa-4x text-secondary opacity-25"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-body p-4 d-flex flex-column">
+                            <div class="mb-2">
+                                <span class="badge bg-primary-subtle text-primary border-0 fw-normal small px-2">
+                                    {{ book.category.name }}
+                                </span>
+                            </div>
+                            <h5 class="card-title fw-bold mb-2 text-dark">{{ book.title }}</h5>
+                            <p class="text-muted small mb-3">Tác giả: <span class="fw-medium">{{ book.author or 'Ẩn
+                                    danh' }}</span></p>
+
+                            <div class="mt-auto pt-3 border-top">
+                                <a href="{{ url_for('main.book_detail', book_id=book.id) }}"
+                                    class="btn btn-primary w-100 rounded-pill fw-bold">
+                                    <i class="fa-solid fa-eye me-1"></i> Xem chi tiết
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if pagination.pages > 1 %}
+            <nav class="mt-5">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {{ 'disabled' if not pagination.has_prev }}">
+                        <a class="page-link border-0 rounded-circle mx-1 d-flex align-items-center justify-content-center"
+                            style="width: 40px; height: 40px;"
+                            href="{{ url_for('main.search', q=search_query, page=pagination.prev_num, **filters) if pagination.has_prev else '#' }}">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </a>
+                    </li>
+
+                    {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2)
+                    %}
+                    {% if page_num %}
+                    <li class="page-item {{ 'active' if page_num == pagination.page }}">
+                        <a class="page-link border-0 rounded-circle mx-1 d-flex align-items-center justify-content-center {{ 'bg-primary text-white shadow-sm' if page_num == pagination.page else 'text-dark' }}"
+                            style="width: 40px; height: 40px;"
+                            href="{{ url_for('main.search', q=search_query, page=page_num, **filters) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link border-0">...</span></li>
+                    {% endif %}
+                    {% endfor %}
+
+                    <li class="page-item {{ 'disabled' if not pagination.has_next }}">
+                        <a class="page-link border-0 rounded-circle mx-1 d-flex align-items-center justify-content-center"
+                            style="width: 40px; height: 40px;"
+                            href="{{ url_for('main.search', q=search_query, page=pagination.next_num, **filters) if pagination.has_next else '#' }}">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="bg-white p-5 rounded-4 shadow-sm text-center">
+                <div class="mb-4">
+                    <i class="fa-solid fa-magnifying-glass fa-4x text-light"></i>
+                </div>
+                <h3 class="fw-bold">Rất tiếc, không tìm thấy sách!</h3>
+                <p class="text-muted">Hãy thử tìm kiếm với từ khóa khác hoặc điều chỉnh bộ lọc.</p>
+                <a href="{{ url_for('main.search') }}" class="btn btn-primary rounded-pill px-4 py-2 mt-2">
+                    Xem tất cả sách
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

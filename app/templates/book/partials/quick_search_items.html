@@ -1,0 +1,29 @@
+{% if books %}
+    {% for book in books %}
+    <a href="{{ url_for('main.book_detail', book_id=book.id) }}" class="dropdown-item d-flex align-items-center py-2 border-bottom px-3">
+        <div class="me-3" style="width: 40px; height: 60px;">
+            {% if book.image %}
+                <img src="{{ book.image }}" alt="{{ book.title }}" class="w-100 h-100 object-fit-cover rounded">
+            {% else %}
+                <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-secondary text-white rounded small">
+                    {{ book.title[:1] }}
+                </div>
+            {% endif %}
+        </div>
+        <div class="overflow-hidden">
+            <div class="fw-bold text-truncate" style="max-width: 300px;">{{ book.title }}</div>
+            <div class="small text-muted text-truncate">{{ book.author }}</div>
+        </div>
+    </a>
+    {% endfor %}
+    <div class="p-2 text-center">
+        <a href="{{ url_for('main.search', q=request.args.get('q')) }}" class="btn btn-sm btn-link text-primary text-decoration-none fw-bold">
+            Xem tất cả kết quả
+        </a>
+    </div>
+{% else %}
+    <div class="p-3 text-center text-muted">
+        <i class="fa-solid fa-magnifying-glass mb-2"></i>
+        <p class="mb-0 small">Không tìm thấy sách phù hợp</p>
+    </div>
+{% endif %}
