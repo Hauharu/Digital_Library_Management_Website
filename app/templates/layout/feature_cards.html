@@ -1,31 +1,39 @@
-<section class="feature-grid">
-    <!-- SÁCH NỔI BẬT (Trang chủ) -->
-    <a href="{{ url_for('main.index') }}" class="feature-card-link">
-        <article class="feature-card {{ 'active' if request.endpoint == 'main.index' or (request.endpoint == 'main.book_detail' and request.args.get('from') == 'featured') }}">
-            <i class="fa-solid fa-star"></i>
-            <h3>SÁCH NỔI BẬT</h3>
-        </article>
-    </a>
+<section class="feature-navigation mb-5">
+    <div class="row g-3 justify-content-center">
+        <div class="col-6 col-md-3">
+            <a href="{{ url_for('main.index') }}" class="nav-card {{ 'active' if request.endpoint == 'main.index' }}">
+                <div class="icon-wrapper">
+                    <i class="fa-solid fa-fire-flame-curved"></i>
+                </div>
+                <span>Sách Nổi Bật</span>
+            </a>
+        </div>
 
-    <!-- SÁCH MỚI -->
-    <article class="feature-card">
-        <i class="fa-solid fa-square-plus"></i>
-        <h3>SÁCH MỚI</h3>
-    </article>
+        <div class="col-6 col-md-3">
+            <a href="#" class="nav-card">
+                <div class="icon-wrapper">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <span>Sách Mới</span>
+            </a>
+        </div>
 
-    <!-- DANH SÁCH SÁCH -->
-    <a href="{{ url_for('main.book_list') }}" class="feature-card-link">
-        <article class="feature-card {{ 'active' if (request.endpoint == 'main.book_list' and not request.args.get('category_id')) or (request.endpoint == 'main.book_detail' and request.args.get('from') == 'list') }}">
-            <i class="fa-solid fa-book"></i>
-            <h3>DANH SÁCH SÁCH</h3>
-        </article>
-    </a>
+        <div class="col-6 col-md-3">
+            <a href="{{ url_for('main.book_list') }}" class="nav-card {{ 'active' if request.endpoint == 'main.book_list' }}">
+                <div class="icon-wrapper">
+                    <i class="fa-solid fa-book-bookmark"></i>
+                </div>
+                <span>Tủ Sách</span>
+            </a>
+        </div>
 
-    <!-- DANH MỤC SÁCH -->
-    <a href="{{ url_for('main.categories') }}" class="feature-card-link">
-        <article class="feature-card {{ 'active' if request.endpoint == 'main.categories' or request.args.get('category_id') or (request.endpoint == 'main.book_detail' and request.args.get('from') == 'category') }}">
-            <i class="fa-solid fa-pen"></i>
-            <h3>DANH MỤC SÁCH</h3>
-        </article>
-    </a>
+        <div class="col-6 col-md-3">
+            <a href="{{ url_for('main.categories') }}" class="nav-card {{ 'active' if request.endpoint == 'main.categories' }}">
+                <div class="icon-wrapper">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <span>Danh Mục</span>
+            </a>
+        </div>
+    </div>
 </section>
