@@ -6,15 +6,16 @@
 
 <section class="books-section">
     <div style="margin-bottom: 30px;">
-        <div class="breadcrumb" style="box-shadow: none; padding: 0; background: transparent; font-size: 16px; font-weight: 500; margin-bottom: 10px;">
+        <div class="breadcrumb"
+            style="box-shadow: none; padding: 0; background: transparent; font-size: 16px; font-weight: 500; margin-bottom: 10px;">
             <a href="{{ url_for('main.index') }}" style="color: #6b7280; text-decoration: none;">Trang chủ</a>
             <i class="fa-solid fa-chevron-right separator" style="font-size: 12px; margin: 0 8px; color: #d1d5db;"></i>
             {% if category %}
-                <a href="{{ url_for('main.categories') }}" style="color: #6b7280; text-decoration: none;">Danh mục</a>
-                <i class="fa-solid fa-chevron-right separator" style="font-size: 12px; margin: 0 8px; color: #d1d5db;"></i>
-                <span style="color: #111827; font-weight: 600;">{{ category.name }}</span>
+            <a href="{{ url_for('main.categories') }}" style="color: #6b7280; text-decoration: none;">Danh mục</a>
+            <i class="fa-solid fa-chevron-right separator" style="font-size: 12px; margin: 0 8px; color: #d1d5db;"></i>
+            <span style="color: #111827; font-weight: 600;">{{ category.name }}</span>
             {% else %}
-                <span style="color: #111827; font-weight: 600;">Danh sách</span>
+            <span style="color: #111827; font-weight: 600;">Danh sách</span>
             {% endif %}
         </div>
         <h1 style="font-size: 22px; font-weight: 700; color: #111827; margin: 0;">
@@ -28,7 +29,9 @@
             <img src="{{ book.image }}" alt="{{ book.title }}">
             <h3>{{ book.title }}</h3>
             <p>{{ book.author }}</p>
-            <button type="button" onclick="window.location.href='/book-detail/{{ book.id }}?from={{ 'category' if category else 'list' }}'">CHI TIẾT</button>
+            <button type="button"
+                onclick="window.location.href='/book-detail/{{ book.id }}?from={{ 'category' if category else 'list' }}'">CHI
+                TIẾT</button>
         </article>
         {% endfor %}
     </div>
@@ -36,7 +39,8 @@
     <!-- Phân trang -->
     <div class="pagination-container">
         {% if pagination.has_prev %}
-        <a href="{{ url_for('main.book_list', page=pagination.prev_num, category_id=category.id if category else None) }}" class="page-link">&laquo; Trước</a>
+        <a href="{{ url_for('main.book_list', page=pagination.prev_num, category_id=category.id if category else None) }}"
+            class="page-link">&laquo; Trước</a>
         {% endif %}
 
         {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
@@ -44,7 +48,8 @@
         {% if pagination.page == page_num %}
         <span class="page-link active">{{ page_num }}</span>
         {% else %}
-        <a href="{{ url_for('main.book_list', page=page_num, category_id=category.id if category else None) }}" class="page-link">{{ page_num }}</a>
+        <a href="{{ url_for('main.book_list', page=page_num, category_id=category.id if category else None) }}"
+            class="page-link">{{ page_num }}</a>
         {% endif %}
         {% else %}
         <span class="page-link dots">...</span>
@@ -52,7 +57,8 @@
         {% endfor %}
 
         {% if pagination.has_next %}
-        <a href="{{ url_for('main.book_list', page=pagination.next_num, category_id=category.id if category else None) }}" class="page-link">Sau &raquo;</a>
+        <a href="{{ url_for('main.book_list', page=pagination.next_num, category_id=category.id if category else None) }}"
+            class="page-link">Sau &raquo;</a>
         {% endif %}
     </div>
 </section>

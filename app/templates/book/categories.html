@@ -7,7 +7,8 @@
 
 <section class="categories-section">
     <div style="margin-bottom: 30px;">
-        <div class="breadcrumb" style="box-shadow: none; padding: 0; background: transparent; font-size: 16px; font-weight: 500; margin-bottom: 10px;">
+        <div class="breadcrumb"
+            style="box-shadow: none; padding: 0; background: transparent; font-size: 16px; font-weight: 500; margin-bottom: 10px;">
             <a href="{{ url_for('main.index') }}" style="color: #6b7280; text-decoration: none;">Trang chủ</a>
             <i class="fa-solid fa-chevron-right separator" style="font-size: 12px; margin: 0 8px; color: #d1d5db;"></i>
             <span style="color: #111827; font-weight: 600;">Danh mục sách</span>
@@ -30,7 +31,8 @@
             </div>
         </a>
         {% else %}
-        <p style="text-align: center; color: #6b7280; grid-column: 1/-1; padding: 40px;">Chưa có danh mục nào được cập nhật.</p>
+        <p style="text-align: center; color: #6b7280; grid-column: 1/-1; padding: 40px;">Chưa có danh mục nào được cập
+            nhật.</p>
         {% endfor %}
     </div>
 </section>
