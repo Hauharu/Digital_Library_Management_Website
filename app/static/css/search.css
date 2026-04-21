@@ -1,0 +1,36 @@
+/* search.css */
+
+.hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Sidebar Styling */
+.sticky-top {
+    z-index: 10;
+}
+
+.form-select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.1);
+}
+
+/* Pagination Styling */
+.page-link {
+    transition: all 0.2s ease;
+}
+
+.page-link:hover:not(.active) {
+    background-color: #f1f5f9;
+    color: #2563eb;
+}
+
+/* Custom width for search container if requested */
+.search-results-wide {
+    max-width: 1400px;
+    margin: 0 auto;
+}

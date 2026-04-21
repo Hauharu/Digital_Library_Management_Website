@@ -6,6 +6,8 @@ from app.models import (
     RoleEnum, User, Book, BorrowRequest,
     BorrowSlip, RequestStatusEnum, BorrowStatusEnum, Category
 )
+from app.services.book_service import BookService
+from flask import jsonify
 
 main_bp = Blueprint('main', __name__)
 
@@ -113,4 +115,44 @@ def staff_dashboard():
 @main_bp.route('/request-borrow/<int:book_id>', methods=['POST'])
 def request_borrow(book_id):
     # Placeholder cho logic mượn sách
-    return f"Yêu cầu mượn sách ID {book_id} đã được gửi (Tính năng đang phát triển)"
+    return f"Yêu cầu mượn sách ID {book_id} đã được gửi (Tính năng đang phát triển)"
+
+@main_bp.route("/search")
+def search():
+    search_query = request.args.get('q', '')
+    category = request.args.get('category', '')
+    language = request.args.get('language', '')
+    
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 12, type=int)
+    
+    filters = {}
+    if category: filters['category'] = int(category) if category.isdigit() else category
+    if language: filters['language'] = language
+    
+    service = BookService()
+    
+    if not search_query and not filters:
+        pagination = service.get_paginated_books(page=page, per_page=per_page, order_desc=True)
+    else:
+        pagination = service.search_books(keyword=search_query, filters=filters, page=page, per_page=per_page)
+    
+    filter_options = service.get_filter_options()
+    
+    return render_template("book/search_results.html", 
+                         search_query=search_query, 
+                         pagination=pagination, 
+                         books=pagination.items if pagination else [],
+                         filters=filters,
+                         filter_options=filter_options)
+
+
+@main_bp.route("/search/quick")
+def search_quick():
+    keyword = request.args.get('q', '').strip()
+    if not keyword:
+        return ""
+    service = BookService()
+    pagination = service.search_books(keyword=keyword, page=1, per_page=5)
+    books = pagination.items if pagination else []
+    return render_template("book/partials/quick_search_items.html", books=books)
