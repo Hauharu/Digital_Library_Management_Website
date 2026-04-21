@@ -16,11 +16,14 @@ def user_profile():
     # Đếm số sách đang mượn từ borrow_slips
     borrow_count = sum(1 for s in user.borrow_slips if s.status == BorrowStatusEnum.Borrowing)
 
+    full_name = " ".join([part.strip() for part in [user.last_name or "", user.first_name or ""] if part and part.strip()])
+    display_name = full_name or user.username or user.email
+
     # Mapping cho view
     user_data = {
         "id": user.id,
         "username": user.username,
-        "name": f"{user.last_name} {user.first_name}",
+        "name": display_name,
         "borrow_count": borrow_count,
         "pending_books": active_requests,
         "email": user.email,

@@ -122,6 +122,9 @@ class BorrowRequest(Base):
     __tablename__ = 'borrow_request'
 
     request_date = db.Column(db.Date, default=lambda: datetime.now().date())
+    borrow_from_date = db.Column(db.Date)
+    borrow_to_date = db.Column(db.Date)
+    quantity = db.Column(db.Integer, default=1, nullable=False)
     status = db.Column(db.Enum(RequestStatusEnum), default=RequestStatusEnum.Pending)
     reject_reason = db.Column(db.String(255))
 
@@ -138,6 +141,8 @@ class BorrowSlip(Base):
     borrow_date = db.Column(db.Date, default=lambda: datetime.now().date())
     due_date = db.Column(db.Date, nullable=False)
     return_date = db.Column(db.Date)
+    quantity = db.Column(db.Integer, default=1, nullable=False)
+    return_requested = db.Column(db.Boolean, default=False, nullable=False)
     status = db.Column(db.Enum(BorrowStatusEnum), default=BorrowStatusEnum.Borrowing)
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
