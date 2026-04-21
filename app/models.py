@@ -131,6 +131,7 @@ class BorrowRequest(Base):
     book = db.relationship('Book', backref='borrow_requests_list')
 
 
+
 class BorrowSlip(Base):
     __tablename__ = "borrow_slip"
 
@@ -143,7 +144,7 @@ class BorrowSlip(Base):
     book_id = db.Column(db.Integer, db.ForeignKey("book.id"), nullable=False)
 
     borrow_request_id = db.Column(db.Integer, db.ForeignKey("borrow_request.id"))
-    borrow_request = db.relationship("BorrowRequest", backref="borrow_slip", uselist=False)
+    borrow_request = db.relationship("BorrowRequest", backref=db.backref("borrow_slip", uselist=False))
 
 
 # ================= INVOICE =================

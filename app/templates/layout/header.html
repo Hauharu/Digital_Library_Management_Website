@@ -1,98 +1,71 @@
-<header class="shadow-sm" style="background-color: #1e293b;"> <div class="container-fluid px-4 d-flex align-items-center justify-content-between py-2">
+<header class="main-header sticky-top">
+    <div class="container-fluid px-lg-5 d-flex align-items-center justify-content-between py-2">
 
-        <div class="d-flex align-items-center flex-grow-1 gap-4">
-            <div class="d-flex align-items-center header-logo flex-shrink-0">
-                <a href="{{ url_for('main.index') }}" class="text-white fs-3 me-2 text-decoration-none">
-                    <i class="fa-solid fa-house"></i>
-                </a>
-                <span class="fw-bold fs-4 text-white">OU BOOK</span>
-            </div>
+        <div class="header-left d-flex align-items-center gap-4 flex-grow-1">
+            <a href="{{ url_for('main.index') }}" class="header-logo d-flex align-items-center text-decoration-none">
+                <div class="logo-icon me-2">
+                    <i class="fa-solid fa-book-open-reader fs-3"></i>
+                </div>
+                <span class="logo-text fw-bold fs-4">OU<span class="text-accent">BOOK</span></span>
+            </a>
 
-            <form action="/search" method="GET" class="header-search flex-grow-1 d-none d-md-block" style="max-width: 500px;">
-                <div class="input-group">
-                    <input class="form-control fs-6 border-0 shadow-none"
-                           type="search"
-                           name="q"
-                           placeholder="Tìm kiếm sách theo tên, tác giả..."
-                           required>
-                    <button class="btn px-4 fw-bold text-white search-btn"
-                            type="submit"
-                            style="background-color: #3b82f6;">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                    </button>
+            <form action="/search" method="GET" class="header-search flex-grow-1 d-none d-md-block" style="max-width: 480px;">
+                <div class="search-input-group">
+                    <i class="fa-solid fa-magnifying-glass ms-3 text-muted"></i>
+                    <input type="search" name="q" class="form-control border-0 bg-transparent shadow-none"
+                           placeholder="Tìm tên sách, tác giả..." required>
+                    <button class="btn btn-search-submit me-1" type="submit">Tìm kiếm</button>
                 </div>
             </form>
 
-            <button class="btn btn-primary fw-bold flex-shrink-0 px-3 btn-filter ms-2 d-none d-lg-block shadow-sm">
-                <i class="fa-solid fa-filter"></i> Lọc nâng cao
+            <button class="btn btn-filter-light d-none d-lg-block shadow-sm">
+                <i class="fa-solid fa-sliders me-1"></i> Lọc nâng cao
             </button>
         </div>
 
-        <div class="header-actions ms-4 flex-shrink-0 d-flex align-items-center">
-
+        <div class="header-right ms-4 flex-shrink-0">
             {% if current_user.is_authenticated %}
             <div class="dropdown">
-                <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
-                   href="#" role="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
-
+                <button class="btn user-dropdown-btn dropdown-toggle shadow-none" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
                     <img src="{{ current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}"
-                         alt="{{ current_user.username }}"
-                         width="38" height="38"
-                         class="rounded-circle me-2 border border-2 border-light"
-                         onerror="this.src='https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png';">
+                         alt="avatar" class="user-avatar me-2">
+                    <span class="username-text fw-semibold d-none d-sm-inline">{{ current_user.username }}</span>
+                </button>
 
-                    <span class="fw-bold d-none d-sm-inline">{{ current_user.username }}</span>
-                </a>
-
-                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userMenu">
-                    <li>
-                        <a class="dropdown-item py-2" href="{{ url_for('user.user_profile') }}">
-                            <i class="fa-solid fa-user me-2 text-primary"></i> Thông tin cá nhân
-                        </a>
-                    </li>
+                <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-3 p-2 rounded-4" aria-labelledby="userMenu">
+                    <li><div class="dropdown-header text-uppercase small fw-bold text-muted">Tài khoản cá nhân</div></li>
+                    <li><a class="dropdown-item rounded-3 py-2" href="{{ url_for('main.borrow_history') }}">
+                        <i class="fas fa-clock-rotate-left me-2 text-primary"></i> Lịch sử mượn
+                    </a></li>
+                    <li><a class="dropdown-item rounded-3 py-2" href="{{ url_for('user.user_profile') }}">
+                        <i class="fa-solid fa-circle-user me-2 text-primary"></i> Thông tin cá nhân
+                    </a></li>
 
                     {% if current_user.role.name == 'ADMIN' %}
-                    <li>
-                        <a class="dropdown-item py-2" href="/admin">
-                            <i class="fa-solid fa-crown me-2 text-warning"></i> Quản trị hệ thống
-                        </a>
-                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item rounded-3 py-2 text-primary fw-bold" href="/admin">
+                        <i class="fa-solid fa-gauge-high me-2"></i> Quản trị hệ thống
+                    </a></li>
                     {% endif %}
 
                     {% if current_user.role.name == 'STAFF' %}
-                    <li>
-                        <a class="dropdown-item py-2" href="/staff">
-                            <i class="fa-solid fa-briefcase me-2 text-info"></i> Trang nhân viên
-                        </a>
-                    </li>
+                    <li><a class="dropdown-item rounded-3 py-2 text-info fw-bold" href="/staff">
+                        <i class="fa-solid fa-clipboard-check me-2"></i> Trang nhân viên
+                    </a></li>
                     {% endif %}
 
                     <li><hr class="dropdown-divider"></li>
-
-                    <li>
-                        <a class="dropdown-item text-danger py-2" href="{{ url_for('auth.logout') }}">
-                            <i class="fa-solid fa-right-from-bracket me-2"></i> Đăng xuất
-                        </a>
-                    </li>
+                    <li><a class="dropdown-item text-danger rounded-3 py-2" href="{{ url_for('auth.logout') }}">
+                        <i class="fa-solid fa-power-off me-2"></i> Đăng xuất
+                    </a></li>
                 </ul>
             </div>
-
             {% else %}
             <div class="d-flex gap-2">
-                <a href="{{ url_for('auth.register') }}"
-                   class="btn fw-bold text-white border-0 px-3 d-none d-sm-block"
-                   style="background-color: #22c55e;">
-                    <i class="fa-solid fa-user-plus"></i> Đăng ký
-                </a>
-
-                <a href="{{ url_for('auth.login') }}"
-                   class="btn fw-bold text-white border-0 px-3"
-                   style="background-color: #2563eb;">
-                    <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
-                </a>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-auth-login">Đăng nhập</a>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-auth-register shadow-sm">Đăng ký</a>
             </div>
             {% endif %}
-
         </div>
     </div>
 </header>
