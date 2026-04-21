@@ -156,3 +156,13 @@ def search_quick():
     pagination = service.search_books(keyword=keyword, page=1, per_page=5)
     books = pagination.items if pagination else []
     return render_template("book/partials/quick_search_items.html", books=books)
+
+
+@main_bp.route('/history')
+@login_required
+def borrow_history():
+
+    history = BorrowRequest.query.filter_by(user_id=current_user.id) \
+        .order_by(BorrowRequest.created_at.desc()).all()
+
+    return render_template('user/history.html', history=history)

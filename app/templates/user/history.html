@@ -1,0 +1,98 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Trang chủ</a></li>
+            <li class="breadcrumb-item active">Lịch sử mượn sách</li>
+        </ol>
+    </nav>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white py-3 border-bottom">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0 fw-bold text-dark">
+                    <i class="fas fa-history me-2 text-primary"></i>Lịch sử mượn sách
+                </h4>
+                <span class="badge bg-light text-muted border px-3 py-2 rounded-pill">
+                    Độc giả: <span class="text-dark fw-bold">{{ current_user.last_name }}</span>
+                </span>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 py-3 text-uppercase small fw-bold">Thông tin sách</th>
+                            <th class="py-3 text-uppercase small fw-bold text-center">Trạng thái duyệt</th>
+                            <th class="py-3 text-uppercase small fw-bold">Thông tin mượn/trả</th>
+                            <th class="pe-4 py-3 text-uppercase small fw-bold text-end">Tiền phạt</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in history %}
+                        <tr>
+                            <td class="ps-4 py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="book-cover me-3">
+                                        <img src="{{ req.book.image }}" class="rounded shadow-sm" style="width: 50px; height: 70px; object-fit: cover;">
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark mb-1">{{ req.book.title }}</div>
+                                        <div class="text-muted small"><i class="far fa-calendar-alt me-1"></i>Yêu cầu: {{ req.request_date.strftime('%d/%m/%Y') }}</div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td class="text-center">
+                                {% if req.status.name == 'Pending' %}
+                                    <span class="badge rounded-pill bg-warning-subtle text-warning border border-warning-subtle px-3">Đang chờ duyệt</span>
+                                {% elif req.status.name == 'Approved' %}
+                                    <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3">Đã duyệt</span>
+                                {% else %}
+                                    <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-3">{{ req.status.value }}</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if req.borrow_slip %}
+                                    {% set slip = req.borrow_slip[0] if req.borrow_slip is iterable else req.borrow_slip %}
+                                    <div class="d-flex flex-column gap-1">
+                                        <div class="small"><i class="fas fa-hourglass-end me-1 text-danger"></i>Hạn trả: <strong>{{ slip.due_date.strftime('%d/%m/%Y') }}</strong></div>
+                                        <div class="small text-primary"><i class="fas fa-info-circle me-1"></i>{{ slip.status.value }}</div>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted italic small">Chưa có thông tin</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="pe-4 text-end">
+                                {% if req.borrow_slip and req.borrow_slip.invoices %}
+                                    <span class="fw-bold text-danger">50,000 VNĐ</span> {% else %}
+                                    <span class="text-success fw-medium">0 VNĐ</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* CSS bổ sung để làm giao diện tinh tế hơn */
+    body { background-color: #f8f9fa; }
+    .card { transition: transform 0.2s; }
+    .table thead th { font-size: 0.75rem; letter-spacing: 0.5px; color: #6c757d; }
+    .bg-warning-subtle { background-color: #fff3cd !important; }
+    .bg-success-subtle { background-color: #d1e7dd !important; }
+    .bg-danger-subtle { background-color: #f8d7da !important; }
+    .book-cover img { transition: scale 0.2s; }
+    .book-cover img:hover { scale: 1.1; }
+</style>
+{% endblock %}
