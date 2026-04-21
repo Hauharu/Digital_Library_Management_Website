@@ -122,6 +122,9 @@ class BorrowRequest(Base):
     __tablename__ = 'borrow_request'
 
     request_date = db.Column(db.Date, default=lambda: datetime.now().date())
+    borrow_from_date = db.Column(db.Date)
+    borrow_to_date = db.Column(db.Date)
+    quantity = db.Column(db.Integer, default=1, nullable=False)
     status = db.Column(db.Enum(RequestStatusEnum), default=RequestStatusEnum.Pending)
     reject_reason = db.Column(db.String(255))
 
@@ -131,19 +134,22 @@ class BorrowRequest(Base):
     book = db.relationship('Book', backref='borrow_requests_list')
 
 
+
 class BorrowSlip(Base):
     __tablename__ = "borrow_slip"
 
     borrow_date = db.Column(db.Date, default=lambda: datetime.now().date())
     due_date = db.Column(db.Date, nullable=False)
     return_date = db.Column(db.Date)
+    quantity = db.Column(db.Integer, default=1, nullable=False)
+    return_requested = db.Column(db.Boolean, default=False, nullable=False)
     status = db.Column(db.Enum(BorrowStatusEnum), default=BorrowStatusEnum.Borrowing)
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey("book.id"), nullable=False)
 
     borrow_request_id = db.Column(db.Integer, db.ForeignKey("borrow_request.id"))
-    borrow_request = db.relationship("BorrowRequest", backref="borrow_slip", uselist=False)
+    borrow_request = db.relationship("BorrowRequest", backref=db.backref("borrow_slip", uselist=False))
 
 
 # ================= INVOICE =================

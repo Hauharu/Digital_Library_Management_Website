@@ -66,12 +66,15 @@
         {% if book.quantity is not none and book.quantity <= 0 %} <button class="btn-borrow disabled" disabled>Hết
             sách</button>
             {% else %}
-            <form method="post" action="{{ url_for('main.request_borrow', book_id=book.book_id) }}">
-                <button type="submit" class="btn-borrow">Đăng ký mượn sách</button>
-            </form>
+            <a href="{{ url_for('borrow_book', book_id=book.book_id) }}" class="btn-borrow text-decoration-none">
+                Đăng ký mượn sách
+            </a>
             {% endif %}
             {% endif %}
             {% else %}
+            <a href="{{ url_for('borrow_book', book_id=book.book_id) }}" class="btn-borrow text-decoration-none">
+                Đăng ký mượn sách
+            </a>
             <div class="auth-alert-box">
                 <h4><i class="fa-solid fa-triangle-exclamation"></i> Yêu cầu</h4>
                 <p>Bạn cần phải đăng nhập vào hệ thống thư viện để mượn sách</p>

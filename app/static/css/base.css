@@ -29,4 +29,66 @@ main {
     min-height: 500px;
 }
 
-/* ===== CUSTOM UTILS ===== */
+
+.feature-navigation {
+    padding: 10px 0;
+}
+
+.nav-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 15px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    text-decoration: none !important;
+    color: #64748b;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+}
+
+.nav-card .icon-wrapper {
+    width: 50px;
+    height: 50px;
+    background: #f1f5f9;
+    color: #94a3b8;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 12px;
+    transition: all 0.3s;
+}
+
+.nav-card span {
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.nav-card:hover {
+    border-color: #3b82f6;
+    background-color: #f0f7ff;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.1);
+}
+
+.nav-card:hover .icon-wrapper {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.nav-card.active {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+    box-shadow: 0 8px 15px rgba(59, 130, 246, 0.2);
+}
+
+.nav-card.active .icon-wrapper {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
