@@ -8,11 +8,17 @@
     <div class="breadcrumb" style="box-shadow: none; padding: 0; background: transparent; font-size: 16px; font-weight: 500; margin-bottom: 10px;">
         <a href="{{ url_for('main.index') }}" style="color: #6b7280; text-decoration: none;">Trang chủ</a>
         <i class="fa-solid fa-chevron-right separator" style="font-size: 12px; margin: 0 8px; color: #d1d5db;"></i>
-        {% if source == 'featured' %}
-        <a href="{{ url_for('main.index') }}" style="color: #6b7280; text-decoration: none;">Sách nổi bật</a>
+        
+        {% if source == 'category' and book.category %}
+            <a href="{{ url_for('main.categories') }}" style="color: #6b7280; text-decoration: none;">Danh mục</a>
+            <i class="fa-solid fa-chevron-right separator" style="font-size: 12px; margin: 0 8px; color: #d1d5db;"></i>
+            <a href="{{ url_for('main.book_list', category_id=book.category.id) }}" style="color: #6b7280; text-decoration: none;">{{ book.category.name }}</a>
+        {% elif source == 'featured' %}
+            <a href="{{ url_for('main.index') }}" style="color: #6b7280; text-decoration: none;">Sách nổi bật</a>
         {% else %}
-        <a href="{{ url_for('main.book_list') }}" style="color: #6b7280; text-decoration: none;">Danh sách</a>
+            <a href="{{ url_for('main.book_list') }}" style="color: #6b7280; text-decoration: none;">Danh sách</a>
         {% endif %}
+        
         <i class="fa-solid fa-chevron-right separator" style="font-size: 12px; margin: 0 8px; color: #d1d5db;"></i>
         <span style="color: #111827; font-weight: 600;">Chi tiết sách</span>
     </div>
