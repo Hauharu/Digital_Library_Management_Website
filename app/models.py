@@ -111,10 +111,17 @@ class Book(Base):
     price = db.Column(db.Float, default=0.0)
     image = db.Column(db.String(255))
     publication_info = db.Column(db.String(255))
+    view_count = db.Column(db.Integer, default=0)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
 
     reviews = db.relationship('Review', backref='book', lazy=True)
     borrow_slips = db.relationship('BorrowSlip', backref='book', lazy=True)
+
+    @property
+    def average_rating(self):
+        if not self.reviews:
+            return 0.0
+        return round(sum(r.rating for r in self.reviews) / len(self.reviews), 1)
 
 
 # ================= BORROW REQUEST =================

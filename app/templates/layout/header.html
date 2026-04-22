@@ -31,7 +31,10 @@
                         type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
                     <img src="{{ current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}"
                          alt="avatar" class="user-avatar me-2">
-                    <span class="username-text fw-semibold d-none d-sm-inline">{{ current_user.username }}</span>
+                    <span class="username-text fw-semibold d-none d-sm-inline">
+                        {%- set display_name = ((current_user.last_name or '') + ' ' + (current_user.first_name or '')).strip() -%}
+                        {{ display_name if display_name else current_user.username }}
+                    </span>
                 </button>
 
                 <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-3 p-2 rounded-4"

@@ -54,7 +54,6 @@ def login():
 @auth_bp.route('/login/google')
 def login_google():
     redirect_uri = url_for('auth.google_callback', _external=True)
-    print("DEBUG redirect_uri:", redirect_uri)
     return oauth.google.authorize_redirect(redirect_uri)
 
 
@@ -65,7 +64,6 @@ def google_callback():
     user_info = resp.json()
     
     if not user_info:
-        flash("Không thể lấy thông tin từ Google.", "danger")
         return redirect(url_for('auth.login'))
 
     email = user_info['email']
@@ -91,7 +89,6 @@ def google_callback():
         db.session.commit()
 
     login_user(user)
-    flash(f"Chào mừng {user.first_name} đã quay trở lại!", "success")
     return redirect(url_for('main.index'))
 
 
@@ -99,4 +96,4 @@ def google_callback():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('main.index'))
+    return redirect(url_for('auth.login'))
