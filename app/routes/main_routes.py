@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, abort, redirect, url_for
+from flask import Blueprint, render_template, request, abort, redirect, url_for, flash
 from app import db
 from flask_login import login_required, current_user
 from app.decorators import role_required
@@ -8,7 +8,7 @@ from app.models import (
 )
 from app.services.book_service import BookService
 from flask import jsonify
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from sqlalchemy import func
 
 main_bp = Blueprint('main', __name__)
@@ -24,7 +24,7 @@ def index():
 def book_list():
     page = request.args.get('page', 1, type=int)
     category_id = request.args.get('category_id', type=int)
-    per_page = 8
+    per_page = 10
     
     query = Book.query
     category = None
@@ -58,6 +58,12 @@ def book_detail(book_id):
         setattr(book, 'quantity', book.available_quantity)
     if not hasattr(book, 'book_id'):
         setattr(book, 'book_id', book.id)
+            
+    # Tăng lượt xem thực tế
+    if not book.view_count:
+        book.view_count = 0
+    book.view_count += 1
+    db.session.commit()
             
     related_books = Book.query.filter(Book.id != book.id).all()
     
@@ -107,6 +113,10 @@ def staff_dashboard():
     total_books = Book.query.count()
 
     pending_count = BorrowRequest.query.filter_by(status=RequestStatusEnum.Pending).count()
+    return_pending_count = BorrowSlip.query.filter_by(
+        status=BorrowStatusEnum.Borrowing,
+        return_requested=True
+    ).count()
 
     borrowing_count = BorrowSlip.query.filter_by(status=BorrowStatusEnum.Borrowing).count()
 
@@ -119,6 +129,10 @@ def staff_dashboard():
 
     recent_requests = BorrowRequest.query.filter_by(status=RequestStatusEnum.Pending) \
         .order_by(BorrowRequest.created_at.desc()).limit(5).all()
+    return_requests = BorrowSlip.query.filter_by(
+        status=BorrowStatusEnum.Borrowing,
+        return_requested=True
+    ).order_by(BorrowSlip.updated_at.desc()).limit(5).all()
 
     low_stock_books = Book.query.filter(Book.available_quantity < 3).limit(5).all()
 
@@ -129,9 +143,11 @@ def staff_dashboard():
     return render_template('staff/dashboard.html',
                            total_books=total_books,
                            pending_count=pending_count,
+                           return_pending_count=return_pending_count,
                            borrowing_count=borrowing_count,
                            overdue_count=overdue_count,
                            requests=recent_requests,
+                           return_requests=return_requests,
                            current_time=now,
                            low_stock_books=low_stock_books,
                            top_books=top_books,
@@ -150,7 +166,7 @@ def search():
     language = request.args.get('language', '')
     
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 12, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     
     filters = {}
     if category: filters['category'] = int(category) if category.isdigit() else category
@@ -191,4 +207,109 @@ def borrow_history():
     history = BorrowRequest.query.filter_by(user_id=current_user.id) \
         .order_by(BorrowRequest.created_at.desc()).all()
 
-    return render_template('user/history.html', history=history)
+    full_name = f"{(current_user.last_name or '').strip()} {(current_user.first_name or '').strip()}".strip()
+    user_display_name = full_name or current_user.username or current_user.email
+
+    return render_template('user/history.html', history=history, user_display_name=user_display_name)
+
+
+def _is_staff_or_admin():
+    return current_user.is_authenticated and current_user.role in (RoleEnum.STAFF, RoleEnum.ADMIN)
+
+
+@main_bp.route('/staff/request/<int:request_id>/approve', methods=['POST'])
+@login_required
+def approve_borrow_request(request_id):
+    if not _is_staff_or_admin():
+        return abort(403)
+
+    borrow_request = BorrowRequest.query.get_or_404(request_id)
+    if borrow_request.status != RequestStatusEnum.Pending:
+        flash('Yêu cầu này đã được xử lý trước đó.', 'warning')
+        return redirect(url_for('main.staff_dashboard'))
+
+    quantity = borrow_request.quantity or 1
+    if borrow_request.book.available_quantity < quantity:
+        flash('Không đủ số lượng sách để duyệt yêu cầu.', 'danger')
+        return redirect(url_for('main.staff_dashboard'))
+
+    borrow_request.status = RequestStatusEnum.Approved
+    borrow_date = borrow_request.borrow_from_date or date.today()
+    due_date = borrow_request.borrow_to_date or (borrow_date + timedelta(days=7))
+
+    borrow_slip = BorrowSlip(
+        user_id=borrow_request.user_id,
+        book_id=borrow_request.book_id,
+        borrow_request_id=borrow_request.id,
+        borrow_date=borrow_date,
+        due_date=due_date,
+        quantity=quantity,
+        status=BorrowStatusEnum.Borrowing
+    )
+    db.session.add(borrow_slip)
+    borrow_request.book.available_quantity -= quantity
+    db.session.commit()
+
+    flash('Đã duyệt yêu cầu mượn và trừ tồn kho thành công.', 'success')
+    return redirect(url_for('main.staff_dashboard'))
+
+
+@main_bp.route('/staff/request/<int:request_id>/reject', methods=['POST'])
+@login_required
+def reject_borrow_request(request_id):
+    if not _is_staff_or_admin():
+        return abort(403)
+
+    borrow_request = BorrowRequest.query.get_or_404(request_id)
+    if borrow_request.status != RequestStatusEnum.Pending:
+        flash('Yêu cầu này đã được xử lý trước đó.', 'warning')
+        return redirect(url_for('main.staff_dashboard'))
+
+    borrow_request.status = RequestStatusEnum.Rejected
+    db.session.commit()
+    flash('Đã từ chối yêu cầu mượn.', 'info')
+    return redirect(url_for('main.staff_dashboard'))
+
+
+@main_bp.route('/history/return/<int:request_id>', methods=['POST'])
+@login_required
+def return_book(request_id):
+    borrow_request = BorrowRequest.query.filter_by(id=request_id, user_id=current_user.id).first_or_404()
+    borrow_slip = borrow_request.borrow_slip
+
+    if not borrow_slip or borrow_slip.status != BorrowStatusEnum.Borrowing:
+        flash('Yêu cầu này chưa ở trạng thái đang mượn để trả sách.', 'warning')
+        return redirect(url_for('main.borrow_history'))
+
+    if borrow_slip.return_requested:
+        flash('Yêu cầu trả sách của bạn đang chờ nhân viên duyệt.', 'info')
+        return redirect(url_for('main.borrow_history'))
+
+    borrow_slip.return_requested = True
+    db.session.commit()
+
+    flash('Đã gửi yêu cầu trả sách. Vui lòng chờ nhân viên duyệt.', 'success')
+    return redirect(url_for('main.borrow_history'))
+
+
+@main_bp.route('/staff/return/<int:request_id>/approve', methods=['POST'])
+@login_required
+def approve_return_request(request_id):
+    if not _is_staff_or_admin():
+        return abort(403)
+
+    borrow_request = BorrowRequest.query.get_or_404(request_id)
+    borrow_slip = borrow_request.borrow_slip
+    if not borrow_slip or borrow_slip.status != BorrowStatusEnum.Borrowing or not borrow_slip.return_requested:
+        flash('Yêu cầu trả sách không hợp lệ hoặc đã được xử lý.', 'warning')
+        return redirect(url_for('main.staff_dashboard'))
+
+    borrow_slip.return_requested = False
+    borrow_slip.status = BorrowStatusEnum.Returned
+    borrow_slip.return_date = date.today()
+    borrow_request.status = RequestStatusEnum.Completed
+    borrow_request.book.available_quantity += (borrow_slip.quantity or 1)
+    db.session.commit()
+
+    flash('Đã duyệt trả sách thành công.', 'success')
+    return redirect(request.referrer or url_for('main.staff_dashboard'))

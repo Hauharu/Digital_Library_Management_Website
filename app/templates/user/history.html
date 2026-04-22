@@ -18,7 +18,7 @@
                     <i class="fas fa-history me-2 text-primary"></i>Lịch sử mượn sách
                 </h4>
                 <span class="badge bg-light text-muted border px-3 py-2 rounded-pill">
-                    Độc giả: <span class="text-dark fw-bold">{{ current_user.last_name }}</span>
+                    Độc giả: <span class="text-dark fw-bold">{{ user_display_name or ((current_user.last_name ~ ' ' ~ current_user.first_name)|trim) or current_user.username or current_user.email or 'Chưa cập nhật' }}</span>
                 </span>
             </div>
         </div>
@@ -29,8 +29,10 @@
                     <thead class="bg-light">
                         <tr>
                             <th class="ps-4 py-3 text-uppercase small fw-bold">Thông tin sách</th>
+                            <th class="py-3 text-uppercase small fw-bold text-center">Số lượng mượn</th>
                             <th class="py-3 text-uppercase small fw-bold text-center">Trạng thái duyệt</th>
                             <th class="py-3 text-uppercase small fw-bold">Thông tin mượn/trả</th>
+                            <th class="py-3 text-uppercase small fw-bold text-center">Trả sách</th>
                             <th class="pe-4 py-3 text-uppercase small fw-bold text-end">Tiền phạt</th>
                         </tr>
                     </thead>
@@ -50,7 +52,15 @@
                             </td>
 
                             <td class="text-center">
-                                {% if req.status.name == 'Pending' %}
+                                <span class="fw-semibold">{{ req.quantity or 1 }}</span>
+                            </td>
+
+                            <td class="text-center">
+                                {% if req.borrow_slip and req.borrow_slip.status.name == 'Borrowing' and req.borrow_slip.return_requested %}
+                                    <span class="badge rounded-pill bg-info-subtle text-info border border-info-subtle px-3">Đang duyệt trả sách</span>
+                                {% elif req.borrow_slip and req.borrow_slip.status.name == 'Returned' %}
+                                    <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3">Đã trả sách</span>
+                                {% elif req.status.name == 'Pending' %}
                                     <span class="badge rounded-pill bg-warning-subtle text-warning border border-warning-subtle px-3">Đang chờ duyệt</span>
                                 {% elif req.status.name == 'Approved' %}
                                     <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3">Đã duyệt</span>
@@ -61,13 +71,25 @@
 
                             <td>
                                 {% if req.borrow_slip %}
-                                    {% set slip = req.borrow_slip[0] if req.borrow_slip is iterable else req.borrow_slip %}
+                                    {% set slip = req.borrow_slip %}
                                     <div class="d-flex flex-column gap-1">
                                         <div class="small"><i class="fas fa-hourglass-end me-1 text-danger"></i>Hạn trả: <strong>{{ slip.due_date.strftime('%d/%m/%Y') }}</strong></div>
                                         <div class="small text-primary"><i class="fas fa-info-circle me-1"></i>{{ slip.status.value }}</div>
                                     </div>
                                 {% else %}
                                     <span class="text-muted italic small">Chưa có thông tin</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-center">
+                                {% if req.borrow_slip and req.borrow_slip.status.name == 'Borrowing' and not req.borrow_slip.return_requested %}
+                                    <form method="post" action="{{ url_for('main.return_book', request_id=req.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-primary">Yêu cầu trả sách</button>
+                                    </form>
+                                {% elif req.borrow_slip and req.borrow_slip.status.name == 'Borrowing' and req.borrow_slip.return_requested %}
+                                    <button type="button" class="btn btn-sm btn-secondary" disabled>Đang duyệt trả</button>
+                                {% else %}
+                                    <button type="button" class="btn btn-sm btn-secondary" disabled>Trả sách</button>
                                 {% endif %}
                             </td>
 

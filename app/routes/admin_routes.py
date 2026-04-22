@@ -1,7 +1,7 @@
 from sqlalchemy import func
 from datetime import datetime
 from app import db
-from app.models import User, Book, Category, BorrowSlip, Invoice, RoleEnum, BorrowStatusEnum
+from app.models import User, Book, Category, BorrowSlip, BorrowRequest, Invoice, RoleEnum, RequestStatusEnum, BorrowStatusEnum
 from flask import Blueprint, render_template, request, abort, redirect, url_for, flash
 from flask_login import login_required
 from app.decorators import role_required
@@ -17,6 +17,11 @@ def admin_dashboard():
     total_revenue = db.session.query(func.sum(Invoice.amount)).scalar() or 0
     total_books = Book.query.count()
     active_borrows = BorrowSlip.query.filter_by(status=BorrowStatusEnum.Borrowing).count()
+    pending_requests = BorrowRequest.query.filter_by(status=RequestStatusEnum.Pending).order_by(BorrowRequest.created_at.desc()).limit(8).all()
+    pending_return_requests = BorrowSlip.query.filter_by(
+        status=BorrowStatusEnum.Borrowing,
+        return_requested=True
+    ).order_by(BorrowSlip.updated_at.desc()).limit(8).all()
 
     recent_users = User.query.order_by(User.created_at.desc()).limit(5).all()
 
@@ -43,6 +48,8 @@ def admin_dashboard():
                            total_revenue=total_revenue,
                            total_books=total_books,
                            active_borrows=active_borrows,
+                           pending_requests=pending_requests,
+                           pending_return_requests=pending_return_requests,
                            recent_users=recent_users,
                            revenue_data=revenue_by_month,
                            now=datetime.now())
