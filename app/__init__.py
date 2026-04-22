@@ -7,6 +7,8 @@ from flask_socketio import SocketIO
 from flask_migrate import Migrate
 from flask_cors import CORS
 from authlib.integrations.flask_client import OAuth
+import cloudinary
+
 
 
 
@@ -43,6 +45,15 @@ def create_app(config_name=None):
     oauth.init_app(app)
 
     CORS(app)
+
+    # Cloudinary Config
+    cloudinary.config(
+        cloud_name=app.config['CLOUDINARY_CLOUD_NAME'],
+        api_key=app.config['CLOUDINARY_API_KEY'],
+        api_secret=app.config['CLOUDINARY_API_SECRET'],
+        secure=True
+    )
+
     from app.models import User
 
     @login_manager.user_loader

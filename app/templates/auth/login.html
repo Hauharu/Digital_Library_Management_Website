@@ -9,7 +9,8 @@
     <div class="card border-0 shadow-lg login-main-card overflow-hidden w-100" style="max-width: 900px;">
         <div class="row g-0">
             <!-- Left Side: Visual Showcase -->
-            <div class="col-lg-5 d-none d-lg-flex flex-column justify-content-center align-items-center p-5 text-white visual-showcase-login">
+            <div
+                class="col-lg-5 d-none d-lg-flex flex-column justify-content-center align-items-center p-5 text-white visual-showcase-login">
                 <div class="visual-bg-login-gradient"></div>
                 <div class="text-center position-relative z-2">
                     <div class="d-flex align-items-center justify-content-center gap-3 mb-4">
@@ -18,7 +19,8 @@
                         </div>
                         <h1 class="fw-bold mb-0 display-6">OU BOOK</h1>
                     </div>
-                    <p class="lead fs-6 opacity-75">Chào mừng bạn quay trở lại. Đăng nhập để tiếp tục hành trình tri thức của mình.</p>
+                    <p class="lead fs-6 opacity-75">Chào mừng bạn quay trở lại. Đăng nhập để tiếp tục hành trình tri
+                        thức của mình.</p>
                 </div>
             </div>
 
@@ -42,22 +44,38 @@
 
                     <form method="post" action="{{ url_for('auth.login') }}">
                         <div class="mb-3 form-floating">
-                            <input type="email" name="email" class="form-control" id="email" placeholder="name@example.com" required />
+                            <input type="email" name="email" class="form-control" id="email"
+                                placeholder="name@example.com" required />
                             <label for="email">Địa chỉ Email</label>
                         </div>
 
                         <div class="mb-4 form-floating position-relative">
-                            <input type="password" id="password" name="password" class="form-control" placeholder="Mật khẩu" required />
+                            <input type="password" id="password" name="password" class="form-control"
+                                placeholder="Mật khẩu" required />
                             <label for="password">Mật khẩu</label>
                             <span class="password-toggle" onclick="togglePassword('password')">
                                 <i id="eye-icon-password" class="fas fa-eye"></i>
                             </span>
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100 fw-bold py-3 rounded-pill shadow-sm login-button-effect">
+                        <button type="submit"
+                            class="btn btn-primary w-100 fw-bold py-3 rounded-pill shadow-sm login-button-effect">
                             ĐĂNG NHẬP
                         </button>
                     </form>
+
+                    <div class="d-flex align-items-center my-4">
+                        <hr class="flex-grow-1 text-muted">
+                        <span class="mx-3 text-muted small fw-bold">HOẶC</span>
+                        <hr class="flex-grow-1 text-muted">
+                    </div>
+
+                    <a href="{{ url_for('auth.login_google') }}"
+                        class="btn btn-outline-light w-100 py-2 rounded-pill shadow-sm d-flex align-items-center justify-content-center gap-2 text-dark border hover-shadow-sm transition-all">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" alt="Google"
+                            style="width: 18px;">
+                        <span class="fw-bold" style="font-size: 14px;">Tiếp tục với Google</span>
+                    </a>
 
                     <div class="mt-4 text-center">
                         <span class="text-muted small">Bạn chưa có tài khoản?</span>
@@ -71,4 +89,4 @@
     </div>
 </div>
 <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
-{% endblock %}
+{% endblock %}

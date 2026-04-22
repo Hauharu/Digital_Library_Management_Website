@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, abort
+from flask import Blueprint, render_template, request, abort, redirect, url_for
 from app import db
 from flask_login import login_required, current_user
 from app.decorators import role_required
@@ -43,6 +43,11 @@ def categories():
     return render_template('book/categories.html', categories=categories_list)
 
 
+@main_bp.route('/admin')
+@login_required
+@role_required(RoleEnum.ADMIN)
+def admin_redirect():
+    return redirect(url_for('admin.admin_dashboard'))
 
 @main_bp.route('/book-detail/<int:book_id>')
 def book_detail(book_id):
