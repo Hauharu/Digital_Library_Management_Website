@@ -68,6 +68,24 @@
     box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
 }
 
+.password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6b7280;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.password-toggle:hover {
+    color: var(--ou-accent);
+}
+
 /* Responsive adjustments */
 @media (max-width: 991.98px) {
     .login-main-card {

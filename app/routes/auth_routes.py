@@ -97,3 +97,28 @@ def google_callback():
 def logout():
     logout_user()
     return redirect(url_for('auth.login'))
+
+
+@auth_bp.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'GET':
+        return render_template('auth/forgot_password.html')
+
+    email = request.form.get('email')
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
+
+    if new_password != confirm_password:
+        flash("Mật khẩu xác nhận không khớp", "danger")
+        return render_template('auth/forgot_password.html')
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        flash("Email không tồn tại trong hệ thống", "danger")
+        return render_template('auth/forgot_password.html')
+
+    user.password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+    db.session.commit()
+
+    flash("Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại.", "success")
+    return redirect(url_for('auth.login'))
