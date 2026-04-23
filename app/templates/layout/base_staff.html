@@ -39,11 +39,14 @@
             <a href="/staff/books" class="nav-item {{ 'active' if 'books' in request.path }}">
                 <i class="fa-solid fa-book"></i> Quản lý sách
             </a>
-            <a href="/staff/orders" class="nav-item">
+            <a href="/staff/borrow" class="nav-item">
                 <i class="fa-solid fa-clipboard-check"></i> Duyệt mượn
                 {% if pending_count > 0 %}
                 <span class="badge bg-danger rounded-pill ms-auto">{{ pending_count }}</span>
                 {% endif %}
+            </a>
+            <a href="/staff/orders" class="nav-item">
+                <i class="fa-solid fa-right-left"></i> Quản lý mượn trả sách
             </a>
             <a href="/staff/invoices" class="nav-item">
                 <i class="fa-solid fa-file-invoice-dollar"></i> Hóa đơn & Phạt
@@ -52,10 +55,7 @@
                 <i class="fa-solid fa-tags"></i> Thể loại sách
             </a>
 
-            <p class="nav-label text-muted small fw-bold text-uppercase mt-4 mb-2 ps-2">Cá nhân</p>
-            <a href="/" class="nav-item">
-                <i class="fa-solid fa-house"></i> Quay lại trang chủ
-            </a>
+            <p class="nav-label text-muted small fw-bold text-uppercase mt-4 mb-2 ps-2">Trạng thái</p>
             <a href="{{ url_for('auth.logout') }}" class="nav-item text-danger">
                 <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
             </a>

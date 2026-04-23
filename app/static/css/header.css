@@ -93,6 +93,9 @@
     border-color: var(--primary-blue);
     background-color: #f8fafc;
 }
+.username-text {
+    color: #000;
+}
 
 .user-avatar {
     width: 34px;
