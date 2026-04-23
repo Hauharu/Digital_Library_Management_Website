@@ -190,3 +190,86 @@ body {
 .bg-info-subtle { background-color: #ecfeff; }
 .bg-success-subtle { background-color: #f0fdf4; }
 .bg-danger-subtle { background-color: #fef2f2 !important; }
+.x-small { font-size: 0.75rem; }
+.nav-pills .nav-link { color: #6c757d; font-weight: 600; border-radius: 8px; }
+.nav-pills .nav-link.active { background-color: #0d6efd; }
+.table thead { font-size: 0.85rem; text-uppercase: uppercase; letter-spacing: 0.5px; }
+
+/* Màu sắc nhẹ nhàng cho Badge */
+.bg-soft-primary { background-color: #e0ebff; }
+.bg-soft-info { background-color: #e0f7fa; }
+.bg-soft-danger { background-color: #ffebee; }
+.bg-soft-warning { background-color: #fffde7; }
+
+/* Avatar ký tự thay cho ảnh nếu lỗi */
+.avatar-sm-text {
+    width: 32px;
+    height: 32px;
+    background-color: #6366f1;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Chỉnh bảng */
+.table thead th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #64748b;
+    border: none;
+    padding: 15px 10px;
+}
+
+.table tbody td {
+    padding: 15px 10px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* Fix nút mờ: đảm bảo button không bị độ trong suốt (opacity) */
+.btn-primary {
+    background-color: #0d6efd !important;
+    opacity: 1 !important;
+    border: none;
+}
+
+.x-small { font-size: 11px; }
+
+/* Custom Styles for Staff Order Management */
+.avatar-circle {
+    width: 35px; height: 35px;
+    background-color: #4e73df; color: white;
+    border-radius: 50%; display: flex;
+    align-items: center; justify-content: center;
+    font-weight: bold; font-size: 14px;
+}
+
+/* Badge Styles */
+.badge-soft-primary { background-color: #e8f0fe; color: #1a73e8; }
+.badge-soft-danger { background-color: #fce8e6; color: #d93025; }
+
+/* Table styling */
+.table thead th { border-bottom: none; }
+.table tbody td { border-bottom: 1px solid #f8f9fa; }
+
+/* Nút icon */
+.btn-icon {
+    width: 32px; height: 32px;
+    padding: 0; display: inline-flex;
+    align-items: center; justify-content: center;
+    border-radius: 8px;
+}
+
+/* Hiệu ứng nháy nhẹ cho báo trả sách */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+.animate-pulse { animation: pulse 2s infinite; }
+
+.x-small { font-size: 11px; }
