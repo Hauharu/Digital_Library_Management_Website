@@ -372,7 +372,7 @@ def all_reviews():
         selected_rev.is_read = True
         db.session.commit()
         
-    return render_template('reviews.html', all_reviews=all_revs, selected_rev=selected_rev)
+    return render_template('user/reviews.html', all_reviews=all_revs, selected_rev=selected_rev)
 
 @main_bp.route('/reviews/mark-all-read')
 def mark_all_reviews_read():
