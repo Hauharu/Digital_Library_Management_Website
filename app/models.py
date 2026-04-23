@@ -111,10 +111,17 @@ class Book(Base):
     price = db.Column(db.Float, default=0.0)
     image = db.Column(db.String(255))
     publication_info = db.Column(db.String(255))
+    view_count = db.Column(db.Integer, default=0)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
 
     reviews = db.relationship('Review', backref='book', lazy=True)
     borrow_slips = db.relationship('BorrowSlip', backref='book', lazy=True)
+
+    @property
+    def average_rating(self):
+        if not self.reviews:
+            return 0.0
+        return round(sum(r.rating for r in self.reviews) / len(self.reviews), 1)
 
 
 # ================= BORROW REQUEST =================
@@ -209,9 +216,23 @@ class Favorite(Base):
 # ================= NOTIFICATION =================
 class Notification(Base):
     __tablename__ = "notification"
-    content = db.Column(db.String(255), nullable=False)
+    title = db.Column(db.String(100))
+    content = db.Column(db.Text, nullable=False)
     sent_date = db.Column(db.DateTime, default=datetime.now)
     type = db.Column(db.String(50))
     is_read = db.Column(db.Boolean, default=False)
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+
+# ================= MESSAGE (CHAT) =================
+class Message(Base):
+    __tablename__ = 'message'
+    content = db.Column(db.Text, nullable=False)
+    sent_date = db.Column(db.DateTime, default=datetime.now)
+    
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    
+    user = db.relationship('User', backref='messages')
+    book = db.relationship('Book', backref='messages')

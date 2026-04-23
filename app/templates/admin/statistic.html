@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Quản trị - Thống kê{% endblock %}
+{% block content %}
+{% include 'partials/header.html' %}
+<div class="admin-layout">
+  {% include 'admin_templates/partials/sidebar.html' %}
+
+  <section class="admin-content">
+    <h2>Tổng quan thống kê</h2>
+
+    <div class="cards">
+      <div class="card">
+        <div>Tổng số sách trong kho</div>
+        <strong>{{ stats.total_books }}</strong>
+      </div>
+      <div class="card warning">
+        <div>Sách đang được mượn</div>
+        <strong>{{ stats.borrowing_books }}</strong>
+      </div>
+      <div class="card success">
+        <div>Tổng số người dùng</div>
+        <strong>{{ stats.total_users }}</strong>
+      </div>
+      <div class="card">
+        <div>Tổng số lượt mượn</div>
+        <strong>{{ stats.total_borrows }}</strong>
+      </div>
+    </div>
+
+    <div class="panel mt-4">
+      <div class="panel-header">
+        <h3>Biểu đồ: Số sách theo danh mục</h3>
+      </div>
+      <canvas id="booksByCategoryChart" height="120"></canvas>
+    </div>
+
+    <div class="panel mt-4">
+      <div class="panel-header">
+        <h3>Số lượt mượn sách theo thư viện</h3>
+      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Thư viện</th>
+            <th>Số lượt mượn</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in stats.borrow_counts_by_library %}
+          <tr>
+            <td>{{ row.library_location or 'Không xác định' }}</td>
+            <td>{{ row.borrow_count }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  (function(){
+    const labels = {{ stats.books_by_category_labels|tojson }};
+    const counts = {{ stats.books_by_category_counts|tojson }};
+    const ctx = document.getElementById('booksByCategoryChart');
+    if (ctx && labels && counts){
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Số sách',
+            data: counts,
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgb(54, 162, 235)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true, ticks: { precision:0 } }
+          }
+        }
+      });
+    }
+  })();
+  </script>
+{% include 'partials/footer.html' %}
+{% endblock %}
+

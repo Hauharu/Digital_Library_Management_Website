@@ -15,7 +15,7 @@ main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
 def index():
-    featured_books = Book.query.limit(8).all()
+    featured_books = Book.query.order_by(Book.view_count.desc()).limit(10).all()
     related_books = Book.query.order_by(db.func.random()).limit(10).all()
     return render_template('index.html', featured_books=featured_books, related_books=related_books)
 
@@ -24,7 +24,7 @@ def index():
 def book_list():
     page = request.args.get('page', 1, type=int)
     category_id = request.args.get('category_id', type=int)
-    per_page = 8
+    per_page = 10
     
     query = Book.query
     category = None
@@ -43,6 +43,11 @@ def categories():
     return render_template('book/categories.html', categories=categories_list)
 
 
+@main_bp.route('/admin')
+@login_required
+@role_required(RoleEnum.ADMIN)
+def admin_redirect():
+    return redirect(url_for('admin.admin_dashboard'))
 
 @main_bp.route('/book-detail/<int:book_id>')
 def book_detail(book_id):
@@ -53,6 +58,12 @@ def book_detail(book_id):
         setattr(book, 'quantity', book.available_quantity)
     if not hasattr(book, 'book_id'):
         setattr(book, 'book_id', book.id)
+            
+    # Tăng lượt xem thực tế
+    if not book.view_count:
+        book.view_count = 0
+    book.view_count += 1
+    db.session.commit()
             
     related_books = Book.query.filter(Book.id != book.id).all()
     
@@ -86,12 +97,17 @@ def book_detail(book_id):
                     'pending' if active_request.status == RequestStatusEnum.Pending else 'approved'
                 )
             
+    # Lấy tin nhắn thảo luận
+    from app.models import Message
+    messages = Message.query.filter_by(book_id=book.id).order_by(Message.sent_date.asc()).limit(50).all()
+    
     return render_template(
         'book/book_detail.html',
         book=book,
         related_books=related_books,
         user_state=user_state,
-        source=source
+        source=source,
+        messages=messages
     )
 
 
@@ -155,7 +171,7 @@ def search():
     language = request.args.get('language', '')
     
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 12, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     
     filters = {}
     if category: filters['category'] = int(category) if category.isdigit() else category

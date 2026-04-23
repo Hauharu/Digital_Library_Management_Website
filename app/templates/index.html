@@ -19,6 +19,16 @@
             <img src="{{ book.image }}" alt="{{ book.title }}">
             <h3>{{ book.title }}</h3>
             <p>{{ book.author }}</p>
+            <div class="book-stats">
+                <div class="stars">
+                    <i class="fa-solid fa-star"></i>
+                    <span>{{ book.average_rating }}</span>
+                </div>
+                <div class="views">
+                    <i class="fa-solid fa-eye"></i>
+                    <span>{{ book.view_count or 0 }}</span>
+                </div>
+            </div>
             <button type="button" onclick="window.location.href='/book-detail/{{ book.id }}?from=featured'">CHI TIẾT</button>
         </article>
         {% endfor %}

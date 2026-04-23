@@ -17,6 +17,7 @@
         </div>
     </div>
 
+<<<<<<< Updated upstream
     <div class="row g-3 mb-4">
         <div class="col-md-3">
             <div class="stat-card-v2 bg-white border p-3 rounded-4">
@@ -195,6 +196,39 @@
                     {% endfor %}
                 </div>
             </div>
+=======
+    <div class="card shadow border-0">
+        <div class="card-header bg-dark text-white">DANH SÁCH YÊU CẦU MƯỢN SÁCH ĐANG CHỜ</div>
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Độc giả</th>
+                        <th>Tên sách</th>
+                        <th>Ngày yêu cầu</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in requests %}
+                    <tr>
+                        <td>{{ req.reader.first_name }} {{ req.reader.last_name }}</td>
+
+                        <td>{{ req.book.title }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-success">Duyệt</button>
+                            <button class="btn btn-sm btn-outline-danger">Từ chối</button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">Hiện tại không có yêu cầu nào cần xử lý.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+>>>>>>> Stashed changes
         </div>
     </div>
 </div>

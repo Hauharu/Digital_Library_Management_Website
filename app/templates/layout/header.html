@@ -24,14 +24,61 @@
             </button>
         </div>
 
-        <div class="header-right ms-4 flex-shrink-0">
+        <div class="header-right ms-4 flex-shrink-0 d-flex align-items-center">
             {% if current_user.is_authenticated %}
+            <div class="header-actions">
+                <!-- Messages -->
+                <button class="action-btn" title="Tin nhắn">
+                    <i class="fa-solid fa-envelope"></i>
+                    <span class="badge-count">2</span>
+                </button>
+
+                <!-- Notifications -->
+                <div class="dropdown">
+                    <button class="action-btn dropdown-toggle no-caret" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa-solid fa-bell"></i>
+                        {% if unread_count > 0 %}
+                        <span class="badge-count">{{ unread_count }}</span>
+                        {% endif %}
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end notification-dropdown border-0 shadow-lg mt-3 p-0 rounded-4">
+                        <div class="notification-header">
+                            <span class="fw-bold">Thông báo</span>
+                            <a href="#" class="small text-decoration-none">Đánh dấu đã đọc</a>
+                        </div>
+                        <div class="notification-list">
+                            {% for notif in notifications %}
+                            <a href="{{ url_for('user.notifications') }}?id={{ notif.id }}" class="notification-item {{ 'unread' if not notif.is_read else '' }}">
+                                <div class="notification-icon">
+                                    <i class="fa-solid {{ 'fa-key' if notif.title and 'đăng nhập' in notif.title.lower() else 'fa-info-circle' }}"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <span class="title">{{ notif.title }}</span>
+                                    <span class="time">{{ notif.sent_date | time_ago }}</span>
+                                </div>
+                            </a>
+                            {% else %}
+                            <div class="p-4 text-center text-muted small">
+                                Không có thông báo nào
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="notification-footer">
+                            <a href="{{ url_for('user.notifications') }}">Xem tất cả thông báo</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="dropdown">
                 <button class="btn user-dropdown-btn dropdown-toggle d-flex align-items-center shadow-none"
                         type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
                     <img src="{{ current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}"
                          alt="avatar" class="user-avatar me-2">
-                    <span class="username-text fw-semibold d-none d-sm-inline">{{ current_user.username }}</span>
+                    <span class="username-text fw-semibold d-none d-sm-inline">
+                        {%- set display_name = ((current_user.last_name or '') + ' ' + (current_user.first_name or '')).strip() -%}
+                        {{ display_name if display_name else current_user.username }}
+                    </span>
                 </button>
 
                 <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-3 p-2 rounded-4"

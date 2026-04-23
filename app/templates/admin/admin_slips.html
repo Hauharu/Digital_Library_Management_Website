@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% block title %}Quản lý phiếu mượn{% endblock %}
+{% block content %}
+<style>
+.filter-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px;}
+.filter-tabs a{
+  text-decoration:none;padding:8px 14px;border:1px solid #d0d7de;
+  border-radius:22px;font-size:13px;font-weight:600;color:#374049;background:#fff;transition:.15s;
+}
+.filter-tabs a.active,
+.filter-tabs a:hover{background:#1d86f0;border-color:#1d86f0;color:#fff;}
+
+.table-slips{width:100%;border-collapse:collapse;font-size:13px;background:#fff;
+  border:1px solid #dfe4e8;border-radius:10px;overflow:hidden;box-shadow:0 2px 6px -2px rgba(0,0,0,.08);}
+.table-slips th,.table-slips td{padding:10px 12px;border-bottom:1px solid #eef1f3;vertical-align:middle;}
+.table-slips th{background:#f5f7f9;font-size:12px;text-transform:uppercase;letter-spacing:.5px;font-weight:600;color:#555;}
+
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:4px 10px;border-radius:14px;letter-spacing:.4px;}
+.badge-borrowed{background:#1d86f0;color:#fff;}
+.badge-overdue{background:#d62828;color:#fff;}
+.badge-returned{background:#2dba4e;color:#fff;}
+.badge-lost{background:#444;color:#eee;}
+.badge-damaged{background:#ff9800;color:#fff;}
+
+/* ========== Action buttons redesign ========== */
+.action-group{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:nowrap;
+}
+
+.btn-action{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  border:none;
+  font-size:11.5px;
+  font-weight:600;
+  line-height:1;
+  padding:7px 10px 7px;
+  border-radius:6px;
+  cursor:pointer;
+  letter-spacing:.3px;
+  min-width:60px;
+  position:relative;
+  transition:background .15s, transform .15s;
+  text-decoration:none;
+  color:#fff;
+}
+
+.btn-action:focus-visible{
+  outline:2px solid #222;
+  outline-offset:2px;
+}
+
+.btn-action.return{
+  background:#137a31;
+}
+.btn-action.return:hover{
+  background:#0f6628;
+}
+
+.btn-action.lost{
+  background:#5a6268;
+}
+.btn-action.lost:hover{
+  background:#4b5358;
+}
+
+.btn-action.damaged{
+  background:#ffb300;
+  color:#1d1d1d;
+}
+.btn-action.damaged:hover{
+  background:#e6a100;
+}
+
+.btn-action:active{
+  transform:translateY(1px);
+}
+
+/* Disabled (nếu sau này cần) */
+.btn-action.disabled,
+.btn-action[disabled]{
+  opacity:.55;
+  cursor:not-allowed;
+  pointer-events:none;
+}
+
+/* Giữ hàng gọn khi màn hình nhỏ: xuống hàng nhưng vẫn đẹp */
+@media (max-width: 680px){
+  .action-group{
+    flex-wrap:wrap;
+    gap:4px;
+  }
+  .btn-action{flex:1 1 auto;min-width:0;}
+}
+</style>
+{% include 'partials/header.html' %}
+<div class="admin-layout">
+  {% include 'admin_templates/partials/sidebar.html' %}
+  <section class="admin-content">
+    <h2>Phiếu mượn</h2>
+
+    <div class="filter-tabs">
+      <a href="{{ url_for('admin.admin_slips', status='borrowed') }}" class="{{ 'active' if current_filter=='borrowed' else '' }}">Đang mượn ({{ counts.borrowed }})</a>
+      <a href="{{ url_for('admin.admin_slips', status='returned') }}" class="{{ 'active' if current_filter=='returned' else '' }}">Đã trả ({{ counts.returned }})</a>
+      <a href="{{ url_for('admin.admin_slips', status='lost') }}" class="{{ 'active' if current_filter=='lost' else '' }}">Mất ({{ counts.lost }})</a>
+      <a href="{{ url_for('admin.admin_slips', status='damaged') }}" class="{{ 'active' if current_filter=='damaged' else '' }}">Hư hỏng ({{ counts.damaged }})</a>
+      <a href="{{ url_for('admin.admin_slips', status='all') }}" class="{{ 'active' if current_filter=='all' else '' }}">Tất cả</a>
+    </div>
+
+    {% if slips %}
+    <table class="table-slips">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Sách</th>
+          <th>Người mượn</th>
+          <th>Ngày mượn</th>
+          <th>Hạn trả</th>
+          <th>Ngày trả</th>
+          <th>Trạng thái</th>
+          <th>Ghi chú</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for s in slips %}
+        {% set is_overdue = (s.status == 'borrowed' and s.due_date and today > s.due_date) %}
+        <tr>
+          <td>{{ s.slip_id }}</td>
+          <td>{% if s.book %}<a href="{{ url_for('main.book_detail', book_id=s.book.book_id) }}">{{ s.book.title }}</a>{% else %}—{% endif %}</td>
+          <td>{{ s.user.full_name if s.user else '—' }}</td>
+          <td>{{ s.borrow_date.strftime('%d/%m/%Y') if s.borrow_date else '—' }}</td>
+          <td>{{ s.due_date.strftime('%d/%m/%Y') if s.due_date else '—' }}</td>
+          <td>{{ s.return_date.strftime('%d/%m/%Y') if s.return_date else '—' }}</td>
+          <td>
+            {% if s.status == 'borrowed' %}
+              <span class="badge {{ 'badge-overdue' if is_overdue else 'badge-borrowed' }}">{{ 'Quá hạn' if is_overdue else 'Đang mượn' }}</span>
+            {% elif s.status == 'returned' %}
+              <span class="badge badge-returned">Đã trả</span>
+            {% elif s.status == 'lost' %}
+              <span class="badge badge-lost">Mất</span>
+            {% elif s.status == 'damaged' %}
+              <span class="badge badge-damaged">Hư hỏng</span>
+            {% else %}
+              <span class="badge">{{ s.status }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if s.status == 'borrowed' and is_overdue %}
+              <span style="color:#d62828;font-size:11px;">Trễ {{ (today - s.due_date).days }} ngày</span>
+            {% elif s.return_date and s.due_date and s.return_date > s.due_date %}
+              <span style="color:#d62828;font-size:11px;">Trả trễ {{ (s.return_date - s.due_date).days }} ngày</span>
+            {% else %}—{% endif %}
+          </td>
+          <td>
+            {% if s.status == 'borrowed' %}
+              <div class="action-group">
+                <form method="POST"
+                      action="{{ url_for('admin.admin_return_slip', slip_id=s.slip_id) }}"
+                      onsubmit="return confirm('Xác nhận TRẢ phiếu #{{ s.slip_id }}?');">
+                  <button class="btn-action return" type="submit">Trả</button>
+                </form>
+                <form method="POST"
+                      action="{{ url_for('admin.admin_mark_lost', slip_id=s.slip_id) }}"
+                      onsubmit="return confirm('Đánh dấu MẤT phiếu #{{ s.slip_id }}? Hành động này không cộng lại số lượng sách.');">
+                  <button class="btn-action lost" type="submit">Mất</button>
+                </form>
+                <form method="POST"
+                      action="{{ url_for('admin.admin_mark_damaged', slip_id=s.slip_id) }}"
+                      onsubmit="return confirm('Đánh dấu HƯ HỎNG phiếu #{{ s.slip_id }}?');">
+                  <button class="btn-action damaged" type="submit">Hư hỏng</button>
+                </form>
+              </div>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <div style="padding:24px;border:2px dashed #b8c6cc;border-radius:14px;background:#f7fbfc;margin-top:20px;text-align:center;">
+        <strong>Không có phiếu phù hợp bộ lọc.</strong>
+      </div>
+    {% endif %}
+  </section>
+</div>
+{% include 'partials/footer.html' %}
+{% endblock %}

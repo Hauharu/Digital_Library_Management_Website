@@ -1,0 +1,263 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Quản lý sách - OU BOOK{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar vh-100 p-3 text-white sticky-top">
+            <h5 class="mb-4 text-warning"><i class="fas fa-user-shield"></i> ADMIN PANEL</h5>
+            <ul class="nav flex-column">
+                <li class="nav-item mb-2">
+                    <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-link text-white text-nowrap">
+                        <i class="fas fa-chart-line me-2"></i> Tổng quan
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a href="{{ url_for('admin.manage_books') }}"
+                        class="nav-link text-white active bg-primary rounded text-nowrap">
+                        <i class="fas fa-book me-2"></i> Kho sách
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a href="#" class="nav-link text-white text-nowrap">
+                        <i class="fas fa-users-cog me-2"></i> Quản lý nhân viên
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a href="#" class="nav-link text-white text-nowrap">
+                        <i class="fas fa-chart-pie me-2"></i> Thống kê báo cáo
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+
+
+            <div
+                class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h2 class="h2"><i class="fas fa-book-open text-primary me-2"></i>Danh sách sách trong kho</h2>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ url_for('admin.add_book') }}" class="btn btn-sm btn-primary shadow-sm">
+                        <i class="fas fa-plus me-1"></i> Thêm sách mới
+                    </a>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="px-4 py-3">Ảnh</th>
+                                    <th>Thông tin sách</th>
+                                    <th>Danh mục</th>
+                                    <th>Số lượng</th>
+                                    <th class="text-center px-4">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for book in books %}
+                                <tr>
+                                    <td class="px-4">
+                                        {% if book.image %}
+                                        <img src="{{ book.image }}" alt="{{ book.title }}" class="rounded shadow-sm"
+                                            style="width: 50px; height: 70px; object-fit: cover;">
+                                        {% else %}
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                                            style="width: 50px; height: 70px;">
+                                            <i class="fas fa-image text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-dark">{{ book.title }}</div>
+                                        <div class="small text-muted">ISBN: {{ book.isbn or 'N/A' }}</div>
+                                        <div class="small text-muted">Tác giả: {{ book.author or 'Ẩn danh' }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info text-dark bg-opacity-10"
+                                            style="border: 1px solid rgba(13, 202, 240, 0.3);">
+                                            {{ book.category.name if book.category else 'Chưa phân loại' }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="me-2">{{ book.available_quantity }}/{{ book.total_quantity
+                                                }}</span>
+                                            <div class="progress flex-grow-1" style="height: 4px; min-width: 60px;">
+                                                {% set percent = (book.available_quantity / book.total_quantity * 100)
+                                                if book.total_quantity > 0 else 0 %}
+                                                <div class="progress-bar {% if percent < 20 %}bg-danger{% elif percent < 50 %}bg-warning{% else %}bg-success{% endif %}"
+                                                    role="progressbar" style="width: {{ percent }}%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center px-4">
+                                        <div class="action-btn-group">
+                                            <a href="#" class="btn btn-sm btn-primary action-btn" title="Chỉnh sửa">
+                                                <i class="fas fa-edit me-1"></i> Sửa
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-danger action-btn" title="Xóa"
+                                                onclick="confirmDelete({{ book.id }})">
+                                                <i class="fas fa-trash me-1"></i> Xóa
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5 text-muted">
+                                        <i class="fas fa-book-open fa-3x mb-3 d-block opacity-25"></i>
+                                        Chưa có sách nào trong kho.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phân trang -->
+            {% if pagination.pages > 1 %}
+            <nav class="mt-4" aria-label="Phân trang">
+                <ul class="pagination pagination-sm justify-content-center">
+                    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                        <a class="page-link"
+                            href="{{ url_for('admin.manage_books', page=pagination.prev_num) if pagination.has_prev else '#' }}"
+                            aria-label="Trước">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+
+                    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if p %}
+                    <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin.manage_books', page=p) }}">{{ p }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                    {% endif %}
+                    {% endfor %}
+
+                    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                        <a class="page-link"
+                            href="{{ url_for('admin.manage_books', page=pagination.next_num) if pagination.has_next else '#' }}"
+                            aria-label="Sau">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+                <p class="text-center text-muted small mt-1">
+                    Hiển thị {{ ((pagination.page - 1) * 10) + 1 }}–{{ ((pagination.page - 1) * 10) + books|length }}
+                    / {{ pagination.total }} sách
+                </p>
+            </nav>
+            {% endif %}
+
+        </main>
+    </div>
+</div>
+
+<style>
+    .sidebar {
+        box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+    }
+
+    /* Header section */
+    .border-bottom {
+        border-color: #e2e8f0 !important;
+    }
+
+    /* Table styling */
+    .table thead {
+        background: linear-gradient(135deg, #f8f9fc, #eef2ff) !important;
+    }
+
+    .table thead th {
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        letter-spacing: 0.06em;
+        color: #6b7280;
+        border-bottom: 2px solid #e5e7eb !important;
+        padding-top: 14px;
+        padding-bottom: 14px;
+    }
+
+    .table tbody tr {
+        transition: background 0.15s ease;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f5f7ff !important;
+    }
+
+    /* Card polish */
+    .card {
+        border-radius: 12px !important;
+        overflow: hidden;
+    }
+
+    /* Category badge */
+    .badge.bg-info {
+        font-size: 0.78rem;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+
+    /* Progress bar */
+    .progress {
+        background-color: #e9ecef;
+        border-radius: 3px;
+    }
+
+    /* Action buttons */
+    .action-btn-group {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+    }
+
+    .action-btn {
+        font-size: 0.78rem;
+        font-weight: 600;
+        border-radius: 7px !important;
+        padding: 5px 12px !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12) !important;
+    }
+
+    .btn-primary.action-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4) !important;
+    }
+
+    .btn-danger.action-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4) !important;
+    }
+
+    /* Book image */
+    .table td img {
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+</style>
+
+<script>
+    function confirmDelete(bookId) {
+        if (confirm('Bạn có chắc chắn muốn xóa cuốn sách này không?')) {
+            // Logic xóa sách ở đây
+            alert('Tính năng xóa đang được phát triển. ID sách: ' + bookId);
+        }
+    }
+</script>
+{% endblock %}
