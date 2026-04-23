@@ -1,0 +1,37 @@
+/* Reviews Master-Detail Styles */
+
+.sidebar-item .notif-book {
+    font-size: 0.75rem;
+    color: #f39c12;
+    font-weight: 700;
+    margin-bottom: 2px;
+    display: block;
+}
+
+.sidebar-item.unread {
+    background-color: #fff9f0;
+    border-left: 4px solid #f39c12;
+}
+
+.detail-stars {
+    color: #f39c12;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.book-link-box {
+    background: #fff9f0;
+    border: 1px solid #ffeeba;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.message-text {
+    border-color: #f39c12 !important;
+    font-style: italic;
+    line-height: 1.6;
+}

@@ -52,7 +52,7 @@
         {% block hero %}{% endblock %}
 
         {% block features %}
-        {% if request.blueprint not in ['auth', 'user'] %}
+        {% if request.blueprint not in ['auth', 'user'] and request.endpoint != 'main.all_reviews' %}
         {% include 'layout/feature_cards.html' %}
         {% endif %}
         {% endblock %}
@@ -63,6 +63,8 @@
     {% include 'layout/footer.html' %}
 
     <!-- JS Bootstrap -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>const socket = io();</script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/search.js') }}"></script>
 

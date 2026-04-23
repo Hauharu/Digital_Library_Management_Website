@@ -121,6 +121,15 @@ def create_app(config_name=None):
             return dict(notifications=notifications, unread_count=unread_count)
         return dict(notifications=[], unread_count=0)
 
+    @app.context_processor
+    def inject_recent_discussions():
+        from app.models import Review
+        # Lấy 5 bình luận/đánh giá mới nhất trên toàn hệ thống
+        recent = Review.query.order_by(Review.created_at.desc()).limit(5).all()
+        # Đếm số lượng bình luận chưa đọc thực tế
+        unread_reviews_count = Review.query.filter_by(is_read=False).count()
+        return dict(recent_discussions=recent, unread_reviews_count=unread_reviews_count)
+
     return app
 
 # ================= SOCKET.IO EVENTS =================
@@ -138,31 +147,79 @@ def handle_message(data):
     if not current_user.is_authenticated:
         return
         
-    from app.models import Message, Book
+    from app.models import Review, Book
     from app import db
     
     book_id = data['book_id']
-    content = data['message']
+    content = data.get('message')
+    rating = data.get('rating') 
     
-    # Lưu vào database
-    new_msg = Message(
-        content=content,
-        user_id=current_user.id,
-        book_id=book_id,
-        sent_date=datetime.now()
-    )
-    db.session.add(new_msg)
-    db.session.commit()
+    try:
+        # Kiểm tra xem user đã đánh giá cuốn sách này chưa
+        existing_rev = Review.query.filter_by(user_id=current_user.id, book_id=book_id).first()
+        
+        if existing_rev:
+            existing_rev.content = content
+            existing_rev.rating = rating
+            existing_rev.created_at = datetime.now()
+            db.session.commit()
+            msg_id = existing_rev.id
+        else:
+            new_rev = Review(
+                content=content,
+                rating=rating,
+                user_id=current_user.id,
+                book_id=book_id,
+                created_at=datetime.now()
+            )
+            db.session.add(new_rev)
+            db.session.commit()
+            msg_id = new_rev.id
+    except Exception as e:
+        db.session.rollback()
+        print(f"Lỗi DB: {str(e)}")
+        return
     
-    # Gửi lại cho mọi người trong phòng
     room = f"book_{book_id}"
     full_name = f"{(current_user.last_name or '').strip()} {(current_user.first_name or '').strip()}".strip()
     user_name = full_name or current_user.username
+
+    # Tính toán số lượng chưa đọc mới để cập nhật Header real-time
+    unread_count = Review.query.filter_by(is_read=False).count()
     
+    # 1. Gửi cho Box Chat (chỉ trong phòng của cuốn sách này)
     emit('receive_message', {
         'message': content,
         'user': user_name,
         'avatar': current_user.avatar,
         'time': datetime.now().strftime('%H:%M'),
-        'user_id': current_user.id
+        'user_id': current_user.id,
+        'msg_id': msg_id,
+        'rating': rating
     }, room=room)
+
+    # 2. Gửi cho Header (toàn bộ các trang của tất cả người dùng)
+    emit('update_header_reviews', {
+        'unread_count': unread_count,
+        'new_review': {
+            'user': user_name,
+            'avatar': current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png',
+            'content': content,
+            'rating': rating,
+            'id': msg_id,
+            'book_id': book_id,
+            'time': 'Vừa xong'
+        }
+    }, broadcast=True)
+
+@socketio.on('delete_message')
+def handle_delete_message(data):
+    from app.models import Review
+    from app import db
+    msg_id = data.get('msg_id')
+    rev = Review.query.get(msg_id)
+    
+    if rev and rev.user_id == current_user.id:
+        db.session.delete(rev)
+        db.session.commit()
+        emit('message_deleted', {'msg_id': msg_id}, broadcast=True)
