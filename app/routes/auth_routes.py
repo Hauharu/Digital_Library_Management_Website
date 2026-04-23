@@ -38,6 +38,30 @@ def login():
     if user and bcrypt.check_password_hash(user.password, password):
         login_user(user)
 
+        # Tạo thông báo đăng nhập mới
+        from app.models import Notification
+        from datetime import datetime
+        new_notif = Notification(
+            user_id=user.id,
+            title="Một lượt đăng nhập mới vào tài khoản OUBOOK của bạn",
+            content=f"""
+                <p>Xin chào <strong>{user.last_name} {user.first_name}</strong>,</p>
+                <p>Tài khoản OUBOOK của bạn đã được đăng nhập trên hệ thống với thông tin cụ thể như sau:</p>
+                <ul>
+                    <li><strong>Tài khoản:</strong> {user.email}</li>
+                    <li><strong>Thời gian:</strong> {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}</li>
+                    <li><strong>Thiết bị:</strong> {request.user_agent.string}</li>
+                    <li><strong>IP:</strong> {request.remote_addr}</li>
+                </ul>
+                <p>Nếu đây là bạn, bạn không cần phải làm gì cả.</p>
+                <p>Nếu bạn không làm điều này, vui lòng <a href='/auth/forgot-password'>thay đổi mật khẩu của bạn</a>.</p>
+            """,
+            type="security",
+            sent_date=datetime.now()
+        )
+        db.session.add(new_notif)
+        db.session.commit()
+
         role = user.role.name
 
         if role == 'ADMIN':
@@ -89,6 +113,29 @@ def google_callback():
         db.session.commit()
 
     login_user(user)
+
+    # Tạo thông báo đăng nhập mới (Google OAuth)
+    from app.models import Notification
+    from datetime import datetime
+    new_notif = Notification(
+        user_id=user.id,
+        title="Đăng nhập mới vào tài khoản OUBOOK bằng Google",
+        content=f"""
+            <p>Xin chào <strong>{user.last_name} {user.first_name}</strong>,</p>
+            <p>Bạn vừa đăng nhập thành công vào OUBOOK bằng tài khoản Google.</p>
+            <ul>
+                <li><strong>Email Google:</strong> {user.email}</li>
+                <li><strong>Thời gian:</strong> {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}</li>
+                <li><strong>Thiết bị:</strong> {request.user_agent.string}</li>
+            </ul>
+            <p>Nếu là bạn, hãy tiếp tục hành trình đọc sách của mình!</p>
+        """,
+        type="security",
+        sent_date=datetime.now()
+    )
+    db.session.add(new_notif)
+    db.session.commit()
+
     return redirect(url_for('main.index'))
 
 

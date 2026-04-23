@@ -85,3 +85,28 @@ def update_password():
     logout_user() # Đăng xuất người dùng
     flash("Đổi mật khẩu thành công! Vui lòng đăng nhập lại.", "success")
     return redirect(url_for('auth.login'))
+
+
+@user_bp.route("/notifications")
+@login_required
+def notifications():
+    from app.models import Notification
+    all_notifications = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.sent_date.desc()).all()
+    
+    selected_id = request.args.get('id', type=int)
+    selected_notif = None
+    if selected_id:
+        selected_notif = Notification.query.get(selected_id)
+        if selected_notif and selected_notif.user_id == current_user.id:
+            if not selected_notif.is_read:
+                selected_notif.is_read = True
+                db.session.commit()
+    elif all_notifications:
+        selected_notif = all_notifications[0]
+        if not selected_notif.is_read:
+            selected_notif.is_read = True
+            db.session.commit()
+            
+    return render_template("user/notifications.html", 
+                           all_notifications=all_notifications, 
+                           selected_notif=selected_notif)
