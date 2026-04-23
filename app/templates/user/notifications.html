@@ -1,0 +1,54 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}Thông báo của bạn{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}">
+
+<div class="notifications-wrapper">
+    <div class="container">
+        <div class="notifications-container">
+            <!-- Sidebar List -->
+            <div class="notifications-sidebar">
+                <div class="sidebar-header">
+                    <h2>Các thông báo</h2>
+                </div>
+                <div class="sidebar-list">
+                    {% for notif in all_notifications %}
+                    <a href="{{ url_for('user.notifications', id=notif.id) }}" 
+                       class="sidebar-item {{ 'active' if selected_notif and selected_notif.id == notif.id else '' }} {{ 'unread' if not notif.is_read else '' }}">
+                        <span class="notif-title">{{ notif.title }}</span>
+                        <span class="notif-time">{{ notif.sent_date | time_ago }}</span>
+                    </a>
+                    {% else %}
+                    <div class="p-4 text-center text-muted">
+                        Bạn chưa có thông báo nào.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Detail Area -->
+            <div class="notifications-detail">
+                {% if selected_notif %}
+                <div class="detail-header">
+                    <h3>{{ selected_notif.title }}</h3>
+                    <div class="detail-meta">
+                        <span><i class="fa-regular fa-clock me-1"></i> {{ selected_notif.sent_date.strftime('%d/%m/%Y %H:%M') }}</span>
+                        <span><i class="fa-regular fa-envelope-open me-1"></i> {{ 'Đã đọc' if selected_notif.is_read else 'Chưa đọc' }}</span>
+                    </div>
+                </div>
+                <div class="detail-content">
+                    {{ selected_notif.content | safe }}
+                </div>
+                {% else %}
+                <div class="detail-empty">
+                    <i class="fa-solid fa-bell-slash"></i>
+                    <p>Chọn một thông báo để xem chi tiết</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -161,9 +161,67 @@
         </div>
     </div>
 </div>
-
-<script src="{{ url_for('static', filename='js/book_detail.js') }}"></script>
 {% endif %}
+
+<!-- Chat Discussion Section -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+<div id="book-id-data" data-book-id="{{ book.id }}"></div>
+{% if current_user.is_authenticated %}
+<div id="user-id-data" data-user-id="{{ current_user.id }}"></div>
+{% endif %}
+
+<section class="book-discussion-section mb-5">
+    <div class="discussion-header">
+        <i class="fa-solid fa-comments text-primary fs-4"></i>
+        <h3>Thảo luận về cuốn sách này</h3>
+    </div>
+    
+    <div class="chat-box" id="chat-box">
+        {% for msg in messages %}
+        {% set is_own = current_user.is_authenticated and msg.user_id == current_user.id %}
+        <div class="chat-message {{ 'own' if is_own else '' }}">
+            <img src="{{ msg.user.avatar if msg.user.avatar else url_for('static', filename='img/default-avatar.png') }}" class="chat-avatar">
+            <div class="message-wrapper">
+                <div class="message-info">
+                    <span class="sender-name">
+                        {%- set d_name = ((msg.user.last_name or '') + ' ' + (msg.user.first_name or '')).strip() -%}
+                        {{ d_name if d_name else msg.user.username }}
+                    </span>
+                    <span class="message-time">{{ msg.sent_date.strftime('%H:%M') }}</span>
+                </div>
+                <div class="message-bubble">
+                    {{ msg.content }}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="p-5 text-center text-muted">
+            <i class="fa-regular fa-comment-dots fs-1 mb-3 opacity-25"></i>
+            <p>Chưa có thảo luận nào. Hãy là người đầu tiên!</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <div class="chat-input-area">
+        <div class="chat-input-group">
+            <input type="text" id="msg-input" placeholder="Nhập tin nhắn của bạn..." autocomplete="off">
+            <button id="btn-send-msg" class="btn-send-msg">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+    {% else %}
+    <div class="chat-auth-prompt">
+        Vui lòng <a href="{{ url_for('auth.login') }}" class="fw-bold">đăng nhập</a> để tham gia thảo luận.
+    </div>
+    {% endif %}
+</section>
+
+<!-- Scripts -->
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+<script src="{{ url_for('static', filename='js/book_detail.js') }}"></script>
 
 <!-- Modal Zoom Ảnh -->
 <div id="image-modal" class="image-zoom-modal">

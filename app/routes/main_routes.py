@@ -15,7 +15,7 @@ main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
 def index():
-    featured_books = Book.query.limit(8).all()
+    featured_books = Book.query.order_by(Book.view_count.desc()).limit(10).all()
     related_books = Book.query.order_by(db.func.random()).limit(10).all()
     return render_template('index.html', featured_books=featured_books, related_books=related_books)
 
@@ -97,12 +97,17 @@ def book_detail(book_id):
                     'pending' if active_request.status == RequestStatusEnum.Pending else 'approved'
                 )
             
+    # Lấy tin nhắn thảo luận
+    from app.models import Message
+    messages = Message.query.filter_by(book_id=book.id).order_by(Message.sent_date.asc()).limit(50).all()
+    
     return render_template(
         'book/book_detail.html',
         book=book,
         related_books=related_books,
         user_state=user_state,
-        source=source
+        source=source,
+        messages=messages
     )
 
 
