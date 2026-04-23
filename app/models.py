@@ -79,7 +79,6 @@ class User(Base, UserMixin):
                        default="https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png")
     is_active = db.Column(db.Boolean, default=True)
 
-    reviews = db.relationship('Review', backref='user', cascade="all, delete-orphan", lazy='selectin')
     borrow_requests = db.relationship('BorrowRequest', backref='reader', cascade="all, delete-orphan", lazy='selectin')
     borrow_slips = db.relationship('BorrowSlip', backref='user', cascade="all, delete-orphan", lazy='selectin')
     notifications = db.relationship('Notification', backref='user', cascade="all, delete-orphan", lazy='selectin')
@@ -114,14 +113,14 @@ class Book(Base):
     view_count = db.Column(db.Integer, default=0)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
 
-    reviews = db.relationship('Review', backref='book', lazy=True)
     borrow_slips = db.relationship('BorrowSlip', backref='book', lazy=True)
 
     @property
     def average_rating(self):
-        if not self.reviews:
+        all_ratings = [r.rating for r in self.reviews if r.rating]
+        if not all_ratings:
             return 0.0
-        return round(sum(r.rating for r in self.reviews) / len(self.reviews), 1)
+        return round(sum(all_ratings) / len(all_ratings), 1)
 
 
 # ================= BORROW REQUEST =================
@@ -195,13 +194,17 @@ class Review(Base):
 
     __table_args__ = (
         db.UniqueConstraint('user_id', 'book_id', name='unique_review'),
-        db.CheckConstraint('rating >= 1 AND rating <= 5', name='valid_rating')
     )
-    content = db.Column(db.Text, nullable=False)
-    rating = db.Column(db.Integer, default=5)
+    content = db.Column(db.Text, nullable=True) 
+    rating = db.Column(db.Integer, nullable=True) 
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.now) 
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+
+    user = db.relationship('User', backref='reviews', lazy='selectin')
+    book = db.relationship('Book', backref='reviews', lazy='selectin')
 
 
 # ================= FAVORITE =================
@@ -223,16 +226,3 @@ class Notification(Base):
     is_read = db.Column(db.Boolean, default=False)
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-
-
-# ================= MESSAGE (CHAT) =================
-class Message(Base):
-    __tablename__ = 'message'
-    content = db.Column(db.Text, nullable=False)
-    sent_date = db.Column(db.DateTime, default=datetime.now)
-    
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
-    
-    user = db.relationship('User', backref='messages')
-    book = db.relationship('Book', backref='messages')
