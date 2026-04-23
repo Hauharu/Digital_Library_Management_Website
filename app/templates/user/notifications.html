@@ -10,16 +10,28 @@
         <div class="notifications-container">
             <!-- Sidebar List -->
             <div class="notifications-sidebar">
-                <div class="sidebar-header">
+                <div class="sidebar-header d-flex justify-content-between align-items-center">
                     <h2>Các thông báo</h2>
+                    {% if all_notifications %}
+                    <button class="btn-delete-all text-danger border-0 bg-transparent small" onclick="deleteAllNotifications()">
+                        <i class="fa-solid fa-trash-can me-1"></i> Xóa tất cả
+                    </button>
+                    {% endif %}
                 </div>
                 <div class="sidebar-list">
                     {% for notif in all_notifications %}
-                    <a href="{{ url_for('user.notifications', id=notif.id) }}" 
-                       class="sidebar-item {{ 'active' if selected_notif and selected_notif.id == notif.id else '' }} {{ 'unread' if not notif.is_read else '' }}">
-                        <span class="notif-title">{{ notif.title }}</span>
-                        <span class="notif-time">{{ notif.sent_date | time_ago }}</span>
-                    </a>
+                    <div class="notif-item-wrapper" id="notif-container-{{ notif.id }}">
+                        <a href="{{ url_for('user.notifications', id=notif.id) }}" 
+                           class="sidebar-item {{ 'active' if selected_notif and selected_notif.id == notif.id else '' }} {{ 'unread' if not notif.is_read else '' }}">
+                            <div class="notif-content-wrapper">
+                                <span class="notif-title">{{ notif.title }}</span>
+                                <span class="notif-time">{{ notif.sent_date | time_ago }}</span>
+                            </div>
+                            <button class="btn-delete-notif" onclick="event.preventDefault(); deleteNotification({{ notif.id }})">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </a>
+                    </div>
                     {% else %}
                     <div class="p-4 text-center text-muted">
                         Bạn chưa có thông báo nào.
@@ -35,9 +47,9 @@
                     <h3>{{ selected_notif.title }}</h3>
                     <div class="detail-meta">
                         <span><i class="fa-regular fa-clock me-1"></i> {{ selected_notif.sent_date.strftime('%d/%m/%Y %H:%M') }}</span>
-                        <span><i class="fa-regular fa-envelope-open me-1"></i> {{ 'Đã đọc' if selected_notif.is_read else 'Chưa đọc' }}</span>
                     </div>
                 </div>
+
                 <div class="detail-content">
                     {{ selected_notif.content | safe }}
                 </div>
@@ -51,4 +63,54 @@
         </div>
     </div>
 </div>
+
+<script>
+    // --- Hàm xóa thông báo đơn lẻ ---
+    function deleteNotification(id) {
+        if (!confirm('Bạn có muốn xóa thông báo này không?')) return;
+
+        fetch(`/user/notifications/delete/${id}`, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const el = document.getElementById(`notif-container-${id}`);
+                el.style.transition = 'all 0.3s ease';
+                el.style.transform = 'translateX(-20px)';
+                el.style.opacity = '0';
+                setTimeout(() => {
+                    el.remove();
+                    if (window.location.search.includes(`id=${id}`) || window.location.href.endsWith(`id=${id}`)) {
+                        window.location.href = "{{ url_for('user.notifications') }}";
+                    }
+                }, 300);
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    // --- Hàm xóa tất cả thông báo ---
+    function deleteAllNotifications() {
+        if (!confirm('Bạn có chắc chắn muốn xóa TẤT CẢ thông báo?')) return;
+
+        fetch(`/user/notifications/delete-all`, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const list = document.querySelector('.sidebar-list');
+                list.style.transition = 'all 0.5s ease';
+                list.style.opacity = '0';
+                setTimeout(() => {
+                    window.location.href = "{{ url_for('user.notifications') }}";
+                }, 500);
+            }
+        })
+        .catch(err => console.error(err));
+    }
+</script>
 {% endblock %}

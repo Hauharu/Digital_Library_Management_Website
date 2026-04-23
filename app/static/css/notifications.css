@@ -7,7 +7,7 @@
 .notifications-container {
     background: #fff;
     border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     display: flex;
     min-height: 600px;
     overflow: hidden;
@@ -24,6 +24,9 @@
 .sidebar-header {
     padding: 20px;
     border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .sidebar-header h2 {
@@ -38,18 +41,29 @@
     overflow-y: auto;
 }
 
+.notif-item-wrapper {
+    position: relative;
+    border-bottom: 1px solid #f1f5f9;
+}
+
 .sidebar-item {
     padding: 15px 20px;
-    border-bottom: 1px solid #f1f5f9;
     cursor: pointer;
     transition: all 0.2s;
     text-decoration: none;
     color: inherit;
     display: block;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
 }
 
 .sidebar-item:hover {
     background-color: #f8fafc;
+}
+
+.sidebar-item:hover .btn-delete-notif {
+    opacity: 1;
 }
 
 .sidebar-item.active {
@@ -59,6 +73,51 @@
 
 .sidebar-item.unread {
     background-color: #f0f9ff;
+}
+
+.btn-delete-notif {
+    background: #fee2e2;
+    color: #ef4444;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    opacity: 1; /* Hiển thị luôn */
+    transition: all 0.2s;
+    margin-top: 2px;
+    margin-left: 10px;
+    flex-shrink: 0;
+}
+
+.btn-delete-notif:hover {
+    background: #ef4444;
+    color: white;
+    transform: scale(1.1);
+}
+
+.btn-delete-all {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    background: none;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    color: #ef4444;
+}
+
+.btn-delete-all:hover {
+    background-color: #fee2e2;
+}
+
+.sidebar-item .notif-content-wrapper {
+    flex-grow: 1;
+    min-width: 0;
 }
 
 .sidebar-item .notif-title {

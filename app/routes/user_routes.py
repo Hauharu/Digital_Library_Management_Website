@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user, logout_user
 from app.models import User, RequestStatusEnum, BorrowStatusEnum, GenderEnum
 from app import db, bcrypt
@@ -110,3 +110,23 @@ def notifications():
     return render_template("user/notifications.html", 
                            all_notifications=all_notifications, 
                            selected_notif=selected_notif)
+
+@user_bp.route("/notifications/delete/<int:notif_id>", methods=["POST"])
+@login_required
+def delete_notification(notif_id):
+    from app.models import Notification
+    notif = Notification.query.get_or_404(notif_id)
+    if notif.user_id != current_user.id:
+        return jsonify({'success': False, 'message': 'Không có quyền'}), 403
+    
+    db.session.delete(notif)
+    db.session.commit()
+    return jsonify({'success': True})
+
+@user_bp.route("/notifications/delete-all", methods=["POST"])
+@login_required
+def delete_all_notifications():
+    from app.models import Notification
+    Notification.query.filter_by(user_id=current_user.id).delete()
+    db.session.commit()
+    return jsonify({'success': True})
