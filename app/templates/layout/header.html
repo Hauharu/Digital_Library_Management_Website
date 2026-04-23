@@ -214,6 +214,45 @@
             });
         }
 
+        // Cập nhật thông báo cá nhân (Icon Chuông)
+        socket.on('update_notifications', function (data) {
+            const bellIcon = document.querySelector('i.fa-bell');
+            if (bellIcon) {
+                const btn = bellIcon.parentElement;
+                let badgeContainer = btn.querySelector('.badge-count');
+                if (data.unread_count > 0) {
+                    if (badgeContainer) {
+                        badgeContainer.innerText = data.unread_count;
+                    } else {
+                        btn.insertAdjacentHTML('beforeend', `<span class="badge-count">${data.unread_count}</span>`);
+                    }
+                }
+            }
+
+            const bellDropdown = document.querySelector('.dropdown button i.fa-bell')?.closest('.dropdown');
+            const dropdownList = bellDropdown?.querySelector('.notification-list');
+            if (dropdownList) {
+                const emptyMsg = dropdownList.querySelector('.text-center');
+                if (emptyMsg) emptyMsg.remove();
+
+                const newNotif = data.new_notification;
+                const itemHtml = `
+                    <a href="/user/notifications?id=${newNotif.id}" class="notification-item unread">
+                        <div class="notification-icon">
+                            <i class="fa-solid fa-info-circle"></i>
+                        </div>
+                        <div class="notification-content">
+                            <span class="title">${newNotif.title}</span>
+                            <span class="time">${newNotif.time}</span>
+                        </div>
+                    </a>
+                `;
+                dropdownList.insertAdjacentHTML('afterbegin', itemHtml);
+                const items = dropdownList.querySelectorAll('.notification-item');
+                if (items.length > 5) items[items.length - 1].remove();
+            }
+        });
+
         // --- AJAX: Đánh dấu đã đọc không tải lại trang (SPA style) ---
         document.querySelectorAll('a[href*="/mark-all-read"]').forEach(link => {
             link.addEventListener('click', function (e) {

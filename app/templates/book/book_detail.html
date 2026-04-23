@@ -260,7 +260,7 @@
                         {%- set d_name = ((msg.user.last_name or '') + ' ' + (msg.user.first_name or '')).strip() -%}
                         {{ d_name if d_name else msg.user.username }}
                     </span>
-                    <span class="message-time small">• {{ msg.sent_date | time_ago }}</span>
+                    <span class="message-time small">• {{ msg.created_at | time_ago }}</span>
                 </div>
 
                 {% if msg.rating %}
@@ -277,14 +277,52 @@
                     safe }}
                 </div>
                 <div class="message-actions" id="msg-actions-{{ msg.id }}">
-                    <span class="action-link text-muted small"><i class="fa-regular fa-thumbs-up"></i> Thích</span>
-                    {% if current_user.is_authenticated and msg.user_id == current_user.id %}
-                    <span class="action-link text-danger small ms-3" onclick="deleteMessage({{ msg.id }})"><i
-                            class="fa-regular fa-trash-can"></i> Xóa</span>
-                    {% else %}
-                    <span class="action-link text-primary small ms-3"><i class="fa-regular fa-comment-dots"></i> Phản
-                        hồi</span>
+                    {% set user_liked = false %}
+                    {% if current_user.is_authenticated %}
+                        {% for like in msg.likes %}
+                            {% if like.user_id == current_user.id %}{% set user_liked = true %}{% endif %}
+                        {% endfor %}
                     {% endif %}
+                    
+                    <span class="action-link {{ 'text-primary' if user_liked else 'text-muted' }} small" 
+                          id="like-btn-{{ msg.id }}" onclick="likeReview({{ msg.id }})">
+                        <i class="{{ 'fa-solid' if user_liked else 'fa-regular' }} fa-thumbs-up"></i> 
+                        Thích <span id="like-count-{{ msg.id }}">{{ msg.like_count if msg.like_count > 0 else '' }}</span>
+                    </span>
+
+                    <span class="action-link text-primary small ms-3" onclick="toggleReplyInput({{ msg.id }})">
+                        <i class="fa-regular fa-comment-dots"></i> Phản hồi
+                    </span>
+
+                    {% if current_user.is_authenticated and msg.user_id == current_user.id %}
+                    <span class="action-link text-danger small ms-3" onclick="deleteMessage({{ msg.id }})">
+                        <i class="fa-regular fa-trash-can"></i> Xóa
+                    </span>
+                    {% endif %}
+                </div>
+
+                <!-- Reply Section -->
+                <div id="reply-list-{{ msg.id }}" class="reply-list ms-4 mt-2">
+                    {% for reply in msg.replies %}
+                    <div class="reply-item d-flex gap-2 mt-2 p-2 rounded bg-light" style="font-size: 13px;">
+                        <img src="{{ reply.user.avatar if reply.user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}" 
+                             style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;">
+                        <div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fw-bold">{{ reply.user.last_name }} {{ reply.user.first_name }}</span>
+                                <span class="text-muted" style="font-size: 11px;">{{ reply.created_at | time_ago }}</span>
+                            </div>
+                            <div class="reply-content">{{ reply.content }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div id="reply-area-{{ msg.id }}" class="reply-input-area ms-4 mt-2 d-none">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" placeholder="Viết phản hồi...">
+                        <button class="btn btn-primary" type="button" onclick="sendReply({{ msg.id }})">Gửi</button>
+                    </div>
                 </div>
             </div>
         </div>

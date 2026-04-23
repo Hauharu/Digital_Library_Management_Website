@@ -45,6 +45,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Hàm thích bình luận
+    window.likeReview = (revId) => {
+        if (!currentUserId) {
+            alert('Vui lòng đăng nhập để thực hiện tính năng này');
+            return;
+        }
+        socket.emit('like_review', { rev_id: revId });
+    };
+
+    // Hàm hiện khung phản hồi
+    window.toggleReplyInput = (revId) => {
+        if (!currentUserId) {
+            alert('Vui lòng đăng nhập để thực hiện tính năng này');
+            return;
+        }
+        const replyArea = document.getElementById(`reply-area-${revId}`);
+        if (replyArea) {
+            replyArea.classList.toggle('d-none');
+            const input = replyArea.querySelector('input');
+            if (!replyArea.classList.contains('d-none')) {
+                input.focus();
+            }
+        }
+    };
+
+    // Hàm gửi phản hồi
+    window.sendReply = (revId) => {
+        const input = document.querySelector(`#reply-area-${revId} input`);
+        const content = input.value.trim();
+        if (content) {
+            socket.emit('reply_review', { rev_id: revId, content: content });
+            input.value = '';
+            document.getElementById(`reply-area-${revId}`).classList.add('d-none');
+        }
+    };
+
     // Khi tin nhắn bị xóa
     socket.on('message_deleted', (data) => {
         const msgElement = document.getElementById(`msg-actions-${data.msg_id}`)?.closest('.chat-message');
@@ -69,6 +105,47 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Hiện lại khung nhập liệu (vì mỗi người chỉ có 1 bài, xóa đi thì được viết lại)
             document.querySelector('.chat-input-area')?.classList.remove('d-none');
+        }
+    });
+
+    // Khi có ai đó thích bình luận
+    socket.on('review_liked', (data) => {
+        const likeBtn = document.getElementById(`like-btn-${data.rev_id}`);
+        const likeCount = document.getElementById(`like-count-${data.rev_id}`);
+        if (likeCount) {
+            likeCount.innerText = data.like_count > 0 ? data.like_count : '';
+        }
+        if (likeBtn && data.user_id === currentUserId) {
+            if (data.liked) {
+                likeBtn.classList.add('text-primary');
+                likeBtn.classList.remove('text-muted');
+                likeBtn.querySelector('i').classList.replace('fa-regular', 'fa-solid');
+            } else {
+                likeBtn.classList.remove('text-primary');
+                likeBtn.classList.add('text-muted');
+                likeBtn.querySelector('i').classList.replace('fa-solid', 'fa-regular');
+            }
+        }
+    });
+
+    // Khi có phản hồi mới
+    socket.on('receive_reply', (data) => {
+        const replyList = document.getElementById(`reply-list-${data.rev_id}`);
+        if (replyList) {
+            const replyHtml = `
+                <div class="reply-item d-flex gap-2 mt-2 p-2 rounded bg-light" style="font-size: 13px;">
+                    <img src="${data.avatar || 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png'}" 
+                         style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;">
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fw-bold">${data.user}</span>
+                            <span class="text-muted" style="font-size: 11px;">${data.time}</span>
+                        </div>
+                        <div class="reply-content">${data.content}</div>
+                    </div>
+                </div>
+            `;
+            replyList.insertAdjacentHTML('beforeend', replyHtml);
         }
     });
 
@@ -101,11 +178,23 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${data.message || '<i class="text-muted small">Người dùng chỉ chấm điểm sao</i>'}
                     </div>
                     <div class="message-actions" id="msg-actions-${data.msg_id}">
-                        <span class="action-link text-muted small"><i class="fa-regular fa-thumbs-up"></i> Thích</span>
+                        <span class="action-link text-muted small" id="like-btn-${data.msg_id}" onclick="likeReview(${data.msg_id})">
+                            <i class="fa-regular fa-thumbs-up"></i> Thích <span id="like-count-${data.msg_id}"></span>
+                        </span>
+                        <span class="action-link text-primary small ms-3" onclick="toggleReplyInput(${data.msg_id})">
+                            <i class="fa-regular fa-comment-dots"></i> Phản hồi
+                        </span>
                         ${isOwn ? 
                             `<span class="action-link text-danger small ms-3" onclick="deleteMessage(${data.msg_id})"><i class="fa-regular fa-trash-can"></i> Xóa</span>` : 
-                            `<span class="action-link text-primary small ms-3"><i class="fa-regular fa-comment-dots"></i> Phản hồi</span>`
+                            ''
                         }
+                    </div>
+                    <div id="reply-list-${data.msg_id}" class="reply-list ms-4 mt-2"></div>
+                    <div id="reply-area-${data.msg_id}" class="reply-input-area ms-4 mt-2 d-none">
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control" placeholder="Viết phản hồi...">
+                            <button class="btn btn-primary" type="button" onclick="sendReply(${data.msg_id})">Gửi</button>
+                        </div>
                     </div>
                 </div>
             </div>

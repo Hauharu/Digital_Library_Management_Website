@@ -142,12 +142,18 @@ def on_join(data):
     room = f"book_{data['book_id']}"
     join_room(room)
 
+@socketio.on('join_user')
+def on_join_user(data):
+    if current_user.is_authenticated:
+        room = f"user_{current_user.id}"
+        join_room(room)
+
 @socketio.on('send_message')
 def handle_message(data):
     if not current_user.is_authenticated:
         return
         
-    from app.models import Review, Book
+    from app.models import Review, Book, ReviewLike, ReviewReply
     from app import db
     
     book_id = data['book_id']
@@ -223,3 +229,124 @@ def handle_delete_message(data):
         db.session.delete(rev)
         db.session.commit()
         emit('message_deleted', {'msg_id': msg_id}, broadcast=True)
+
+@socketio.on('like_review')
+def handle_like_review(data):
+    if not current_user.is_authenticated:
+        return
+    
+    from app.models import Review, ReviewLike, Notification
+    from app import db
+    
+    rev_id = data.get('rev_id')
+    rev = Review.query.get(rev_id)
+    if not rev:
+        return
+
+    existing_like = ReviewLike.query.filter_by(user_id=current_user.id, review_id=rev_id).first()
+    
+    if existing_like:
+        db.session.delete(existing_like)
+        liked = False
+    else:
+        new_like = ReviewLike(user_id=current_user.id, review_id=rev_id)
+        db.session.add(new_like)
+        liked = True
+        
+        # Tạo thông báo nếu không phải tự mình thích
+        if rev.user_id != current_user.id:
+            full_name = f"{(current_user.last_name or '').strip()} {(current_user.first_name or '').strip()}".strip()
+            user_name = full_name or current_user.username
+            
+            notif = Notification(
+                user_id=rev.user_id,
+                title=f"{user_name} đã thích bình luận của bạn",
+                content=f"{user_name} đã thích bình luận của bạn về sách '{rev.book.title}'",
+                type="LIKE"
+            )
+            db.session.add(notif)
+            db.session.commit()
+            
+            # Gửi thông báo real-time cho chủ bài viết
+            unread_count = Notification.query.filter_by(user_id=rev.user_id, is_read=False).count()
+            emit('update_notifications', {
+                'unread_count': unread_count,
+                'new_notification': {
+                    'title': notif.title,
+                    'time': 'Vừa xong',
+                    'id': notif.id
+                }
+            }, room=f"user_{rev.user_id}")
+        
+    db.session.commit()
+    
+    emit('review_liked', {
+        'rev_id': rev_id,
+        'like_count': rev.like_count if rev else 0,
+        'liked': liked,
+        'user_id': current_user.id
+    }, broadcast=True)
+
+@socketio.on('reply_review')
+def handle_reply_review(data):
+    if not current_user.is_authenticated:
+        return
+        
+    from app.models import Review, ReviewReply, Notification
+    from app import db
+    
+    rev_id = data.get('rev_id')
+    rev = Review.query.get(rev_id)
+    content = data.get('content')
+    
+    if not content or not rev:
+        return
+        
+    new_reply = ReviewReply(
+        content=content,
+        user_id=current_user.id,
+        review_id=rev_id,
+        created_at=datetime.now()
+    )
+    db.session.add(new_reply)
+    
+    # Tạo thông báo nếu không phải tự mình phản hồi
+    if rev.user_id != current_user.id:
+        full_name = f"{(current_user.last_name or '').strip()} {(current_user.first_name or '').strip()}".strip()
+        user_name = full_name or current_user.username
+        
+        notif = Notification(
+            user_id=rev.user_id,
+            title=f"{user_name} đã phản hồi bình luận của bạn",
+            content=f"{user_name} đã phản hồi bình luận của bạn: \"{content[:30]}...\"",
+            type="REPLY"
+        )
+        db.session.add(notif)
+        db.session.commit()
+        
+        # Gửi thông báo real-time
+        unread_count = Notification.query.filter_by(user_id=rev.user_id, is_read=False).count()
+        emit('update_notifications', {
+            'unread_count': unread_count,
+            'new_notification': {
+                'title': notif.title,
+                'time': 'Vừa xong',
+                'id': notif.id
+            }
+        }, room=f"user_{rev.user_id}")
+
+    db.session.commit()
+    
+    full_name = f"{(current_user.last_name or '').strip()} {(current_user.first_name or '').strip()}".strip()
+    user_name = full_name or current_user.username
+    
+    emit('receive_reply', {
+        'rev_id': rev_id,
+        'reply_id': new_reply.id,
+        'content': content,
+        'user': user_name,
+        'avatar': current_user.avatar,
+        'time': datetime.now().strftime('%H:%M'),
+        'user_id': current_user.id
+    }, broadcast=True)
+

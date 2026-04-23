@@ -98,19 +98,8 @@ def book_detail(book_id):
                 )
             
     from app.models import Review
-    all_reviews = Review.query.filter_by(book_id=book.id).order_by(Review.created_at.asc()).all()
-    
-    combined_list = []
-    for r in all_reviews:
-        combined_list.append({
-            'user': r.user,
-            'content': r.content,
-            'rating': r.rating,
-            'sent_date': r.created_at,
-            'id': r.id,
-            'user_id': r.user_id,
-            'is_old_review': False 
-        })
+    discussions = Review.query.filter_by(book_id=book.id).order_by(Review.created_at.asc()).all()
+
     
     return render_template(
         'book/book_detail.html',
@@ -118,7 +107,7 @@ def book_detail(book_id):
         related_books=related_books,
         user_state=user_state,
         source=source,
-        discussions=combined_list
+        discussions=discussions
     )
 
 

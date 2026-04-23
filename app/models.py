@@ -206,6 +206,38 @@ class Review(Base):
     user = db.relationship('User', backref='reviews', lazy='selectin')
     book = db.relationship('Book', backref='reviews', lazy='selectin')
 
+    # Relationships for interactions
+    likes = db.relationship('ReviewLike', backref='review', cascade="all, delete-orphan", lazy='selectin')
+    replies = db.relationship('ReviewReply', backref='review', cascade="all, delete-orphan", lazy='selectin')
+
+    @property
+    def like_count(self):
+        return len(self.likes)
+
+
+# ================= REVIEW LIKE =================
+class ReviewLike(Base):
+    __tablename__ = 'review_like'
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'review_id', name='unique_review_like'),
+    )
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    review_id = db.Column(db.Integer, db.ForeignKey('review.id'), nullable=False)
+
+    user = db.relationship('User', backref='review_likes', lazy='selectin')
+
+
+# ================= REVIEW REPLY =================
+class ReviewReply(Base):
+    __tablename__ = 'review_reply'
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    review_id = db.Column(db.Integer, db.ForeignKey('review.id'), nullable=False)
+
+    user = db.relationship('User', backref='review_replies', lazy='selectin')
+
 
 # ================= FAVORITE =================
 class Favorite(Base):

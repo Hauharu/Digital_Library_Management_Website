@@ -23,7 +23,8 @@
     <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" />
 </head>
 
-<body class="d-flex flex-column min-vh-100">
+<body class="d-flex flex-column min-vh-100" {% if current_user.is_authenticated %}data-user-id="{{ current_user.id }}"
+    {% endif %}>
 
 
     <!-- Flash Toast Container (fixed overlay) -->
@@ -64,7 +65,14 @@
 
     <!-- JS Bootstrap -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script>const socket = io();</script>
+    <script>
+        const socket = io();
+        const bodyTag = document.body;
+        const authUserId = bodyTag.getAttribute('data-user-id');
+        if (authUserId) {
+            socket.emit('join_user', { user_id: parseInt(authUserId) });
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/search.js') }}"></script>
 
