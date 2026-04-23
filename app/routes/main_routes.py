@@ -363,6 +363,8 @@ def add_review(book_id):
 def all_reviews():
     from app.models import Review
     rev_id = request.args.get('id', type=int)
+    is_ajax = request.args.get('ajax', type=int)
+    
     all_revs = Review.query.order_by(Review.created_at.desc()).all()
     
     selected_rev = Review.query.get(rev_id) if rev_id else (all_revs[0] if all_revs else None)
@@ -371,6 +373,9 @@ def all_reviews():
     if selected_rev and not selected_rev.is_read:
         selected_rev.is_read = True
         db.session.commit()
+        
+    if is_ajax:
+        return render_template('user/partials/review_detail.html', selected_rev=selected_rev)
         
     return render_template('user/reviews.html', all_reviews=all_revs, selected_rev=selected_rev)
 
