@@ -19,10 +19,6 @@
                     <a href="{{ url_for('main.all_reviews', id=rev.id) }}" 
                        class="sidebar-item {{ 'active' if selected_rev and selected_rev.id == rev.id else '' }} {{ 'unread' if not rev.is_read else '' }}">
                         <span class="notif-book text-uppercase">{{ rev.book.title }}</span>
-                        <span class="notif-title">
-                            {%- set r_name = ((rev.user.last_name or '') + ' ' + (rev.user.first_name or '')).strip() -%}
-                            {{ r_name if r_name else rev.user.username }}
-                        </span>
                         <span class="notif-time">{{ rev.created_at | time_ago }}</span>
                     </a>
                     {% else %}
