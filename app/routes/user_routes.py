@@ -1,7 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user, logout_user
-from app.models import User, RequestStatusEnum, BorrowStatusEnum, GenderEnum
+from app.models import User, RequestStatusEnum, BorrowStatusEnum, GenderEnum,Book
 from app import db, bcrypt
+from datetime import datetime
+from app.services.borrow_service import BorrowService
 
 user_bp = Blueprint('user', __name__, url_prefix='/user')
 
@@ -130,3 +132,49 @@ def delete_all_notifications():
     Notification.query.filter_by(user_id=current_user.id).delete()
     db.session.commit()
     return jsonify({'success': True})
+
+@user_bp.route('/borrow/<int:book_id>', methods=['GET', 'POST'])
+@login_required
+def borrow_book(book_id):
+    book = Book.query.get_or_404(book_id)
+    quantity_available = book.available_quantity or 0
+
+    if request.method == 'POST':
+        start_date_str = request.form.get('start_date', '').strip()
+        end_date_str = request.form.get('end_date', '').strip()
+        quantity_str = request.form.get('quantity', '1').strip()
+
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            flash('Ngày mượn hoặc ngày trả không hợp lệ.', 'danger')
+            return redirect(url_for('borrow_book', book_id=book_id))
+
+        try:
+            quantity = int(quantity_str)
+        except ValueError:
+            flash('Số lượng mượn phải là số nguyên.', 'danger')
+            return redirect(url_for('borrow_book', book_id=book_id))
+
+        result = BorrowService.create_borrow_request(
+            user=current_user,
+            book=book,
+            start_date=start_date,
+            end_date=end_date,
+            quantity=quantity
+        )
+
+        flash(result['message'], result['category'])
+        if result['ok']:
+            return redirect(url_for('main.book_detail', book_id=book_id, **{'from': 'featured'}))
+
+        return redirect(url_for('borrow_book', book_id=book_id))
+
+    return render_template(
+        'book/borrow_form.html',
+        user=current_user,
+        book=book,
+        quantity_available=quantity_available,
+        today=datetime.now().date().isoformat()
+    )
