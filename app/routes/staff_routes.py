@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from app import db
+from app import db,socketio
 from app.models import BorrowSlip, Book, User, BorrowStatusEnum, Invoice, InvoiceStatusEnum, BorrowRequest, \
-    RequestStatusEnum
-from datetime import datetime
+    RequestStatusEnum, Notification
+from datetime import date, datetime, timedelta
+from flask_login import login_required, current_user, logout_user
 
 staff_bp = Blueprint('staff', __name__, url_prefix='/staff')
 
@@ -75,3 +76,92 @@ def confirm_return(slip_id):
     db.session.commit()
     flash(f"Đã nhận trả sách: {book.title}", "success")
     return redirect(url_for('staff.manage_orders'))
+
+
+@staff_bp.route('/approve-request/<int:request_id>', methods=['POST'])
+@login_required
+def approve_request(request_id):
+    borrow_req = BorrowRequest.query.get_or_404(request_id)
+    book = Book.query.get(borrow_req.book_id)
+
+    if book.available_quantity < borrow_req.quantity:
+        flash(f"Sách '{book.title}' không đủ số lượng!", "danger")
+        return redirect(request.referrer)
+
+    new_slip = BorrowSlip(
+        borrow_date=datetime.now().date(),
+        due_date=borrow_req.borrow_to_date,
+        quantity=borrow_req.quantity,
+        status=BorrowStatusEnum.Borrowing,
+        user_id=borrow_req.user_id,
+        book_id=borrow_req.book_id,
+        borrow_request_id=borrow_req.id
+    )
+
+    borrow_req.status = RequestStatusEnum.Completed
+    book.available_quantity -= borrow_req.quantity
+
+    notif = Notification(
+        user_id=borrow_req.user_id,
+        title="Yêu cầu mượn sách đã được duyệt",
+        content=f"Cuốn '{book.title}' đã sẵn sàng để bạn đến lấy.",
+        type="SYSTEM"
+    )
+
+    try:
+        db.session.add(new_slip)
+        db.session.add(notif)
+        db.session.commit()
+
+        unread_count = Notification.query.filter_by(user_id=borrow_req.user_id, is_read=False).count()
+        socketio.emit('update_notifications', {
+            'unread_count': unread_count,
+            'new_notification': {
+                'title': notif.title,
+                'time': 'Vừa xong',
+                'id': notif.id
+            }
+        }, room=f"user_{borrow_req.user_id}")
+
+        flash(f"Đã duyệt yêu cầu của {borrow_req.reader.first_name}!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash("Lỗi: " + str(e), "danger")
+
+    return redirect(url_for('staff.staff_requests'))
+
+@staff_bp.route('/reject-request/<int:request_id>', methods=['POST'])
+@login_required
+def reject_request(request_id):
+    req = BorrowRequest.query.get_or_404(request_id)
+    reason = request.form.get('reject_reason', 'Không rõ lý do')
+
+    req.status = RequestStatusEnum.Rejected
+    req.reject_reason = reason
+
+    notif = Notification(
+        user_id=req.user_id,
+        title="Yêu cầu mượn sách bị từ chối",
+        content=f"Lý do: {reason}",
+        type="SYSTEM"
+    )
+    db.session.add(notif)
+    db.session.commit()
+
+    unread_count = Notification.query.filter_by(user_id=req.user_id, is_read=False).count()
+    socketio.emit('update_notifications', {
+        'unread_count': unread_count,
+        'new_notification': {'title': notif.title, 'time': 'Vừa xong'}
+    }, room=f"user_{req.user_id}")
+
+    flash("Đã từ chối yêu cầu.", "info")
+    return redirect(url_for('staff.staff_requests'))
+
+
+@staff_bp.route('/requests')
+@login_required
+def staff_requests():
+
+    pending_requests = BorrowRequest.query.filter_by(status=RequestStatusEnum.Pending).all()
+
+    return render_template('staff/staff_requests.html', pending_requests=pending_requests)

@@ -39,7 +39,7 @@
             <a href="/staff/books" class="nav-item {{ 'active' if 'books' in request.path }}">
                 <i class="fa-solid fa-book"></i> Quản lý sách
             </a>
-            <a href="/staff/borrow" class="nav-item">
+            <a href="/staff/requests" class="nav-item">
                 <i class="fa-solid fa-clipboard-check"></i> Duyệt mượn
                 {% if pending_count > 0 %}
                 <span class="badge bg-danger rounded-pill ms-auto">{{ pending_count }}</span>

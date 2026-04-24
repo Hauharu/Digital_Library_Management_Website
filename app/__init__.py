@@ -15,7 +15,7 @@ import cloudinary
 db = SQLAlchemy()
 login_manager = LoginManager()
 bcrypt = Bcrypt()
-socketio = SocketIO(cors_allowed_origins="*")
+socketio = SocketIO(cors_allowed_origins="*", async_mode='eventlet')
 migrate = Migrate()
 mail = Mail()
 oauth = OAuth()

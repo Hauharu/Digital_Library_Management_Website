@@ -19,7 +19,7 @@
                         <div><strong>Số lượng còn:</strong> {{ quantity_available }} cuốn</div>
                     </div>
 
-                    <form method="post" action="{{ url_for('borrow_book', book_id=book.id) }}">
+                    <form method="post" action="{{ url_for('user.borrow_book', book_id=book.id) }}">
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-semibold">Tên độc giả</label>
