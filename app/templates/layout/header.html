@@ -9,29 +9,123 @@
             </a>
 
             <form action="/search" method="GET" class="header-search flex-grow-1 d-none d-md-block"
-                  style="max-width: 480px;">
+                style="max-width: 480px;">
                 <div class="search-input-group">
                     <i class="fa-solid fa-magnifying-glass ms-3 text-muted"></i>
                     <input type="search" name="q" class="form-control border-0 bg-transparent shadow-none"
-                           placeholder="Tìm tên sách, tác giả..." required>
+                        placeholder="Tìm tên sách, tác giả..." required>
                     <button class="btn btn-search-submit" type="submit">Tìm kiếm</button>
                 </div>
             </form>
 
-            <button class="btn btn-filter-light d-none d-lg-flex shadow-sm">
+            <a href="{{ url_for('main.search') }}"
+                class="btn btn-filter-light d-none d-lg-flex shadow-sm text-decoration-none">
                 <i class="fa-solid fa-sliders"></i>
                 <span>Lọc nâng cao</span>
-            </button>
+            </a>
         </div>
 
-        <div class="header-right ms-4 flex-shrink-0">
+        <div class="header-right ms-4 flex-shrink-0 d-flex align-items-center">
             {% if current_user.is_authenticated %}
+            <div class="header-actions">
+                <!-- Comments -->
+                <div class="dropdown">
+                    <button class="action-btn dropdown-toggle no-caret" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        <i class="fa-solid fa-envelope"></i>
+                        {% if unread_reviews_count > 0 %}
+                        <span class="badge-count">{{ unread_reviews_count }}</span>
+                        {% endif %}
+                    </button>
+                    <div
+                        class="dropdown-menu dropdown-menu-end notification-dropdown border-0 shadow-lg mt-3 p-0 rounded-4">
+                        <div class="notification-header">
+                            <span class="fw-bold">Bình luận</span>
+                            <a href="{{ url_for('main.mark_all_reviews_read') }}"
+                                class="small text-decoration-none">Đánh dấu đã đọc</a>
+                        </div>
+                        <div class="notification-list">
+                            {% for rev in recent_discussions %}
+                            <a href="{{ url_for('main.all_reviews', id=rev.id) }}"
+                                class="notification-item text-decoration-none {{ 'unread' if not rev.is_read else '' }}">
+                                <div class="notification-icon">
+                                    <img src="{{ rev.user.avatar if rev.user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}"
+                                        style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
+                                </div>
+                                <div class="notification-content">
+                                    <span class="title">
+                                        {%- set r_name = ((rev.user.last_name or '') + ' ' + (rev.user.first_name or
+                                        '')).strip() -%}
+                                        {{ r_name if r_name else rev.user.username }}
+                                    </span>
+                                    <span class="text-muted small d-block text-truncate" style="max-width: 200px;">
+                                        {{ rev.content if rev.content else 'Đã chấm ' ~ rev.rating ~ ' sao' }}
+                                    </span>
+                                    <span class="time">{{ rev.created_at | time_ago }}</span>
+                                </div>
+                            </a>
+                            {% else %}
+                            <div class="p-4 text-center text-muted small">Chưa có hoạt động nào</div>
+                            {% endfor %}
+                        </div>
+                        <div class="notification-footer">
+                            <a href="{{ url_for('main.all_reviews') }}">Xem tất cả bình luận</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications -->
+                <div class="dropdown">
+                    <button class="action-btn dropdown-toggle no-caret" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        <i class="fa-solid fa-bell"></i>
+                        {% if unread_count > 0 %}
+                        <span class="badge-count">{{ unread_count }}</span>
+                        {% endif %}
+                    </button>
+                    <div
+                        class="dropdown-menu dropdown-menu-end notification-dropdown border-0 shadow-lg mt-3 p-0 rounded-4">
+                        <div class="notification-header">
+                            <span class="fw-bold">Thông báo</span>
+                            <a href="{{ url_for('main.mark_all_notifications_read') }}"
+                                class="small text-decoration-none">Đánh dấu đã đọc</a>
+                        </div>
+                        <div class="notification-list">
+                            {% for notif in notifications %}
+                            <a href="{{ url_for('user.notifications') }}?id={{ notif.id }}"
+                                class="notification-item {{ 'unread' if not notif.is_read else '' }}">
+                                <div class="notification-icon">
+                                    <i
+                                        class="fa-solid {{ 'fa-key' if notif.title and 'đăng nhập' in notif.title.lower() else 'fa-info-circle' }}"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <span class="title">{{ notif.title }}</span>
+                                    <span class="time">{{ notif.sent_date | time_ago }}</span>
+                                </div>
+                            </a>
+                            {% else %}
+                            <div class="p-4 text-center text-muted small">
+                                Không có thông báo nào
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="notification-footer">
+                            <a href="{{ url_for('user.notifications') }}">Xem tất cả thông báo</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="dropdown">
                 <button class="btn user-dropdown-btn dropdown-toggle d-flex align-items-center shadow-none"
-                        type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                    type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
                     <img src="{{ current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}"
-                         alt="avatar" class="user-avatar me-2">
-                    <span class="username-text fw-semibold d-none d-sm-inline">{{ current_user.username }}</span>
+                        alt="avatar" class="user-avatar me-2">
+                    <span class="username-text fw-semibold d-none d-sm-inline">
+                        {%- set display_name = ((current_user.last_name or '') + ' ' + (current_user.first_name or
+                        '')).strip() -%}
+                        {{ display_name if display_name else current_user.username }}
+                    </span>
                 </button>
 
                 <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-3 p-2 rounded-4"
@@ -40,33 +134,33 @@
                         <div class="dropdown-header text-uppercase small fw-bold text-muted">Tài khoản</div>
                     </li>
                     <li><a class="dropdown-item" href="{{ url_for('main.borrow_history') }}">
-                        <i class="fas fa-clock-rotate-left me-2 text-primary"></i> Lịch sử mượn
-                    </a></li>
+                            <i class="fas fa-clock-rotate-left me-2 text-primary"></i> Lịch sử mượn
+                        </a></li>
                     <li><a class="dropdown-item" href="{{ url_for('user.user_profile') }}">
-                        <i class="fa-solid fa-circle-user me-2 text-primary"></i> Thông tin cá nhân
-                    </a></li>
+                            <i class="fa-solid fa-circle-user me-2 text-primary"></i> Thông tin cá nhân
+                        </a></li>
 
                     {% if current_user.role.name == 'ADMIN' %}
                     <li>
                         <hr class="dropdown-divider">
                     </li>
                     <li><a class="dropdown-item text-primary fw-bold" href="/admin">
-                        <i class="fa-solid fa-gauge-high me-2"></i> Quản trị
-                    </a></li>
+                            <i class="fa-solid fa gauge-high me-2"></i> Quản trị
+                        </a></li>
                     {% endif %}
 
                     {% if current_user.role.name == 'STAFF' %}
                     <li><a class="dropdown-item text-info fw-bold" href="/staff">
-                        <i class="fa-solid fa-clipboard-check me-2"></i> Nhân viên
-                    </a></li>
+                            <i class="fa-solid fa-clipboard-check me-2"></i> Nhân viên
+                        </a></li>
                     {% endif %}
 
                     <li>
                         <hr class="dropdown-divider">
                     </li>
                     <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
-                        <i class="fa-solid fa-power-off me-2"></i> Đăng xuất
-                    </a></li>
+                            <i class="fa-solid fa-power-off me-2"></i> Đăng xuất
+                        </a></li>
                 </ul>
             </div>
             {% else %}
@@ -78,3 +172,106 @@
         </div>
     </div>
 </header>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof socket !== 'undefined') {
+            socket.on('update_header_reviews', function (data) {
+                const envelopeIcon = document.querySelector('i.fa-envelope');
+                if (envelopeIcon && data.unread_count > 0) {
+                    const btn = envelopeIcon.parentElement;
+                    let badgeContainer = btn.querySelector('.badge-count');
+                    if (badgeContainer) {
+                        badgeContainer.innerText = data.unread_count;
+                    } else {
+                        btn.insertAdjacentHTML('beforeend', `<span class="badge-count">${data.unread_count}</span>`);
+                    }
+                }
+
+                const dropdownList = document.querySelector('.dropdown-menu .notification-list');
+                if (dropdownList) {
+                    const emptyMsg = dropdownList.querySelector('.text-center');
+                    if (emptyMsg) emptyMsg.remove();
+
+                    const newReview = data.new_review;
+                    const itemHtml = `
+                        <a href="/reviews?id=${newReview.id}" class="notification-item text-decoration-none unread">
+                            <div class="notification-icon">
+                                <img src="${newReview.avatar}" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
+                            </div>
+                            <div class="notification-content">
+                                <span class="title">${newReview.user}</span>
+                                <span class="text-muted small d-block text-truncate" style="max-width: 200px;">
+                                    ${newReview.content || 'Đã chấm ' + newReview.rating + ' sao'}
+                                </span>
+                                <span class="time">${newReview.time}</span>
+                            </div>
+                        </a>
+                    `;
+                    dropdownList.insertAdjacentHTML('afterbegin', itemHtml);
+                    const items = dropdownList.querySelectorAll('.notification-item');
+                    if (items.length > 5) items[items.length - 1].remove();
+                }
+            });
+        }
+
+        // Cập nhật thông báo cá nhân (Icon Chuông)
+        socket.on('update_notifications', function (data) {
+            const bellIcon = document.querySelector('i.fa-bell');
+            if (bellIcon) {
+                const btn = bellIcon.parentElement;
+                let badgeContainer = btn.querySelector('.badge-count');
+                if (data.unread_count > 0) {
+                    if (badgeContainer) {
+                        badgeContainer.innerText = data.unread_count;
+                    } else {
+                        btn.insertAdjacentHTML('beforeend', `<span class="badge-count">${data.unread_count}</span>`);
+                    }
+                }
+            }
+
+            const bellDropdown = document.querySelector('.dropdown button i.fa-bell')?.closest('.dropdown');
+            const dropdownList = bellDropdown?.querySelector('.notification-list');
+            if (dropdownList) {
+                const emptyMsg = dropdownList.querySelector('.text-center');
+                if (emptyMsg) emptyMsg.remove();
+
+                const newNotif = data.new_notification;
+                const itemHtml = `
+                    <a href="/user/notifications?id=${newNotif.id}" class="notification-item unread">
+                        <div class="notification-icon">
+                            <i class="fa-solid fa-info-circle"></i>
+                        </div>
+                        <div class="notification-content">
+                            <span class="title">${newNotif.title}</span>
+                            <span class="time">${newNotif.time}</span>
+                        </div>
+                    </a>
+                `;
+                dropdownList.insertAdjacentHTML('afterbegin', itemHtml);
+                const items = dropdownList.querySelectorAll('.notification-item');
+                if (items.length > 5) items[items.length - 1].remove();
+            }
+        });
+
+        // --- AJAX: Đánh dấu đã đọc không tải lại trang (SPA style) ---
+        document.querySelectorAll('a[href*="/mark-all-read"]').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const url = this.getAttribute('href');
+                fetch(url + (url.includes('?') ? '&' : '?') + 'ajax=1', {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            const dropdown = this.closest('.dropdown');
+                            const badge = dropdown.querySelector('.badge-count');
+                            if (badge) badge.remove();
+                            dropdown.querySelectorAll('.notification-item.unread').forEach(item => item.classList.remove('unread'));
+                        }
+                    }).catch(err => console.error(err));
+            });
+        });
+    });
+</script>

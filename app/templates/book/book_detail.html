@@ -5,20 +5,22 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/book_detail.css') }}">
 
 <div style="margin-bottom: 20px;">
-    <div class="breadcrumb" style="box-shadow: none; padding: 0; background: transparent; font-size: 16px; font-weight: 500; margin-bottom: 10px;">
+    <div class="breadcrumb"
+        style="box-shadow: none; padding: 0; background: transparent; font-size: 16px; font-weight: 500; margin-bottom: 10px;">
         <a href="{{ url_for('main.index') }}" style="color: #6b7280; text-decoration: none;">Trang chủ</a>
         <i class="fa-solid fa-chevron-right separator" style="font-size: 12px; margin: 0 8px; color: #d1d5db;"></i>
-        
+
         {% if source == 'category' and book.category %}
-            <a href="{{ url_for('main.categories') }}" style="color: #6b7280; text-decoration: none;">Danh mục</a>
-            <i class="fa-solid fa-chevron-right separator" style="font-size: 12px; margin: 0 8px; color: #d1d5db;"></i>
-            <a href="{{ url_for('main.book_list', category_id=book.category.id) }}" style="color: #6b7280; text-decoration: none;">{{ book.category.name }}</a>
+        <a href="{{ url_for('main.categories') }}" style="color: #6b7280; text-decoration: none;">Danh mục</a>
+        <i class="fa-solid fa-chevron-right separator" style="font-size: 12px; margin: 0 8px; color: #d1d5db;"></i>
+        <a href="{{ url_for('main.book_list', category_id=book.category.id) }}"
+            style="color: #6b7280; text-decoration: none;">{{ book.category.name }}</a>
         {% elif source == 'featured' %}
-            <a href="{{ url_for('main.index') }}" style="color: #6b7280; text-decoration: none;">Sách nổi bật</a>
+        <a href="{{ url_for('main.index') }}" style="color: #6b7280; text-decoration: none;">Sách nổi bật</a>
         {% else %}
-            <a href="{{ url_for('main.book_list') }}" style="color: #6b7280; text-decoration: none;">Danh sách</a>
+        <a href="{{ url_for('main.book_list') }}" style="color: #6b7280; text-decoration: none;">Danh sách</a>
         {% endif %}
-        
+
         <i class="fa-solid fa-chevron-right separator" style="font-size: 12px; margin: 0 8px; color: #d1d5db;"></i>
         <span style="color: #111827; font-weight: 600;">Chi tiết sách</span>
     </div>
@@ -36,16 +38,20 @@
         </div>
 
         <div class="book-actions-icons">
+            <a href="#discussion-anchor" class="icon-item text-decoration-none" style="color: inherit;">
+                <div id="top-stars-display" class="stars-mini" style="font-size: 10px; margin-bottom: 2px;">
+                    {% set r_val = (book.average_rating|round(0, 'floor'))|int %}
+                    {% for i in range(r_val) %}<i class="fa-solid fa-star" style="color: #f39c12 !important;"></i>{% endfor %}
+                    {% for i in range(5 - r_val) %}<i class="fa-regular fa-star" style="color: #f39c12 !important;"></i>{% endfor %}
+                </div>
+                <span id="top-rating-text">{{ book.average_rating|round(1) if book.average_rating else '0.0' }}/5</span>
+            </a>
+            <a href="#discussion-anchor" class="icon-item text-decoration-none" style="color: inherit;">
+                <i class="fa-solid fa-comment text-primary"></i>
+                <span id="top-comment-count">{{ discussions|length }} Bình luận</span>
+            </a>
             <div class="icon-item">
-                <i class="fa-solid fa-star"></i>
-                <span>4.8/5</span>
-            </div>
-            <div class="icon-item">
-                <i class="fa-solid fa-comment"></i>
-                <span>128</span>
-            </div>
-            <div class="icon-item">
-                <i class="fa-solid fa-share-nodes"></i>
+                <i class="fa-solid fa-share-nodes text-success"></i>
                 <span>Chia sẻ</span>
             </div>
         </div>
@@ -66,7 +72,7 @@
         {% if book.quantity is not none and book.quantity <= 0 %} <button class="btn-borrow disabled" disabled>Hết
             sách</button>
             {% else %}
-            <a href="{{ url_for('borrow_book', book_id=book.book_id) }}" class="btn-borrow text-decoration-none">
+            <a href="{{ url_for('user.borrow_book', book_id=book.book_id) }}" class="btn-borrow text-decoration-none">
                 Đăng ký mượn sách
             </a>
             {% endif %}
@@ -137,6 +143,8 @@
                 {% endif %}
             </div>
         </div>
+
+        <!-- Reviews Section Placeholder (Moved outside) -->
     </div>
 </div>
 
@@ -161,9 +169,170 @@
         </div>
     </div>
 </div>
-
-<script src="{{ url_for('static', filename='js/book_detail.js') }}"></script>
 {% endif %}
+
+<!-- Reviews & Discussion Section Combined -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+<div id="book-id-data" data-book-id="{{ book.id }}"></div>
+{% if current_user.is_authenticated %}
+<div id="user-id-data" data-user-id="{{ current_user.id }}"></div>
+{% endif %}
+
+<section class="container mt-5 mb-5 book-discussion-section">
+    <div class="discussion-header mb-4" style="border-bottom: 2px solid #f39c12; padding-bottom: 10px;">
+        <h3 id="discussion-anchor" style="scroll-margin-top: 120px; color: #f39c12;">
+            <i class="fa-solid fa-comments"></i> Bình Luận & Đánh Giá (<span id="top-comment-count-inner">{{ discussions|length }}</span>)
+        </h3>
+        <p class="text-muted small">Chia sẻ cảm nhận hoặc chấm điểm cho cuốn sách này.</p>
+    </div>
+
+    {# Thông báo nếu chưa có bình luận #}
+    <div id="no-comments-placeholder" class="mb-4 {% if discussions %}d-none{% endif %}">
+        <div class="p-4 text-center text-muted bg-white border rounded shadow-sm">
+            <p class="mb-0"><i class="fa-solid fa-feather-pointed"></i> Chưa có bình luận nào. Hãy là người đầu tiên chia sẻ cảm nhận!</p>
+        </div>
+    </div>
+
+    {% set ns = namespace(user_has_reviewed=false) %}
+    {% for d in discussions %}
+        {% if current_user.is_authenticated and d.user_id == current_user.id %}
+            {% set ns.user_has_reviewed = true %}
+        {% endif %}
+    {% endfor %}
+
+    {% if current_user.is_authenticated %}
+    <div class="chat-input-area clearfix mb-5 shadow-sm border rounded-3 p-4 {% if ns.user_has_reviewed %}d-none{% endif %}">
+        <!-- Star Rating Picker inside Chat Form -->
+        <div class="mb-3">
+            <label class="form-label d-block text-muted small fw-bold">Chấm điểm (không bắt buộc):</label>
+            <div class="star-rating-chat fs-3"
+                style="color: #f39c12; cursor: pointer; display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: 10px;">
+                <input type="radio" name="rating" value="5" id="chat-s5" class="d-none"><label for="chat-s5"><i
+                        class="fa-regular fa-star" onclick="setChatRating(5)"></i></label>
+                <input type="radio" name="rating" value="4" id="chat-s4" class="d-none"><label for="chat-s4"><i
+                        class="fa-regular fa-star" onclick="setChatRating(4)"></i></label>
+                <input type="radio" name="rating" value="3" id="chat-s3" class="d-none"><label for="chat-s3"><i
+                        class="fa-regular fa-star" onclick="setChatRating(3)"></i></label>
+                <input type="radio" name="rating" value="2" id="chat-s2" class="d-none"><label for="chat-s2"><i
+                        class="fa-regular fa-star" onclick="setChatRating(2)"></i></label>
+                <input type="radio" name="rating" value="1" id="chat-s1" class="d-none"><label for="chat-s1"><i
+                        class="fa-regular fa-star" onclick="setChatRating(1)"></i></label>
+            </div>
+            <input type="hidden" id="selected-rating" value="">
+        </div>
+
+        <textarea id="msg-input" placeholder="Viết cảm nhận của bạn tại đây..."
+            style="border-radius: 8px; border: 1px solid #eee;"></textarea>
+        <button id="btn-send-msg" class="btn btn-warning text-white fw-bold mt-2"
+            style="background-color: #f39c12; border: none;">
+            Gửi bình luận & Đánh giá
+        </button>
+    </div>
+
+    <script>
+        function setChatRating(n) {
+            const stars = document.querySelectorAll('.star-rating-chat i');
+            stars.forEach((s, index) => {
+                if (5 - index <= n) {
+                    s.classList.replace('fa-regular', 'fa-solid');
+                } else {
+                    s.classList.replace('fa-solid', 'fa-regular');
+                }
+            });
+            document.getElementById('selected-rating').value = n;
+        }
+    </script>
+    {% else %}
+    <div class="chat-auth-prompt p-4 text-center bg-light border mb-4 rounded shadow-sm">
+        Vui lòng <a href="{{ url_for('auth.login') }}" class="fw-bold text-primary text-decoration-none">đăng nhập</a>
+        để tham gia bình luận và đánh giá.
+    </div>
+    {% endif %}
+
+    <div class="chat-box" id="chat-box">
+        {% for msg in discussions %}
+        <div class="chat-message border-bottom pb-4 mb-4 bg-white p-3 rounded-3 shadow-sm">
+            <img src="{{ msg.user.avatar if msg.user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}"
+                class="chat-avatar">
+            <div class="message-wrapper">
+                <div class="message-info">
+                    <span class="sender-name">
+                        {%- set d_name = ((msg.user.last_name or '') + ' ' + (msg.user.first_name or '')).strip() -%}
+                        {{ d_name if d_name else msg.user.username }}
+                    </span>
+                    <span class="message-time small">• {{ msg.created_at | time_ago }}</span>
+                </div>
+
+                {% if msg.rating %}
+                <div class="message-rating mb-2" style="font-size: 14px;">
+                    {% for i in range(msg.rating) %}<i class="fa-solid fa-star"
+                        style="color: #f39c12 !important;"></i>{% endfor %}
+                    {% for i in range(5 - msg.rating) %}<i class="fa-regular fa-star"
+                        style="color: #f39c12 !important;"></i>{% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="message-bubble mb-3">
+                    {{ msg.content if msg.content else '<i class="text-muted small">Người dùng chỉ chấm điểm sao</i>' |
+                    safe }}
+                </div>
+                <div class="message-actions" id="msg-actions-{{ msg.id }}">
+                    {% set user_liked = false %}
+                    {% if current_user.is_authenticated %}
+                        {% for like in msg.likes %}
+                            {% if like.user_id == current_user.id %}{% set user_liked = true %}{% endif %}
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <span class="action-link {{ 'text-primary' if user_liked else 'text-muted' }} small" 
+                          id="like-btn-{{ msg.id }}" onclick="likeReview({{ msg.id }})">
+                        <i class="{{ 'fa-solid' if user_liked else 'fa-regular' }} fa-thumbs-up"></i> 
+                        Thích <span id="like-count-{{ msg.id }}">{{ msg.like_count if msg.like_count > 0 else '' }}</span>
+                    </span>
+
+                    <span class="action-link text-primary small ms-3" onclick="toggleReplyInput({{ msg.id }})">
+                        <i class="fa-regular fa-comment-dots"></i> Phản hồi
+                    </span>
+
+                    {% if current_user.is_authenticated and msg.user_id == current_user.id %}
+                    <span class="action-link text-danger small ms-3" onclick="deleteMessage({{ msg.id }})">
+                        <i class="fa-regular fa-trash-can"></i> Xóa
+                    </span>
+                    {% endif %}
+                </div>
+
+                <!-- Reply Section -->
+                <div id="reply-list-{{ msg.id }}" class="reply-list ms-4 mt-2">
+                    {% for reply in msg.replies %}
+                    <div class="reply-item d-flex gap-2 mt-2 p-2 rounded bg-light" style="font-size: 13px;">
+                        <img src="{{ reply.user.avatar if reply.user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}" 
+                             style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;">
+                        <div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fw-bold">{{ reply.user.last_name }} {{ reply.user.first_name }}</span>
+                                <span class="text-muted" style="font-size: 11px;">{{ reply.created_at | time_ago }}</span>
+                            </div>
+                            <div class="reply-content">{{ reply.content }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div id="reply-area-{{ msg.id }}" class="reply-input-area ms-4 mt-2 d-none">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" placeholder="Viết phản hồi...">
+                        <button class="btn btn-primary" type="button" onclick="sendReply({{ msg.id }})">Gửi</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Scripts -->
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+<script src="{{ url_for('static', filename='js/book_detail.js') }}"></script>
 
 <!-- Modal Zoom Ảnh -->
 <div id="image-modal" class="image-zoom-modal">

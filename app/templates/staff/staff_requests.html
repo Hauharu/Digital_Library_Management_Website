@@ -1,0 +1,154 @@
+{% extends "layout/base_staff.html" %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/staff_request.css') }}">
+{% endblock %}
+{% block content %}
+<div class="container-fluid py-5 px-5">
+    <div class="row mb-5 align-items-center">
+        <div class="col-lg-12">
+            <h1 class="fw-900 text-dark mb-2" style="font-size: 2.5rem; letter-spacing: -1px;">Duyệt yêu cầu mượn
+                sách</h1>
+            <p class="text-muted fs-5">Phê duyệt hoặc từ chối các yêu cầu đặt sách từ độc giả.</p>
+        </div>
+    </div>
+
+    <div class="table-wrapper-premium shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-premium align-middle mb-0">
+                <thead>
+                <tr>
+                    <th class="ps-4">Độc giả</th>
+                    <th>Thông tin sách</th>
+                    <th>Số lượng</th>
+                    <th>Thời gian dự kiến</th>
+                    <th class="text-center">Trạng thái</th>
+                    <th class="text-end pe-4">Thao tác</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for req in pending_requests %}
+                <tr>
+                    <td class="ps-4">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-circle me-3 bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center"
+                                 style="width: 40px; height: 40px; border-radius: 50%;">
+                                {{ req.reader.first_name[0]|upper }}
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark">{{ req.reader.last_name }} {{ req.reader.first_name }}
+                                </div>
+                                <div class="text-muted x-small">ID: #USR-{{ req.user_id }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="fw-bold text-dark">{{ req.book.title }}</div>
+                        <div class="text-muted x-small">Sẵn có: {{ req.book.available_quantity }} cuốn</div>
+                    </td>
+                    <td><span class="badge bg-light text-dark border px-3">{{ req.quantity }}</span></td>
+                    <td>
+                        <div class="small">Từ: {{ req.borrow_from_date.strftime('%d/%m/%Y') }}</div>
+                        <div class="small text-primary fw-600">Đến: {{ req.borrow_to_date.strftime('%d/%m/%Y') }}</div>
+                    </td>
+                    <td class="text-center">
+                            <span class="badge-status"
+                                  style="background: #fffbeb; color: #92400e; border: 1px solid #fef3c7;">
+                                <i class="fa-solid fa-clock me-1"></i> CHỜ DUYỆT
+                            </span>
+                    </td>
+                    <td class="action-column">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="button" class="btn-action-premium btn-approve"
+                                    onclick="openApproveModal('{{ req.id }}', '{{ req.book.title|e }}', '{{ req.reader.first_name }}')">
+                                <i class="fa-solid fa-check"></i> Duyệt
+                            </button>
+
+                            <button type="button" class="btn-action-premium btn-reject"
+                                    onclick="openRejectModal('{{ req.id }}', '{{ req.book.title|e }}')">
+                                <i class="fa-solid fa-xmark"></i> Từ chối
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">Không có yêu cầu mượn nào đang chờ.</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-premium" id="approveModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-2xl border-0">
+            <div class="modal-body text-center p-5">
+                <div class="icon-circle bg-success-subtle text-success mx-auto mb-4 d-flex align-items-center justify-content-center"
+                     style="width: 80px; height: 80px; border-radius: 50%;">
+                    <i class="fa-solid fa-file-circle-check fa-2x"></i>
+                </div>
+                <h3 class="fw-900 mb-3 text-dark">Phê duyệt yêu cầu?</h3>
+                <p class="text-muted">Đồng ý cho <b id="appUser" class="text-primary"></b> mượn cuốn <br><b id="appBook"
+                                                                                                            class="text-dark"></b>?
+                </p>
+                <form id="formApprove" method="POST" class="mt-4">
+                    <div class="d-flex gap-3">
+                        <button type="button" class="btn btn-light rounded-pill flex-grow-1 py-3 fw-bold"
+                                data-bs-dismiss="modal">Để sau
+                        </button>
+                        <button type="submit" class="btn btn-primary rounded-pill flex-grow-1 py-3 fw-bold shadow">Xác
+                            nhận duyệt
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-premium" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-2xl">
+            <form id="formReject" method="POST">
+                <div class="modal-header bg-danger-subtle py-4 px-5">
+                    <h5 class="modal-title fw-900 text-danger fs-4">Từ chối yêu cầu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-5">
+                    <p class="text-muted mb-4">Lý do từ chối mượn cuốn: <strong id="rejBook" class="text-dark"></strong>
+                    </p>
+                    <textarea name="reject_reason" class="form-control input-premium shadow-none" rows="4"
+                              placeholder="Nhập lý do cụ thể (VD: Sách đang bảo trì, Độc giả đang có nợ phí...)"
+                              required></textarea>
+                </div>
+                <div class="modal-footer bg-light p-4">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4 fw-bold" data-bs-dismiss="modal">
+                        Hủy
+                    </button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-5 fw-bold shadow">Xác nhận từ chối
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function openApproveModal(id, bookTitle, userName) {
+        document.getElementById('appBook').innerText = bookTitle;
+        document.getElementById('appUser').innerText = userName;
+        document.getElementById('formApprove').action = "/staff/approve-request/" + id;
+        new bootstrap.Modal(document.getElementById('approveModal')).show();
+    }
+
+    function openRejectModal(id, bookTitle) {
+        document.getElementById('rejBook').innerText = bookTitle;
+        document.getElementById('formReject').action = "/staff/reject-request/" + id;
+        new bootstrap.Modal(document.getElementById('rejectModal')).show();
+    }
+</script>
+{% endblock %}

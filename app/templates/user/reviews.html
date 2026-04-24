@@ -1,0 +1,93 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Tất cả Bình luận - OUBOOK{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/reviews.css') }}">
+
+<div class="notifications-wrapper">
+    <div class="container">
+        <div class="notifications-container">
+            <!-- Sidebar List -->
+            <div class="notifications-sidebar">
+                <div class="sidebar-header">
+                    <h2>Bình luận mới</h2>
+                </div>
+                <div class="sidebar-list">
+                    {% for rev in all_reviews %}
+                    <a href="{{ url_for('main.all_reviews', id=rev.id) }}" 
+                       class="sidebar-item {{ 'active' if selected_rev and selected_rev.id == rev.id else '' }} {{ 'unread' if not rev.is_read else '' }}">
+                        <span class="notif-book text-uppercase">{{ rev.book.title }}</span>
+                        <span class="notif-time">{{ rev.created_at | time_ago }}</span>
+                    </a>
+                    {% else %}
+                    <div class="p-4 text-center text-muted">
+                        Chưa có bình luận nào.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Detail Area -->
+            <div class="notifications-detail" id="review-detail-container">
+                {% include 'user/partials/review_detail.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    const detailContainer = document.getElementById('review-detail-container');
+
+    function loadReview(url, pushState = true) {
+        // Thêm hiệu ứng loading
+        detailContainer.style.opacity = '0.5';
+
+        // Gọi AJAX lấy nội dung chi tiết
+        const ajaxUrl = url.includes('?') ? `${url}&ajax=1` : `${url}?ajax=1`;
+        
+        fetch(ajaxUrl)
+            .then(response => response.text())
+            .then(html => {
+                detailContainer.innerHTML = html;
+                detailContainer.style.opacity = '1';
+                
+                if (pushState) {
+                    window.history.pushState({ path: url }, '', url);
+                }
+
+                // Cập nhật trạng thái active trong sidebar dựa trên URL
+                const currentId = new URLSearchParams(url.split('?')[1] || '').get('id');
+                sidebarItems.forEach(item => {
+                    const itemId = new URLSearchParams(item.getAttribute('href').split('?')[1] || '').get('id');
+                    if (itemId === currentId) {
+                        item.classList.add('active');
+                        item.classList.remove('unread');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                detailContainer.style.opacity = '1';
+            });
+    }
+
+    sidebarItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            loadReview(this.getAttribute('href'));
+        });
+    });
+
+    // Xử lý nút back/forward của trình duyệt
+    window.onpopstate = function(event) {
+        loadReview(window.location.href, false);
+    };
+});
+</script>
+{% endblock %}

@@ -63,9 +63,9 @@ INSERT INTO payment (id, amount_paid, method, status, payment_date, invoice_id) 
 
 
 -- ====== REVIEW ======
-INSERT INTO review (id, content, rating, user_id, book_id) VALUES
-(1, 'Sách rất hay!', 5, 3, 1),
-(2, 'Đọc ổn', 4, 3, 2);
+-- INSERT INTO review (id, content, rating, user_id, book_id) VALUES
+-- (1, 'Sách rất hay!', 5, 3, 1),
+-- (2, 'Đọc ổn', 4, 3, 2);
 
 
 

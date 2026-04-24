@@ -15,7 +15,7 @@ main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
 def index():
-    featured_books = Book.query.limit(8).all()
+    featured_books = Book.query.order_by(Book.view_count.desc()).limit(10).all()
     related_books = Book.query.order_by(db.func.random()).limit(10).all()
     return render_template('index.html', featured_books=featured_books, related_books=related_books)
 
@@ -24,7 +24,7 @@ def index():
 def book_list():
     page = request.args.get('page', 1, type=int)
     category_id = request.args.get('category_id', type=int)
-    per_page = 8
+    per_page = 10
     
     query = Book.query
     category = None
@@ -43,6 +43,11 @@ def categories():
     return render_template('book/categories.html', categories=categories_list)
 
 
+@main_bp.route('/admin')
+@login_required
+@role_required(RoleEnum.ADMIN)
+def admin_redirect():
+    return redirect(url_for('admin.admin_dashboard'))
 
 @main_bp.route('/book-detail/<int:book_id>')
 def book_detail(book_id):
@@ -53,6 +58,12 @@ def book_detail(book_id):
         setattr(book, 'quantity', book.available_quantity)
     if not hasattr(book, 'book_id'):
         setattr(book, 'book_id', book.id)
+            
+    # Tăng lượt xem thực tế
+    if not book.view_count:
+        book.view_count = 0
+    book.view_count += 1
+    db.session.commit()
             
     related_books = Book.query.filter(Book.id != book.id).all()
     
@@ -86,12 +97,17 @@ def book_detail(book_id):
                     'pending' if active_request.status == RequestStatusEnum.Pending else 'approved'
                 )
             
+    from app.models import Review
+    discussions = Review.query.filter_by(book_id=book.id).order_by(Review.created_at.asc()).all()
+
+    
     return render_template(
         'book/book_detail.html',
         book=book,
         related_books=related_books,
         user_state=user_state,
-        source=source
+        source=source,
+        discussions=discussions
     )
 
 
@@ -145,7 +161,6 @@ def staff_dashboard():
 
 @main_bp.route('/request-borrow/<int:book_id>', methods=['POST'])
 def request_borrow(book_id):
-    # Placeholder cho logic mượn sách
     return f"Yêu cầu mượn sách ID {book_id} đã được gửi (Tính năng đang phát triển)"
 
 @main_bp.route("/search")
@@ -155,7 +170,7 @@ def search():
     language = request.args.get('language', '')
     
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 12, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     
     filters = {}
     if category: filters['category'] = int(category) if category.isdigit() else category
@@ -302,3 +317,72 @@ def approve_return_request(request_id):
 
     flash('Đã duyệt trả sách thành công.', 'success')
     return redirect(request.referrer or url_for('main.staff_dashboard'))
+
+
+@main_bp.route('/book/review/<int:book_id>', methods=['POST'])
+@login_required
+def add_review(book_id):
+    from app.models import Review
+    content = request.form.get('content')
+    rating = request.form.get('rating', type=int)
+    
+    if not content or not rating:
+        flash('Vui lòng nhập nội dung và chọn số sao.', 'warning')
+        return redirect(url_for('main.book_detail', book_id=book_id))
+    
+    existing_review = Review.query.filter_by(user_id=current_user.id, book_id=book_id).first()
+    if existing_review:
+        existing_review.content = content
+        existing_review.rating = rating
+        flash('Đánh giá của bạn đã được cập nhật.', 'success')
+    else:
+        new_review = Review(
+            content=content,
+            rating=rating,
+            user_id=current_user.id,
+            book_id=book_id
+        )
+        db.session.add(new_review)
+        flash('Cảm ơn bạn đã đánh giá sách!', 'success')
+        
+    db.session.commit()
+    return redirect(url_for('main.book_detail', book_id=book_id))
+
+@main_bp.route('/reviews')
+def all_reviews():
+    from app.models import Review
+    rev_id = request.args.get('id', type=int)
+    is_ajax = request.args.get('ajax', type=int)
+    
+    all_revs = Review.query.order_by(Review.created_at.desc()).all()
+    
+    selected_rev = Review.query.get(rev_id) if rev_id else (all_revs[0] if all_revs else None)
+    
+    # Đánh dấu là đã đọc nếu người dùng xem
+    if selected_rev and not selected_rev.is_read:
+        selected_rev.is_read = True
+        db.session.commit()
+        
+    if is_ajax:
+        return render_template('user/partials/review_detail.html', selected_rev=selected_rev)
+        
+    return render_template('user/reviews.html', all_reviews=all_revs, selected_rev=selected_rev)
+
+@main_bp.route('/reviews/mark-all-read')
+def mark_all_reviews_read():
+    from app.models import Review
+    Review.query.filter_by(is_read=False).update({Review.is_read: True})
+    db.session.commit()
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.args.get('ajax'):
+        return jsonify({'success': True})
+    return redirect(request.referrer or url_for('main.all_reviews'))
+
+@main_bp.route('/notifications/mark-all-read')
+@login_required
+def mark_all_notifications_read():
+    from app.models import Notification
+    Notification.query.filter_by(user_id=current_user.id, is_read=False).update({Notification.is_read: True})
+    db.session.commit()
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.args.get('ajax'):
+        return jsonify({'success': True})
+    return redirect(request.referrer or url_for('user.notifications'))

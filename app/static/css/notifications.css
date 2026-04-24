@@ -1,0 +1,199 @@
+.notifications-wrapper {
+    background-color: #f8fafc;
+    min-height: calc(100vh - 72px);
+    padding: 30px 0;
+}
+
+.notifications-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    min-height: 600px;
+    overflow: hidden;
+}
+
+/* Sidebar List */
+.notifications-sidebar {
+    width: 350px;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.sidebar-list {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.notif-item-wrapper {
+    position: relative;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.sidebar-item {
+    padding: 15px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.sidebar-item:hover {
+    background-color: #f8fafc;
+}
+
+.sidebar-item:hover .btn-delete-notif {
+    opacity: 1;
+}
+
+.sidebar-item.active {
+    background-color: #eff6ff;
+    border-left: 4px solid #3b82f6;
+}
+
+.sidebar-item.unread {
+    background-color: #f0f9ff;
+}
+
+.btn-delete-notif {
+    background: #fee2e2;
+    color: #ef4444;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    opacity: 1; /* Hiển thị luôn */
+    transition: all 0.2s;
+    margin-top: 2px;
+    margin-left: 10px;
+    flex-shrink: 0;
+}
+
+.btn-delete-notif:hover {
+    background: #ef4444;
+    color: white;
+    transform: scale(1.1);
+}
+
+.btn-delete-all {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    background: none;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    color: #ef4444;
+}
+
+.btn-delete-all:hover {
+    background-color: #fee2e2;
+}
+
+.sidebar-item .notif-content-wrapper {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.sidebar-item .notif-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 4px;
+    display: block;
+    line-height: 1.4;
+}
+
+.sidebar-item .notif-time {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+/* Detail Area */
+.notifications-detail {
+    flex-grow: 1;
+    padding: 40px;
+    background-color: #fff;
+}
+
+.detail-empty {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+}
+
+.detail-empty i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.detail-header {
+    margin-bottom: 30px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 20px;
+}
+
+.detail-header h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 10px;
+}
+
+.detail-meta {
+    font-size: 0.9rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.detail-content {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #334155;
+}
+
+.detail-content p {
+    margin-bottom: 15px;
+}
+
+.detail-content ul {
+    background: #f8fafc;
+    padding: 20px 40px;
+    border-radius: 8px;
+    margin: 20px 0;
+    list-style-type: disc;
+}
+
+.detail-content li {
+    margin-bottom: 8px;
+}

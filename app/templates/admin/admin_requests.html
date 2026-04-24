@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}Quản lý thư viện - Yêu cầu mượn sách{% endblock %}
+{% block content %}
+<style>
+.card-link{ text-decoration:none; color:inherit; }
+.card-link .card{ cursor:pointer; transition:.2s; }
+.card-link .card:hover{ transform:translateY(-2px); box-shadow:0 4px 8px rgba(0,0,0,.1); }
+.card.active{ border:2px solid #007bff; background:#f4f9ff; }
+.actions form{ display:inline-block; margin-right:4px; }
+.status-badge{display:inline-block;font-size:11px;font-weight:600;padding:4px 10px;border-radius:14px;letter-spacing:.4px;}
+.status-pending{background:#ffe8a3;color:#7a5600;}
+.status-approved{background:#c5f3d0;color:#155f26;}
+.status-rejected{background:#f9c5c1;color:#8a1f18;}
+.status-converted{background:#d0e7ff;color:#0d518c;}
+</style>
+{% include 'partials/header.html' %}
+<div class="admin-layout">
+  {% include 'admin_templates/partials/sidebar.html' %}
+
+  <section class="admin-content">
+    <h2>Quản lý yêu cầu mượn</h2>
+
+    <div class="cards" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
+      <a href="{{ url_for('admin.admin_requests', status='pending') }}" class="card-link">
+        <div class="card {{ 'active' if current_filter=='pending' else '' }}">
+          <div>Pending</div><strong>{{ counts.pending }}</strong>
+        </div>
+      </a>
+      <a href="{{ url_for('admin.admin_requests', status='approved') }}" class="card-link">
+        <div class="card {{ 'active' if current_filter=='approved' else '' }}">
+          <div>Approved</div><strong>{{ counts.approved }}</strong>
+        </div>
+      </a>
+      <a href="{{ url_for('admin.admin_requests', status='converted') }}" class="card-link">
+        <div class="card {{ 'active' if current_filter=='converted' else '' }}">
+          <div>Converted</div><strong>{{ counts.converted }}</strong>
+        </div>
+      </a>
+      <a href="{{ url_for('admin.admin_requests', status='rejected') }}" class="card-link">
+        <div class="card {{ 'active' if current_filter=='rejected' else '' }}">
+          <div>Rejected</div><strong>{{ counts.rejected }}</strong>
+        </div>
+      </a>
+      <a href="{{ url_for('admin.admin_requests') }}" class="card-link">
+        <div class="card {{ '' if current_filter else 'active' }}">
+          <div>Tất cả</div><strong>{{ counts.pending + counts.approved + counts.converted + counts.rejected }}</strong>
+        </div>
+      </a>
+    </div>
+
+    <div class="panel">
+      <table class="requests table table-sm">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Book</th>
+            <th>User</th>
+            <th>Ngày yêu cầu</th>
+            <th>Trạng thái</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for r in requests %}
+          <tr>
+            <td>{{ r.request_id }}</td>
+            <td>{{ r.book.title if r.book else 'N/A' }}</td>
+            <td>{{ r.user.full_name if r.user else 'N/A' }}</td>
+            <td>{{ r.request_date.strftime('%d/%m/%Y') if r.request_date else '—' }}</td>
+            <td>
+              <span class="status-badge status-{{ r.status }}">
+                {% if r.status=='pending' %}Chờ duyệt
+                {% elif r.status=='approved' %}Đã duyệt
+                {% elif r.status=='converted' %}Đã tạo phiếu
+                {% elif r.status=='rejected' %}Từ chối
+                {% else %}{{ r.status }}{% endif %}
+              </span>
+              {% if r.status=='rejected' and r.reject_reason %}
+                <div style="font-size:11px;color:#8a1f18;margin-top:4px;">Lý do: {{ r.reject_reason }}</div>
+              {% endif %}
+            </td>
+            <td class="actions">
+              {% if r.status == 'pending' %}
+                <form method="POST" action="{{ url_for('admin.approve_request', request_id=r.request_id) }}">
+                  <button class="btn btn-sm btn-success">Duyệt</button>
+                </form>
+                <button class="btn btn-sm btn-danger" type="button" onclick="showRejectModal({{ r.request_id }})">Từ chối</button>
+              {% elif r.status == 'approved' %}
+                <form method="POST" action="{{ url_for('admin.convert_request', request_id=r.request_id) }}">
+                  <button class="btn btn-sm btn-primary">Giao sách</button>
+                </form>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<!-- Modal Từ chối -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="rejectForm" method="POST">
+        <div class="modal-header">
+          <h5 class="modal-title">Từ chối yêu cầu</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label">Lý do:</label>
+          <textarea class="form-control" name="reject_reason" rows="3" placeholder="Nhập lý do từ chối..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-danger">Từ chối</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% include 'partials/footer.html' %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showRejectModal(requestId){
+  const form = document.getElementById('rejectForm');
+  form.action = `/admin/requests/${requestId}/reject`;
+  const modal = new bootstrap.Modal(document.getElementById('rejectModal'));
+  modal.show();
+}
+</script>
+{% endblock %}

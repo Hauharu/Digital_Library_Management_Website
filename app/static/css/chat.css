@@ -1,0 +1,138 @@
+.book-discussion-section {
+    margin-top: 40px;
+    background: transparent;
+    box-shadow: none;
+    border: none;
+}
+
+.discussion-header h3 {
+    color: #f39c12;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.chat-input-area {
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 30px;
+}
+
+.chat-input-area textarea {
+    width: 100%;
+    min-height: 80px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    outline: none;
+}
+
+.chat-input-area .btn-send-msg {
+    width: auto;
+    height: auto;
+    padding: 8px 25px;
+    border-radius: 4px;
+    background: #f39c12;
+    float: right;
+}
+
+.chat-box {
+    background: transparent;
+    padding: 0;
+    height: auto;
+    gap: 0;
+}
+
+.chat-message {
+    background: #f9f9f9;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    display: flex;
+    max-width: 100% !important;
+    align-self: flex-start !important;
+    border-bottom: 1px solid #eee;
+    width: 100%;
+}
+
+.chat-message.own {
+    flex-direction: row !important;
+    background: #f9f9f9;
+}
+
+.chat-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 15px;
+}
+
+.message-wrapper {
+    flex-grow: 1;
+}
+
+.message-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    justify-content: flex-start !important;
+}
+
+.sender-name {
+    color: #007bff;
+    font-weight: 600;
+}
+
+.user-badge {
+    background: #2ecc71;
+    color: #fff;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+}
+
+.message-bubble {
+    background: transparent !important;
+    color: #333 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.message-actions {
+    display: flex;
+    gap: 20px;
+    font-size: 0.85rem;
+    color: #666;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+}
+
+.action-link {
+    cursor: pointer;
+    text-decoration: none;
+    color: #007bff;
+}
+
+.action-link i {
+    margin-right: 5px;
+}
+
+.message-time {
+    color: #999;
+}
+
+
+.chat-auth-prompt {
+    padding: 20px;
+    text-align: center;
+    background: #f8fafc;
+    border-radius: 10px;
+    color: #64748b;
+}
