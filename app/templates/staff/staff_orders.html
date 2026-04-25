@@ -98,12 +98,12 @@
                     <td>
                         <div class="fw-bold text-dark small mb-1">{{ slip.book.title }}</div>
                         <div class="text-muted x-small">
-                            <i class="fa-solid fa-clock me-1"></i>Mượn từ: {{ slip.borrow_date.strftime('%d/%m/%Y') }}
+                            <i class="fa-solid fa-clock me-1"></i>Mượn từ: {{ slip.borrow_date.strftime('%d/%m/%Y') if slip.borrow_date else 'N/A' }}
                         </div>
                     </td>
                     <td>
                         <div class=" {{ 'text-danger' if slip.is_late else 'text-dark' }}">
-                            <i class="fa-solid fa-calendar-check me-1"></i>{{ slip.due_date.strftime('%d/%m/%Y') }}
+                            <i class="fa-solid fa-calendar-check me-1"></i>{{ slip.due_date.strftime('%d/%m/%Y') if slip.due_date else 'N/A' }}
                         </div>
                     </td>
                     <td class="text-center">
@@ -173,11 +173,11 @@
                                                 </div>
                                                 <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
                                                     <span class="text-muted">Ngày mượn:</span>
-                                                    <span class="fw-bold">{{ slip.borrow_date.strftime('%d/%m/%Y') }}</span>
+                                                    <span class="fw-bold">{{ slip.borrow_date.strftime('%d/%m/%Y') if slip.borrow_date else 'N/A' }}</span>
                                                 </div>
                                                 <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
                                                     <span class="text-muted">Hạn trả:</span>
-                                                    <span class="fw-bold text-primary">{{ slip.due_date.strftime('%d/%m/%Y') }}</span>
+                                                    <span class="fw-bold text-primary">{{ slip.due_date.strftime('%d/%m/%Y') if slip.due_date else 'N/A' }}</span>
                                                 </div>
                                                 <div class="d-flex justify-content-between">
                                                     <span class="text-muted">Tiền phạt quá hạn:</span>

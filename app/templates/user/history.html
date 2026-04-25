@@ -46,7 +46,7 @@
                                     </div>
                                     <div>
                                         <div class="fw-bold text-dark mb-1">{{ req.book.title }}</div>
-                                        <div class="text-muted small"><i class="far fa-calendar-alt me-1"></i>Yêu cầu: {{ req.request_date.strftime('%d/%m/%Y') }}</div>
+                                        <div class="text-muted small"><i class="far fa-calendar-alt me-1"></i>Yêu cầu: {{ req.request_date.strftime('%d/%m/%Y') if req.request_date else 'N/A' }}</div>
                                     </div>
                                 </div>
                             </td>
@@ -73,7 +73,7 @@
                                 {% if req.borrow_slip %}
                                     {% set slip = req.borrow_slip %}
                                     <div class="d-flex flex-column gap-1">
-                                        <div class="small"><i class="fas fa-hourglass-end me-1 text-danger"></i>Hạn trả: <strong>{{ slip.due_date.strftime('%d/%m/%Y') }}</strong></div>
+                                        <div class="small"><i class="fas fa-hourglass-end me-1 text-danger"></i>Hạn trả: <strong>{{ slip.due_date.strftime('%d/%m/%Y') if slip.due_date else 'Chưa xác định' }}</strong></div>
                                         <div class="small text-primary"><i class="fas fa-info-circle me-1"></i>{{ slip.status.value }}</div>
                                     </div>
                                 {% else %}

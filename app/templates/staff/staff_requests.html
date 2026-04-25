@@ -47,8 +47,8 @@
                     </td>
                     <td><span class="badge bg-light text-dark border px-3">{{ req.quantity }}</span></td>
                     <td>
-                        <div class="small">Từ: {{ req.borrow_from_date.strftime('%d/%m/%Y') }}</div>
-                        <div class="small text-primary fw-600">Đến: {{ req.borrow_to_date.strftime('%d/%m/%Y') }}</div>
+                        <div class="small">Từ: {{ req.borrow_from_date.strftime('%d/%m/%Y') if req.borrow_from_date else 'N/A' }}</div>
+                        <div class="small text-primary fw-600">Đến: {{ req.borrow_to_date.strftime('%d/%m/%Y') if req.borrow_to_date else 'N/A' }}</div>
                     </td>
                     <td class="text-center">
                             <span class="badge-status"
