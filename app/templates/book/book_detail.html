@@ -78,7 +78,7 @@
             {% endif %}
             {% endif %}
             {% else %}
-            <a href="{{ url_for('borrow_book', book_id=book.book_id) }}" class="btn-borrow text-decoration-none">
+            <a href="{{ url_for('user.borrow_book', book_id=book.book_id) }}" class="btn-borrow text-decoration-none">
                 Đăng ký mượn sách
             </a>
             <div class="auth-alert-box">

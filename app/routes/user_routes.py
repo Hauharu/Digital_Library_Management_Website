@@ -4,7 +4,7 @@ from app.models import User, RequestStatusEnum, BorrowStatusEnum, GenderEnum,Boo
 from app import db, bcrypt
 from datetime import datetime
 from app.services.borrow_service import BorrowService
-
+from app.services.email_service import EmailService
 user_bp = Blueprint('user', __name__, url_prefix='/user')
 
 @user_bp.route("/profile")
@@ -83,6 +83,12 @@ def update_password():
 
     current_user.password = bcrypt.generate_password_hash(new_password).decode('utf-8')
     db.session.commit()
+
+    EmailService.send_general_notification(
+        current_user.first_name,
+        current_user.email,
+        "Mật khẩu tài khoản đã được thay đổi",
+        "Chúng tôi thông báo rằng mật khẩu của bạn tại OU BOOK vừa được cập nhật thành công qua trang cá nhân.")
     
     logout_user() # Đăng xuất người dùng
     flash("Đổi mật khẩu thành công! Vui lòng đăng nhập lại.", "success")
@@ -167,6 +173,12 @@ def borrow_book(book_id):
 
         flash(result['message'], result['category'])
         if result['ok']:
+            EmailService.send_general_notification(
+                current_user.first_name,
+                current_user.email,
+                f"Xác nhận yêu cầu mượn sách: {book.title}",
+                f"Yêu cầu mượn cuốn sách <b>{book.title}</b> của bạn đã được gửi đến thủ thư. Vui lòng chờ thông báo duyệt từ hệ thống."
+            )
             return redirect(url_for('main.book_detail', book_id=book_id, **{'from': 'featured'}))
 
         return redirect(url_for('borrow_book', book_id=book_id))

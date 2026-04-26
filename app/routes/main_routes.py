@@ -10,6 +10,7 @@ from app.services.book_service import BookService
 from flask import jsonify
 from datetime import datetime, date, timedelta
 from sqlalchemy import func
+from app.services.email_service import EmailService
 
 main_bp = Blueprint('main', __name__)
 
@@ -254,6 +255,13 @@ def approve_borrow_request(request_id):
     borrow_request.book.available_quantity -= quantity
     db.session.commit()
 
+    EmailService.send_approve_notification(
+        borrow_request.user.first_name,
+        borrow_request.user.email,
+        borrow_request.book.title,
+        due_date.strftime('%d/%m/%Y')
+    )
+
     flash('Đã duyệt yêu cầu mượn và trừ tồn kho thành công.', 'success')
     return redirect(url_for('main.staff_dashboard'))
 
@@ -271,6 +279,15 @@ def reject_borrow_request(request_id):
 
     borrow_request.status = RequestStatusEnum.Rejected
     db.session.commit()
+
+    from app.services.email_service import EmailService
+    EmailService.send_reject_notification(
+        borrow_request.user.first_name,
+        borrow_request.user.email,
+        borrow_request.book.title,
+        "Yêu cầu không phù hợp hoặc sách hiện không khả dụng."
+    )
+
     flash('Đã từ chối yêu cầu mượn.', 'info')
     return redirect(url_for('main.staff_dashboard'))
 

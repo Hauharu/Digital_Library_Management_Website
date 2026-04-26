@@ -4,6 +4,7 @@ from app.models import RoleEnum, User, db
 from flask_login import logout_user, login_required, current_user, login_user
 from app import bcrypt, oauth
 import secrets
+from app.services.email_service import EmailService
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -19,6 +20,15 @@ def register():
 
     if "error" in result:
         return render_template('auth/register.html', error=result['error'])
+
+    user = User.query.filter_by(email=data.get('email')).first()
+    if user:
+        EmailService.send_general_notification(
+            user.first_name,
+            user.email,
+            "Chào mừng bạn đến với OUBOOK",
+            "Tài khoản của bạn đã được khởi tạo thành công. Hãy khám phá kho sách khổng lồ của chúng tôi ngay hôm nay!"
+        )
 
     flash(result['message'], 'success')
     return redirect(url_for('auth.login'))
@@ -61,6 +71,13 @@ def login():
         )
         db.session.add(new_notif)
         db.session.commit()
+
+        EmailService.send_general_notification(
+            user.first_name,
+            user.email,
+            "Cảnh báo đăng nhập mới",
+            f"Tài khoản của bạn vừa được đăng nhập từ thiết bị: {request.user_agent.platform}. Nếu không phải bạn, hãy đổi mật khẩu ngay."
+        )
 
         role = user.role.name
 
@@ -111,6 +128,14 @@ def google_callback():
         )
         db.session.add(user)
         db.session.commit()
+
+        # Gửi thêm Email cảnh báo bảo mật
+        EmailService.send_general_notification(
+            user.first_name,
+            user.email,
+            "Cảnh báo đăng nhập mới",
+            f"Tài khoản của bạn vừa được đăng nhập từ thiết bị: {request.user_agent.platform}. Nếu không phải bạn, hãy đổi mật khẩu ngay."
+        )
 
     login_user(user)
 
@@ -166,6 +191,13 @@ def forgot_password():
 
     user.password = bcrypt.generate_password_hash(new_password).decode('utf-8')
     db.session.commit()
+
+    EmailService.send_general_notification(
+        user.first_name,
+        user.email,
+        "Mật khẩu của bạn đã được thay đổi",
+        "Chúng tôi thông báo rằng mật khẩu tài khoản OUBOOK của bạn vừa được cập nhật thành công. Nếu bạn không thực hiện thay đổi này, hãy liên hệ hỗ trợ ngay lập tức."
+    )
 
     flash("Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại.", "success")
     return redirect(url_for('auth.login'))
