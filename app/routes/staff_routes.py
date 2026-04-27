@@ -64,3 +64,25 @@ def run_overdue_check():
         flash("Hiện tại không có độc giả nào quá hạn sách.", "info")
 
     return redirect(url_for('staff.manage_orders'))
+
+
+@staff_bp.route('/report-incident/<int:slip_id>', methods=['POST'])
+@login_required
+def report_incident(slip_id):
+
+    damage_ratio = request.form.get('damage_ratio')
+    description = request.form.get('description')
+    fine_amount = request.form.get('fine_amount')
+
+    StaffService.report_incident(slip_id, damage_ratio, description, fine_amount)
+
+    flash('Đã ghi nhận sự cố !', 'success')
+    return redirect(url_for('staff.manage_orders'))
+
+
+@staff_bp.route('/incident-report/<int:slip_id>')
+@login_required
+def incident_report_page(slip_id):
+    from app.models import BorrowSlip
+    slip = BorrowSlip.query.get_or_404(slip_id)
+    return render_template('staff/incident_report.html', slip=slip)

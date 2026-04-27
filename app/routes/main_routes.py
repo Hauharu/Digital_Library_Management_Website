@@ -256,8 +256,8 @@ def approve_borrow_request(request_id):
     db.session.commit()
 
     EmailService.send_approve_notification(
-        borrow_request.user.first_name,
-        borrow_request.user.email,
+        borrow_request.reader.first_name,
+        borrow_request.reader.email,
         borrow_request.book.title,
         due_date.strftime('%d/%m/%Y')
     )
@@ -282,8 +282,8 @@ def reject_borrow_request(request_id):
 
     from app.services.email_service import EmailService
     EmailService.send_reject_notification(
-        borrow_request.user.first_name,
-        borrow_request.user.email,
+        borrow_request.reader.first_name,
+        borrow_request.reader.email,
         borrow_request.book.title,
         "Yêu cầu không phù hợp hoặc sách hiện không khả dụng."
     )

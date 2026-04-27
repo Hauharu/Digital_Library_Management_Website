@@ -1,8 +1,9 @@
 from app import db, socketio
 from app.models import BorrowSlip, Book, Invoice, InvoiceStatusEnum, BorrowRequest, \
-    RequestStatusEnum, Notification, BorrowStatusEnum
+    RequestStatusEnum, Notification, BorrowStatusEnum,IncidentReport,IncidentTypeEnum
 from datetime import datetime
 from app.services.email_service import EmailService
+from datetime import datetime, timedelta
 
 
 class StaffService:
@@ -12,7 +13,7 @@ class StaffService:
 
         if search_query:
             clean_id = search_query.lower().replace('MS-', '').lstrip('0')
-            from app.models import User  # Tránh circular import nếu cần
+            from app.models import User
             query = query.join(User).join(Book).filter(
                 db.or_(
                     User.last_name.ilike(f"%{search_query}%"),
@@ -161,3 +162,57 @@ class StaffService:
             )
             count += 1
         return count
+
+    @staticmethod
+    def report_incident(slip_id, damage_ratio, description, fine_amount):
+
+        slip = BorrowSlip.query.get_or_404(slip_id)
+        amount = float(fine_amount)
+
+        try:
+            ratio_val = float(damage_ratio)
+        except (ValueError, TypeError):
+
+            ratio_val = 0.5
+
+        if ratio_val >= 1.0:
+            inc_type = IncidentTypeEnum.LOST
+            slip.status = BorrowStatusEnum.Lost
+        else:
+            inc_type = IncidentTypeEnum.DAMAGED
+            slip.status = BorrowStatusEnum.Damaged
+
+        report = IncidentReport(
+            borrow_slip_id=slip.id,
+            type=inc_type,
+            description=description,
+            fine_amount=amount
+        )
+        db.session.add(report)
+
+        existing_invoice = Invoice.query.filter_by(borrow_slip_id=slip.id).first()
+
+        if existing_invoice:
+            existing_invoice.amount += amount
+            existing_invoice.updated_at = datetime.now()
+        else:
+
+            new_invoice = Invoice(
+                amount=amount,
+                issue_date=datetime.now(),
+                due_date=(datetime.now() + timedelta(days=7)).date(),
+                status=InvoiceStatusEnum.Pending,
+                borrow_slip_id=slip.id
+            )
+            db.session.add(new_invoice)
+
+        db.session.commit()
+
+        EmailService.send_general_notification(
+            slip.user.first_name,
+            slip.user.email,
+            f"Thông báo xử lý sự cố sách: {slip.book.title}",
+            f"Chúng tôi ghi nhận cuốn sách bạn mượn gặp sự cố: {inc_type.value}. "
+            f"Số tiền phạt là: {amount:,.0f} VNĐ. Vui lòng thanh toán hóa đơn."
+        )
+        return True

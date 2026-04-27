@@ -1,0 +1,106 @@
+:root {
+    --premium-red: #d90429;
+    --soft-bg: #f8f9fa;
+    --glass-border: rgba(217, 4, 41, 0.1);
+}
+
+.report-container {
+    background-color: var(--soft-bg);
+    min-height: 100vh;
+    padding: 40px 0;
+}
+
+.glass-card {
+    background: white;
+    border-radius: 24px;
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.report-header {
+    background: linear-gradient(135deg, var(--premium-red), #ef233c);
+    padding: 40px;
+    text-align: center;
+    color: white;
+}
+
+.report-header h3 {
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.book-preview-box {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: -30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+}
+
+.info-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #8d99ae;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.info-value {
+    font-weight: 700;
+    color: #2b2d42;
+    font-size: 1.1rem;
+}
+
+.form-section {
+    padding: 40px;
+}
+
+.custom-select, .custom-input {
+    border: 2px solid #edf2f4;
+    border-radius: 12px;
+    padding: 12px 15px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.custom-select:focus, .custom-input:focus {
+    border-color: var(--premium-red);
+    box-shadow: 0 0 0 4px rgba(217, 4, 41, 0.1);
+}
+
+.price-badge {
+    background: rgba(217, 4, 41, 0.1);
+    color: var(--premium-red);
+    padding: 5px 15px;
+    border-radius: 30px;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.btn-submit {
+    background: var(--premium-red);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.btn-submit:hover {
+    background: #b90422;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(217, 4, 41, 0.2);
+    color: white;
+}
+
+.alert-info-light {
+    background: #edf2f4;
+    border-left: 5px solid var(--premium-red);
+    border-radius: 8px;
+}
