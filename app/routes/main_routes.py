@@ -24,12 +24,10 @@ def index():
     
     if current_user.is_authenticated:
         from app.models import Favorite
-        # Lấy danh sách ID các sách đã thích
         user_favs = Favorite.query.filter_by(user_id=current_user.id).all()
         user_fav_ids = [f.book_id for f in user_favs]
         
-        # Tạm thời tắt gợi ý sách
-        # recommended_books = RecommendationService.get_recommendations(current_user.id, limit=10)
+        recommended_books = RecommendationService.get_recommendations(current_user.id, limit=10)
     
     return render_template('index.html', 
                            featured_books=featured_books, 
@@ -78,10 +76,17 @@ def book_detail(book_id):
     if not hasattr(book, 'book_id'):
         setattr(book, 'book_id', book.id)
             
-    # Tăng lượt xem thực tế
+    # Tăng lượt xem thực tế (tổng toàn hệ thống)
     if not book.view_count:
         book.view_count = 0
     book.view_count += 1
+    
+    # Ghi nhận lịch sử xem cá nhân nếu đã đăng nhập
+    if current_user.is_authenticated:
+        from app.models import ViewHistory
+        new_view = ViewHistory(user_id=current_user.id, book_id=book.id)
+        db.session.add(new_view)
+        
     db.session.commit()
             
     related_books = Book.query.filter(Book.id != book.id).all()

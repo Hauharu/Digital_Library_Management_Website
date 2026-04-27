@@ -9,6 +9,47 @@
 {% endblock %}
 
 {% block content %}
+{% if current_user.is_authenticated and recommended_books %}
+<section class="recommendation-section mb-5">
+    <div class="section-title-wrapper mb-3">
+        <h2 style="font-size: 22px; font-weight: 700; color: #111827; margin-bottom: 4px;">SÁCH ĐỀ XUẤT CHO BẠN</h2>
+        <p class="text-muted small mb-0">Dựa trên lịch sử xem, mượn và sở thích của bạn</p>
+    </div>
+
+    <div class="slider-wrapper position-relative">
+        <!-- Nút Trái -->
+        <button class="slider-nav-btn prev-btn" onclick="moveRecSlider('prev')">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <div class="slider-container" id="recommendation-slider" style="overflow-x: hidden; scroll-behavior: smooth;">
+            <div class="slide-track-static d-flex" style="gap: 20px;">
+                {% for book in recommended_books %}
+                <a href="{{ url_for('main.book_detail', book_id=book.id) }}?from=recommendation" class="slide"
+                    style="flex: 0 0 160px; text-decoration: none;">
+                    <img src="{{ book.image }}" alt="{{ book.title }}"
+                        style="width: 100%; height: 220px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                    <div class="slide-info" style="padding: 10px 5px; text-align: center;">
+                        <div class="slide-title" title="{{ book.title }}"
+                            style="font-size: 14px; font-weight: 700; color: #111827; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; height: 40px;">
+                            {{ book.title }}</div>
+                        <div class="slide-author"
+                            style="font-size: 12px; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            {{ book.author }}</div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Nút Phải -->
+        <button class="slider-nav-btn next-btn" onclick="moveRecSlider('next')">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </div>
+</section>
+{% endif %}
+
 <section class="books-section">
     <h2 style="font-size: 22px; font-weight: 700; color: #111827; margin-bottom: 25px;">SÁCH NỔI BẬT</h2>
     <div class="book-grid">
@@ -18,7 +59,7 @@
             <div class="card-favorite-btn" onclick="toggleFavoriteCard(this, {{ book.id }})">
                 <i class="{{ 'fa-solid text-danger' if book.id in user_fav_ids else 'fa-regular' }} fa-heart"></i>
             </div>
-            
+
             <img src="{{ book.image }}" alt="{{ book.title }}">
             <h3>{{ book.title }}</h3>
             <p>{{ book.author }}</p>
@@ -69,8 +110,7 @@
 <script src="{{ url_for('static', filename='js/favorite.js') }}"></script>
 <script>
     const slider = document.getElementById('draggable-slider');
-    const recSlider = document.getElementById('recommendation-slider');
-    
+
     function initDraggable(el) {
         if (!el) return;
         let isDown = false;
@@ -101,87 +141,22 @@
     }
 
     initDraggable(slider);
+    
+    // Kích hoạt tính năng kéo cho phần Đề xuất
+    const recSlider = document.getElementById('recommendation-slider');
     initDraggable(recSlider);
+
+    function moveRecSlider(direction) {
+        const container = document.getElementById('recommendation-slider');
+        if (!container) return;
+        const scrollAmount = 350; // Cuộn khoảng 2 cuốn sách
+        if (direction === 'next') {
+            container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        } else {
+            container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        }
+    }
 </script>
 
-<style>
-.card-favorite-btn {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: white;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    cursor: pointer;
-    z-index: 10;
-    transition: all 0.3s ease;
-}
-.card-favorite-btn:hover {
-    transform: scale(1.1);
-}
-.card-favorite-btn i {
-    font-size: 18px;
-}
-
-/* Recommendation Section Styles */
-.book-card-mini {
-    width: 180px;
-    flex-shrink: 0;
-    transition: all 0.3s ease;
-}
-.book-card-mini img {
-    width: 100%;
-    height: 250px;
-    object-fit: cover;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-.book-card-mini h3 {
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 4px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-.card-img-wrapper {
-    position: relative;
-    overflow: hidden;
-    border-radius: 12px;
-}
-.card-overlay {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: 0.3s;
-    color: white;
-    font-size: 24px;
-}
-.card-img-wrapper:hover .card-overlay {
-    opacity: 1;
-}
-.recommendation-section .slider-container {
-    overflow-x: auto;
-    padding-bottom: 15px;
-    cursor: grab;
-}
-.recommendation-section .slider-container::-webkit-scrollbar {
-    height: 4px;
-}
-.recommendation-section .slider-container::-webkit-scrollbar-thumb {
-    background: #e2e8f0;
-    border-radius: 10px;
-}
-</style>
 {% endif %}
 {% endblock %}

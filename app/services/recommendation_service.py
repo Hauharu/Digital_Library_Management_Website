@@ -41,6 +41,15 @@ class RecommendationService:
         for cat_id, count in review_categories:
             category_scores[cat_id] = category_scores.get(cat_id, 0) + (count * 2)
 
+        # Trọng số lịch sử xem (Rating = 1 điểm mỗi lần xem)
+        from app.models import ViewHistory
+        view_categories = db.session.query(Book.category_id, func.count(Book.category_id))\
+            .join(ViewHistory, Book.id == ViewHistory.book_id)\
+            .filter(ViewHistory.user_id == user_id)\
+            .group_by(Book.category_id).all()
+        for cat_id, count in view_categories:
+            category_scores[cat_id] = category_scores.get(cat_id, 0) + (count * 1)
+
         if not category_scores:
             # Nếu người dùng mới chưa có dữ liệu, gợi ý sách có lượt xem cao nhất
             return Book.query.order_by(Book.view_count.desc()).limit(limit).all()

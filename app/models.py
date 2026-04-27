@@ -102,7 +102,7 @@ class Book(Base):
     )
     isbn = db.Column(db.String(20))
     title = db.Column(db.String(255), nullable=False)
-    author = db.Column(db.String(100))
+    author = db.Column(db.String(255))
     description = db.Column(db.Text)
     language = db.Column(db.String(50))
     total_quantity = db.Column(db.Integer, default=0)
@@ -262,3 +262,15 @@ class Notification(Base):
     is_read = db.Column(db.Boolean, default=False)
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+
+# ================= VIEW HISTORY =================
+class ViewHistory(Base):
+    __tablename__ = 'view_history'
+    
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    viewed_at = db.Column(db.DateTime, default=datetime.now)
+
+    book = db.relationship('Book', backref='view_logs', lazy='selectin')
+    user = db.relationship('User', backref='view_history', lazy='selectin')
