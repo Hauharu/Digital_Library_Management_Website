@@ -100,33 +100,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         };
 
-        // Handle select changes immediately
-        filterForm.querySelectorAll('select').forEach(select => {
-            select.addEventListener('change', function() {
-                const catVal = filterForm.querySelector('select[name="category"]').value;
-                const langVal = filterForm.querySelector('select[name="language"]').value;
-                
-                // SYNC Q FROM HEADER
-                const headerSearchInput = document.querySelector('#header-search-form input[name="q"]');
-                const sidebarQ = filterForm.querySelector('input[name="q"]');
-                
-                if (headerSearchInput && sidebarQ) {
-                    // Logic: If both filters are "All", clear the keyword (User requirement)
-                    if (catVal === "" && langVal === "") {
-                        headerSearchInput.value = "";
-                        sidebarQ.value = "";
-                    } else {
-                        sidebarQ.value = headerSearchInput.value;
-                    }
-                }
-
-                const formData = new FormData(filterForm);
-                const params = new URLSearchParams(formData);
-                const url = `${filterForm.action}?${params.toString()}`;
-                updateResults(url);
-            });
-        });
-
+        // (Removed auto-update on change as per user request - wait for Submit)
+        
         // Handle form submit
         filterForm.addEventListener('submit', function(e) {
             e.preventDefault();
