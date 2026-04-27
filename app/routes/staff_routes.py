@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from app.models import BorrowRequest, RequestStatusEnum
+from app.models import BorrowRequest, RequestStatusEnum, Book
 from app.services.staff_service import StaffService
 from flask_login import login_required
 
@@ -86,3 +86,74 @@ def incident_report_page(slip_id):
     from app.models import BorrowSlip
     slip = BorrowSlip.query.get_or_404(slip_id)
     return render_template('staff/incident_report.html', slip=slip)
+
+
+@staff_bp.route('/manage-books')
+@login_required
+def manage_books():
+    page = request.args.get('page', 1, type=int)
+    search = request.args.get('search', '')
+    cat_id = request.args.get('category_id', 'all')
+
+    pagination = StaffService.get_filtered_books(
+        page=page,
+        per_page=8,
+        search_query=search,
+        category_id=cat_id
+    )
+
+    categories = StaffService.get_all_categories()
+    return render_template('staff/manage_books.html',
+                           books=pagination.items,
+                           pagination=pagination,
+                           categories=categories,
+                           search=search,
+                           current_cat=cat_id)
+
+@staff_bp.route('/add-book', methods=['POST'])
+@login_required
+def add_book():
+    data = request.form.to_dict()
+    image_file = request.files.get('image')
+    if StaffService.create_book(data, image_file):
+        flash('Thêm sách mới thành công!', 'success')
+    else:
+        flash('Có lỗi xảy ra khi thêm sách.', 'danger')
+    return redirect(url_for('staff.manage_books'))
+
+@staff_bp.route('/edit-book/<int:id>', methods=['POST'])
+@login_required
+def edit_book(id):
+    data = request.form.to_dict()
+    image_file = request.files.get('image')
+    if StaffService.update_book(id, data, image_file):
+        flash('Cập nhật thông tin thành công!', 'success')
+    return redirect(url_for('staff.manage_books'))
+
+@staff_bp.route('/delete-book/<int:id>', methods=['POST'])
+@login_required
+def delete_book(id):
+    result = StaffService.delete_book(id)
+    if result == True:
+        flash('Đã xóa sách thành công!', 'success')
+    elif result == "cannot_delete_borrowed":
+        flash('Không thể xóa vì sách đang có người mượn!', 'warning')
+    else:
+        flash('Lỗi hệ thống khi xóa sách.', 'danger')
+    return redirect(url_for('staff.manage_books'))
+
+@staff_bp.route('/api/book/<int:id>')
+def get_book_api(id):
+    book = Book.query.get_or_404(id)
+    return {
+        "id": book.id,
+        "title": book.title,
+        "author": book.author,
+        "category_name": book.category.name,
+        "isbn": book.isbn,
+        "price": book.price,
+        "total_quantity": book.total_quantity,
+        "available_quantity": book.available_quantity,
+        "description": book.description,
+        "image": book.image
+    }

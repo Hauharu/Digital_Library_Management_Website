@@ -106,7 +106,7 @@ class Book(Base):
         db.CheckConstraint('available_quantity >= 0'),
         db.CheckConstraint('total_quantity >= available_quantity'),
     )
-    isbn = db.Column(db.String(20))
+    isbn = db.Column(db.String(20), unique=True)
     title = db.Column(db.String(255), nullable=False)
     author = db.Column(db.String(100))
     description = db.Column(db.Text)

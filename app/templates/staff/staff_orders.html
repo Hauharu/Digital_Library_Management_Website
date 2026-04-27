@@ -148,7 +148,7 @@
                                 <div class="row g-0">
                                     <div class="col-lg-4 border-end">
                                         <div class="book-info-card m-4 text-center">
-                                            <img src="{{ slip.book.image or url_for('static', filename='img/default_book.png') }}" class="book-cover-large mb-4" style="width: 150px; height: 220px; object-fit: cover; border-radius: 10px;">
+                                            <img src="{{ slip.book.image or url_for('static', filename='images/sachmau.png') }}" class="book-cover-large mb-4" style="width: 150px; height: 220px; object-fit: cover; border-radius: 10px;">
                                             <h4 class="fw-bold">{{ slip.book.title }}</h4>
                                             <div class="info-list mt-4 text-start">
                                                 <p><strong>Ngày mượn:</strong> {{ slip.borrow_date.strftime('%d/%m/%Y') }}</p>

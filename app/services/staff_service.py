@@ -1,10 +1,11 @@
 from app import db, socketio
 from app.models import BorrowSlip, Book, Invoice, InvoiceStatusEnum, BorrowRequest, \
-    RequestStatusEnum, Notification, BorrowStatusEnum,IncidentReport,IncidentTypeEnum
+    RequestStatusEnum, Notification, BorrowStatusEnum,IncidentReport,IncidentTypeEnum, Category
 from datetime import datetime
 from app.services.email_service import EmailService
 from datetime import datetime, timedelta
-
+import cloudinary
+import cloudinary.uploader
 
 class StaffService:
     @staticmethod
@@ -216,3 +217,107 @@ class StaffService:
             f"Số tiền phạt là: {amount:,.0f} VNĐ. Vui lòng thanh toán hóa đơn."
         )
         return True
+
+    @staticmethod
+    def create_book(data, image_file):
+        try:
+            image_url = None
+
+            if image_file and image_file.filename != '':
+                # Gọi hàm uploader của Cloudinary
+                upload_result = cloudinary.uploader.upload(
+                    image_file,
+                    folder="library/books"  # Lưu vào thư mục này trên Cloudinary cho gọn
+                )
+                image_url = upload_result.get('secure_url')
+
+            # Tạo đối tượng Book mới
+            new_book = Book(
+                title=data.get('title'),
+                author=data.get('author'),
+                category_id=data.get('category_id'),
+                isbn=data.get('isbn'),
+                price=data.get('price'),
+                total_quantity=data.get('total_quantity'),
+                available_quantity=data.get('total_quantity'),
+                description=data.get('description'),
+                image=image_url
+            )
+
+            db.session.add(new_book)
+            db.session.commit()
+            return True
+        except Exception as e:
+            print(f"Lỗi khi thêm sách: {str(e)}")
+            db.session.rollback()
+            return False
+
+
+    @staticmethod
+    def update_book(book_id, data, image_file):
+        book = Book.query.get(book_id)
+        if not book: return False
+
+        book.title = data.get('title')
+        book.price = float(data.get('price'))
+
+        # Logic: Nếu tăng tổng số lượng, số lượng sẵn có cũng tăng theo
+        diff = int(data.get('total_quantity')) - book.total_quantity
+        book.total_quantity = int(data.get('total_quantity'))
+        book.available_quantity += diff
+
+        if image_file:
+            upload_result = cloudinary.uploader.upload(image_file)
+            book.image = upload_result.get('url')
+
+        db.session.commit()
+        return True
+
+    @staticmethod
+    def get_all_books():
+        return Book.query.options(
+            db.selectinload(Book.category)
+        ).order_by(Book.id.desc()).all()
+
+    @staticmethod
+    def get_all_categories():
+        return Category.query.all()
+
+    @staticmethod
+    def get_book_by_id(book_id):
+        return Book.query.get_or_404(book_id)
+
+    @staticmethod
+    def get_filtered_books(page=1, per_page=10, search_query='', category_id=None):
+        query = Book.query
+
+        if search_query:
+            query = query.filter(
+                db.or_(
+                    Book.title.icontains(search_query),
+                    Book.author.icontains(search_query),
+                    Book.isbn.contains(search_query)
+                )
+            )
+
+        if category_id and category_id != 'all':
+            query = query.filter(Book.category_id == category_id)
+
+        return query.order_by(Book.id.desc()).paginate(page=page, per_page=per_page)
+
+    @staticmethod
+    def delete_book(book_id):
+        book = Book.query.get(book_id)
+        if not book:
+            return False
+
+        borrowing_count = any(slip.status.name == 'Borrowed' for slip in book.borrow_slips)
+        if borrowing_count:
+            return "cannot_delete_borrowed"
+
+        try:
+            db.session.delete(book)
+            db.session.commit()
+            return True
+        except Exception:
+            return False
