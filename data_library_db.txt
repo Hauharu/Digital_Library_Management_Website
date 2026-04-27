@@ -16,7 +16,6 @@ INSERT INTO category (id, name) VALUES
 (5, 'Thiếu nhi');
 
 
-
 -- ====== BOOK ======
 INSERT INTO book (id, title, author, description, total_quantity, available_quantity, price, category_id, image, language, publication_info, isbn) VALUES
 (1, 'Tôi Thấy Hoa Vàng Trên Cỏ Xanh', 'Nguyễn Nhật Ánh', 'Truyện tuổi thơ', 10, 10, 50000, 1, '/static/images/sachmau.png', 'Tiếng Việt', 'NXB Trẻ, 2021', '978-604-1-1800-1'),

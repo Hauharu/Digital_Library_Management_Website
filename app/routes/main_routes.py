@@ -11,6 +11,8 @@ from flask import jsonify
 from datetime import datetime, date, timedelta
 from sqlalchemy import func
 from app.services.recommendation_service import RecommendationService
+from app.services.semantic_search_service import SemanticSearchService
+from app.services.prediction_service import PredictionService
 
 main_bp = Blueprint('main', __name__)
 
@@ -175,6 +177,9 @@ def staff_dashboard():
         .join(BorrowSlip, Book.id == BorrowSlip.book_id) \
         .group_by(Book.id).order_by(func.count(BorrowSlip.id).desc()).limit(5).all()
 
+    # Dự báo nhu cầu
+    predicted_demands = PredictionService.predict_demand()[:5]
+
     return render_template('staff/dashboard.html',
                            total_books=total_books,
                            pending_count=pending_count,
@@ -186,6 +191,7 @@ def staff_dashboard():
                            current_time=now,
                            low_stock_books=low_stock_books,
                            top_books=top_books,
+                           predicted_demands=predicted_demands,
                            now=datetime.now())
 
 
@@ -249,6 +255,26 @@ def search_quick():
     pagination = service.search_books(keyword=keyword, page=1, per_page=5)
     books = pagination.items if pagination else []
     return render_template("book/partials/quick_search_items.html", books=books)
+
+
+@main_bp.route("/search/semantic")
+def search_semantic():
+    query = request.args.get('q', '').strip()
+    if not query:
+        return redirect(url_for('main.search'))
+    
+    books = SemanticSearchService.search(query, limit=12)
+    
+    template_data = {
+        "search_query": query,
+        "books": books,
+        "is_semantic": True
+    }
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render_template("book/partials/_search_results_grid.html", **template_data)
+    
+    return render_template("book/search_results.html", **template_data)
 
 
 @main_bp.route('/history')
