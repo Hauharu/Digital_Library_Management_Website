@@ -10,6 +10,7 @@ from app.services.book_service import BookService
 from flask import jsonify
 from datetime import datetime, date, timedelta
 from sqlalchemy import func
+from app.services.recommendation_service import RecommendationService
 
 main_bp = Blueprint('main', __name__)
 
@@ -17,7 +18,25 @@ main_bp = Blueprint('main', __name__)
 def index():
     featured_books = Book.query.order_by(Book.view_count.desc()).limit(10).all()
     related_books = Book.query.order_by(db.func.random()).limit(10).all()
-    return render_template('index.html', featured_books=featured_books, related_books=related_books)
+    
+    recommended_books = []
+    user_fav_ids = []
+    
+    if current_user.is_authenticated:
+        from app.models import Favorite
+        # Lấy danh sách ID các sách đã thích
+        user_favs = Favorite.query.filter_by(user_id=current_user.id).all()
+        user_fav_ids = [f.book_id for f in user_favs]
+        
+        # Tạm thời tắt gợi ý sách
+        # recommended_books = RecommendationService.get_recommendations(current_user.id, limit=10)
+    
+    return render_template('index.html', 
+                           featured_books=featured_books, 
+                           related_books=related_books,
+                           recommended_books=recommended_books,
+                           user_fav_ids=user_fav_ids)
+
 
 
 @main_bp.route('/books')
@@ -97,9 +116,14 @@ def book_detail(book_id):
                     'pending' if active_request.status == RequestStatusEnum.Pending else 'approved'
                 )
             
+    is_favorited = False
+    if current_user.is_authenticated:
+        from app.models import Favorite
+        fav = Favorite.query.filter_by(user_id=current_user.id, book_id=book.id).first()
+        is_favorited = True if fav else False
+
     from app.models import Review
     discussions = Review.query.filter_by(book_id=book.id).order_by(Review.created_at.asc()).all()
-
     
     return render_template(
         'book/book_detail.html',
@@ -107,7 +131,8 @@ def book_detail(book_id):
         related_books=related_books,
         user_state=user_state,
         source=source,
-        discussions=discussions
+        discussions=discussions,
+        is_favorited=is_favorited
     )
 
 
@@ -403,3 +428,28 @@ def mark_all_notifications_read():
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.args.get('ajax'):
         return jsonify({'success': True})
     return redirect(request.referrer or url_for('user.notifications'))
+
+
+@main_bp.route('/toggle-favorite/<int:book_id>', methods=['POST'])
+@login_required
+def toggle_favorite(book_id):
+    from app.models import Favorite
+    favorite = Favorite.query.filter_by(user_id=current_user.id, book_id=book_id).first()
+    
+    if favorite:
+        db.session.delete(favorite)
+        db.session.commit()
+        return jsonify({'status': 'removed', 'message': 'Đã xóa khỏi danh sách yêu thích'})
+    else:
+        new_favorite = Favorite(user_id=current_user.id, book_id=book_id)
+        db.session.add(new_favorite)
+        db.session.commit()
+        return jsonify({'status': 'added', 'message': 'Đã thêm vào danh sách yêu thích'})
+
+
+@main_bp.route('/favorites')
+@login_required
+def favorites_list():
+    from app.models import Favorite
+    favorites = Favorite.query.filter_by(user_id=current_user.id).order_by(Favorite.created_at.desc()).all()
+    return render_template('book/favorites.html', favorites=favorites)

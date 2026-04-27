@@ -133,11 +133,14 @@
                     <li>
                         <div class="dropdown-header text-uppercase small fw-bold text-muted">Tài khoản</div>
                     </li>
-                    <li><a class="dropdown-item" href="{{ url_for('main.borrow_history') }}">
-                            <i class="fas fa-clock-rotate-left me-2 text-primary"></i> Lịch sử mượn
-                        </a></li>
                     <li><a class="dropdown-item" href="{{ url_for('user.user_profile') }}">
                             <i class="fa-solid fa-circle-user me-2 text-primary"></i> Thông tin cá nhân
+                        </a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('main.favorites_list') }}">
+                            <i class="fa-solid fa-heart me-2 text-danger"></i> Sách yêu thích
+                        </a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('main.borrow_history') }}">
+                            <i class="fas fa-clock-rotate-left me-2 text-primary"></i> Lịch sử mượn trả
                         </a></li>
 
                     {% if current_user.role.name == 'ADMIN' %}

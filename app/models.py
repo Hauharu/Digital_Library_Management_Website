@@ -246,6 +246,10 @@ class Favorite(Base):
     __table_args__ = (db.UniqueConstraint('user_id', 'book_id', name='unique_favorite'),)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+
+    book = db.relationship('Book', backref='favorited_by', lazy='selectin')
+    user = db.relationship('User', backref='favorites', lazy='selectin')
 
 
 # ================= NOTIFICATION =================

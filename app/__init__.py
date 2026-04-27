@@ -226,9 +226,16 @@ def handle_delete_message(data):
     rev = Review.query.get(msg_id)
     
     if rev and rev.user_id == current_user.id:
+        book = rev.book
         db.session.delete(rev)
         db.session.commit()
-        emit('message_deleted', {'msg_id': msg_id}, broadcast=True)
+        
+        # Tính toán lại điểm trung bình mới
+        new_avg = book.average_rating
+        emit('message_deleted', {
+            'msg_id': msg_id, 
+            'new_avg': new_avg
+        }, broadcast=True)
 
 @socketio.on('like_review')
 def handle_like_review(data):

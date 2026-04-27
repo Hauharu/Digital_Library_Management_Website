@@ -9,13 +9,16 @@
 {% endblock %}
 
 {% block content %}
-
-
 <section class="books-section">
     <h2 style="font-size: 22px; font-weight: 700; color: #111827; margin-bottom: 25px;">SÁCH NỔI BẬT</h2>
     <div class="book-grid">
         {% for book in featured_books %}
-        <article class="book-card">
+        <article class="book-card position-relative">
+            <!-- Nút thả tim nhanh -->
+            <div class="card-favorite-btn" onclick="toggleFavoriteCard(this, {{ book.id }})">
+                <i class="{{ 'fa-solid text-danger' if book.id in user_fav_ids else 'fa-regular' }} fa-heart"></i>
+            </div>
+            
             <img src="{{ book.image }}" alt="{{ book.title }}">
             <h3>{{ book.title }}</h3>
             <p>{{ book.author }}</p>
@@ -29,7 +32,8 @@
                     <span>{{ book.view_count or 0 }}</span>
                 </div>
             </div>
-            <button type="button" onclick="window.location.href='/book-detail/{{ book.id }}?from=featured'">CHI TIẾT</button>
+            <button type="button" onclick="window.location.href='/book-detail/{{ book.id }}?from=featured'">CHI
+                TIẾT</button>
         </article>
         {% endfor %}
     </div>
@@ -40,7 +44,8 @@
 
 {% if related_books %}
 <div class="related-books-section">
-    <h3 class="related-books-title" style="font-size: 22px; font-weight: 700; color: #111827; margin-bottom: 20px;">Sách có thể bạn quan tâm</h3>
+    <h3 class="related-books-title" style="font-size: 22px; font-weight: 700; color: #111827; margin-bottom: 20px;">Sách
+        có thể bạn quan tâm</h3>
     <div class="slider-container" id="draggable-slider">
         <div class="slide-track">
             {% for rb in related_books %}
@@ -61,34 +66,122 @@
 </div>
 
 <!-- Script cho Slider (Dùng chung) -->
+<script src="{{ url_for('static', filename='js/favorite.js') }}"></script>
 <script>
     const slider = document.getElementById('draggable-slider');
-    let isDown = false;
-    let startX;
-    let scrollLeft;
+    const recSlider = document.getElementById('recommendation-slider');
+    
+    function initDraggable(el) {
+        if (!el) return;
+        let isDown = false;
+        let startX;
+        let scrollLeft;
 
-    slider.addEventListener('mousedown', (e) => {
-        isDown = true;
-        slider.classList.add('active');
-        startX = e.pageX - slider.offsetLeft;
-        scrollLeft = slider.scrollLeft;
-    });
-    slider.addEventListener('mouseleave', () => {
-        isDown = false;
-        slider.classList.remove('active');
-    });
-    slider.addEventListener('mouseup', () => {
-        isDown = false;
-        slider.classList.remove('active');
-    });
-    slider.addEventListener('mousemove', (e) => {
-        if (!isDown) return;
-        e.preventDefault();
-        const x = e.pageX - slider.offsetLeft;
-        const walk = (x - startX) * 2;
-        slider.scrollLeft = scrollLeft - walk;
-    });
+        el.addEventListener('mousedown', (e) => {
+            isDown = true;
+            el.classList.add('active');
+            startX = e.pageX - el.offsetLeft;
+            scrollLeft = el.scrollLeft;
+        });
+        el.addEventListener('mouseleave', () => {
+            isDown = false;
+            el.classList.remove('active');
+        });
+        el.addEventListener('mouseup', () => {
+            isDown = false;
+            el.classList.remove('active');
+        });
+        el.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - el.offsetLeft;
+            const walk = (x - startX) * 2;
+            el.scrollLeft = scrollLeft - walk;
+        });
+    }
+
+    initDraggable(slider);
+    initDraggable(recSlider);
 </script>
-{% endif %}
 
+<style>
+.card-favorite-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.3s ease;
+}
+.card-favorite-btn:hover {
+    transform: scale(1.1);
+}
+.card-favorite-btn i {
+    font-size: 18px;
+}
+
+/* Recommendation Section Styles */
+.book-card-mini {
+    width: 180px;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+.book-card-mini img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.book-card-mini h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.card-img-wrapper {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+}
+.card-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: 0.3s;
+    color: white;
+    font-size: 24px;
+}
+.card-img-wrapper:hover .card-overlay {
+    opacity: 1;
+}
+.recommendation-section .slider-container {
+    overflow-x: auto;
+    padding-bottom: 15px;
+    cursor: grab;
+}
+.recommendation-section .slider-container::-webkit-scrollbar {
+    height: 4px;
+}
+.recommendation-section .slider-container::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+</style>
+{% endif %}
 {% endblock %}
