@@ -173,8 +173,19 @@ def search():
     per_page = request.args.get('per_page', 10, type=int)
     
     filters = {}
-    if category: filters['category'] = int(category) if category.isdigit() else category
-    if language: filters['language'] = language
+    active_filter_labels = {}
+    
+    if category and category.strip():
+        cat_id = int(category) if category.isdigit() else category
+        filters['category'] = cat_id
+        # Tìm tên danh mục để hiển thị badge
+        cat_obj = Category.query.get(cat_id) if isinstance(cat_id, int) else None
+        if cat_obj:
+            active_filter_labels['category'] = cat_obj.name
+            
+    if language and language.strip():
+        filters['language'] = language
+        active_filter_labels['language'] = language
     
     service = BookService()
     
@@ -185,12 +196,18 @@ def search():
     
     filter_options = service.get_filter_options()
     
-    return render_template("book/search_results.html", 
-                         search_query=search_query, 
-                         pagination=pagination, 
-                         books=pagination.items if pagination else [],
-                         filters=filters,
-                         filter_options=filter_options)
+    template_data = {
+        "search_query": search_query,
+        "pagination": pagination,
+        "books": pagination.items if pagination else [],
+        "filters": filters,
+        "active_filter_labels": active_filter_labels
+    }
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render_template("book/partials/_search_results_grid.html", **template_data)
+    
+    return render_template("book/search_results.html", filter_options=filter_options, **template_data)
 
 
 @main_bp.route("/search/quick")
