@@ -1,7 +1,10 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from app.models import BorrowRequest, RequestStatusEnum, Book
+from flask import Blueprint, render_template, request, redirect, url_for, flash,jsonify
+from app.models import BorrowRequest, RequestStatusEnum, Book, User, RoleEnum,BorrowStatusEnum, BorrowSlip,GenderEnum
 from app.services.staff_service import StaffService
 from flask_login import login_required
+from sqlalchemy import or_
+from datetime import datetime, timedelta
+from app import db
 
 staff_bp = Blueprint('staff', __name__, url_prefix='/staff')
 
@@ -157,3 +160,117 @@ def get_book_api(id):
         "description": book.description,
         "image": book.image
     }
+
+
+@staff_bp.route('/create-borrow')
+@login_required
+def create_borrow():
+    # Lấy danh sách sách còn trong kho để hiện ở ô Select
+    books = Book.query.filter(Book.available_quantity > 0).all()
+    return render_template('staff/create_borrow.html', books=books)
+
+
+@staff_bp.route('/api/check-reader')
+@login_required
+def check_reader():
+    try:
+        q = request.args.get('phone')
+        # Tìm theo phone_number HOẶC email
+        user = User.query.filter(or_(User.phone_number == q, User.email == q)).first()
+
+        if user:
+            return jsonify({
+                "exists": True,
+                "name": f"{user.last_name} {user.first_name}",
+                "id": user.id,
+                "email": user.email,
+                "phone": user.phone_number
+            })
+        return jsonify({"exists": False})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@staff_bp.route('/api/quick-register', methods=['POST'])
+@login_required
+def api_quick_register():
+    data = request.json
+    try:
+        input_val = data.get('phone') # Giá trị từ ô nhập (SĐT hoặc Email)
+        full_name = data.get('full_name', '').strip()
+
+        # 1. Xử lý Email thông minh
+        # Nếu input_val đã có chữ '@' thì đó là email, giữ nguyên.
+        # Nếu không có thì mới tạo email ảo từ SĐT.
+        if "@" in input_val:
+            final_email = input_val
+            final_username = input_val.split('@')[0] # Lấy phần trước @ làm username
+        else:
+            final_email = f"{input_val}@library.com"
+            final_username = input_val
+
+        # 2. Tách tên
+        name_parts = full_name.split()
+        f_name = name_parts[-1] if name_parts else "Reader"
+        l_name = " ".join(name_parts[:-1]) if len(name_parts) > 1 else "Người dùng"
+
+        # 3. Tạo User
+        new_user = User(
+            first_name=f_name,
+            last_name=l_name,
+            username=final_username,
+            email=final_email,
+            phone_number=input_val if "@" not in input_val else None,
+            password="pbkdf2:sha256:260000$default_password",
+            gender=GenderEnum.OTHER,
+            role=RoleEnum.READER,
+            is_active=True
+        )
+
+        db.session.add(new_user)
+        db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "id": new_user.id,
+            "name": f"{l_name} {f_name}",
+            "phone": new_user.phone_number or "N/A",
+            "email": new_user.email
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"LỖI DATABASE: {str(e)}") # Bạn xem lỗi cụ thể ở Terminal nhé
+        return jsonify({"success": False, "message": "Username hoặc Email đã tồn tại!"}), 500
+
+
+@staff_bp.route('/api/create-borrow-slip', methods=['POST'])
+@login_required
+def api_create_borrow_slip():
+    data = request.json
+    user_id = data.get('user_id')
+    book_ids = data.get('book_ids')  # Danh sách ID sách
+
+    try:
+        # VÌ MODEL CỦA BẠN: Một BorrowSlip chỉ chứa MỘT book_id
+        # Nên nếu khách mượn 3 cuốn, ta phải tạo 3 BorrowSlip (đúng logic model của bạn)
+        for b_id in book_ids:
+            book = Book.query.get(b_id)
+            if book and book.available_quantity > 0:
+                book.available_quantity -= 1
+
+                new_slip = BorrowSlip(
+                    user_id=user_id,
+                    book_id=b_id,
+                    due_date=datetime.now().date() + timedelta(days=14),
+                    quantity=1,
+                    status=BorrowStatusEnum.Borrowing
+                )
+                db.session.add(new_slip)
+
+        db.session.commit()
+        return jsonify({"success": True})
+    except Exception as e:
+        db.session.rollback()
+        print(f"Lỗi tạo phiếu: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500

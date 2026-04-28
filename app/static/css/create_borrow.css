@@ -1,0 +1,68 @@
+:root {
+    --navy: #1e293b;
+    --primary-blue: #2563eb;
+}
+
+body { background-color: #f8fafc; }
+
+.text-navy { color: var(--navy); }
+
+.step-badge {
+    width: 28px;
+    height: 28px;
+    background: var(--navy);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Reader Card */
+.avatar-reader {
+    width: 50px;
+    height: 50px;
+    background: var(--primary-blue);
+    color: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.bg-primary-subtle { background-color: #eff6ff !important; }
+.bg-danger-subtle { background-color: #fef2f2 !important; }
+
+/* Table styling */
+.table thead th {
+    padding: 12px;
+    background-color: #f1f5f9;
+}
+
+.btn-navy {
+    background-color: var(--navy);
+    color: white;
+}
+.btn-navy:hover {
+    background-color: #0f172a;
+    color: white;
+}
+
+/* Animation */
+.animate__animated {
+    animation-duration: 0.5s;
+}
+
+#borrow-list tr:hover {
+    background-color: #f8fafc;
+}
+
+.form-select:focus, .form-control:focus {
+    box-shadow: none;
+    border-color: var(--primary-blue);
+}
