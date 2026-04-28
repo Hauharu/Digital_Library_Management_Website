@@ -58,6 +58,7 @@ class BookService:
             stop_words = {'và', 'của', 'là', 'trên', 'trong', 'với', 'cho', 'những', 'phần'}
             keywords = [kw for kw in keyword.lower().split() if kw not in stop_words and len(kw) >= 2]
 
+            keyword_lower = keyword.lower()
             for b in all_books:
                 # 1. Điểm nền tảng từ AI
                 ai_score = semantic_scores.get(b.id, 0)
@@ -69,25 +70,45 @@ class BookService:
                 title_lower = b.title.lower()
                 desc_lower = (b.description or "").lower()
                 author_lower = (b.author or "").lower()
-                
+                category_lower = b.category.name.lower()
+
+                # Kiểm tra khớp cả cụm (Ưu tiên cao nhất)
+                phrase_match = False
+                if (keyword_lower in title_lower or 
+                    keyword_lower in category_lower or 
+                    keyword_lower in author_lower or
+                    keyword_lower in desc_lower):
+                    phrase_match = True
+                    sql_match = True
+                    sql_boost += 0.5  # Thưởng lớn cho khớp cả cụm
+
+                # Kiểm tra từng từ đơn
                 for kw in keywords:
                     if kw in title_lower:
                         sql_match = True
-                        sql_boost += 0.4
+                        sql_boost += 0.15
                     if kw in author_lower:
                         sql_match = True
-                        sql_boost += 0.3
+                        sql_boost += 0.1
+                    if kw in category_lower:
+                        sql_match = True
+                        sql_boost += 0.15
                     if kw in desc_lower:
                         sql_match = True
-                        sql_boost += 0.2
+                        sql_boost += 0.1  # Tăng từ 0.05 lên 0.1
                 
                 # CÔNG THỨC LỌC KÉP:
                 if sql_match:
-                    final_score = max(0.6, ai_score + sql_boost)
-                    threshold = 0.5 # Khớp từ khóa thì ưu tiên hiện
+                    # Nếu có khớp cả cụm, điểm tối thiểu cao để chắc chắn hiện
+                    if phrase_match:
+                        final_score = max(0.65, ai_score + sql_boost)
+                        threshold = 0.6
+                    else:
+                        final_score = max(0.5, ai_score + sql_boost)
+                        threshold = 0.55 if ai_score < 0.3 else 0.5
                 else:
                     final_score = ai_score
-                    threshold = 0.6 # Chỉ dựa vào AI thì phải cực kỳ liên quan mới hiện
+                    threshold = 0.7
                 
                 final_score = min(1.0, final_score)
                 

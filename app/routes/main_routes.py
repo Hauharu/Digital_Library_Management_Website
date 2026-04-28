@@ -226,9 +226,9 @@ def search():
     service = BookService()
     
     if not search_query and not filters:
-        pagination = service.get_paginated_books(page=page, per_page=per_page, order_desc=True)
+        pagination = BookService.search_books(page=page, per_page=per_page)
     else:
-        pagination = service.search_books(keyword=search_query, filters=filters, page=page, per_page=per_page)
+        pagination = BookService.search_books(keyword=search_query, filters=filters, page=page, per_page=per_page)
     
     filter_options = service.get_filter_options()
     
