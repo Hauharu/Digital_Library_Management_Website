@@ -159,6 +159,6 @@ class PaymentService:
             )
             db.session.add(payment)
             db.session.commit()
-            return True, "Thanh toán thành công."
+            return True, ""
         else:
             return False, f"Thanh toán thất bại. Mã lỗi: {vnp_ResponseCode}"

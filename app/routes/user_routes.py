@@ -221,7 +221,8 @@ def vnpay_return():
     data = request.args.to_dict()
     success, message = PaymentService.process_vnpay_result(data)
     if success:
-        flash(message, "success")
+        # flash(message, "success")
+        pass
     else:
         flash(message, "danger")
     return redirect(url_for('main.borrow_history'))
@@ -244,7 +245,8 @@ def paypal_return():
     payment_id = request.args.get('paymentId')
     payer_id = request.args.get('PayerID')
     if PaymentService.execute_paypal_payment(payment_id, payer_id):
-        flash("Thanh toán PayPal thành công!", "success")
+        # flash("Thanh toán PayPal thành công!", "success")
+        pass
     else:
         flash("Thanh toán PayPal thất bại.", "danger")
     return redirect(url_for('main.borrow_history'))
