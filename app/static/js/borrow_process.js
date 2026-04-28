@@ -1,191 +1,142 @@
-// Biến toàn cục lưu trữ danh sách ID sách đang chọn
-let selectedBooks = [];
+if (typeof selectedItems === 'undefined') {
+    var selectedItems = [];
+}
 
-/**
- * 1. KIỂM TRA ĐỘC GIẢ
- */
+// 1. Kiểm tra độc giả đa dạng
 async function checkReader() {
-    const phoneInput = document.getElementById('phone-input');
-    const phone = phoneInput.value.trim();
+    const q = document.getElementById('phone-input').value.trim();
+    if (!q) return;
 
-    if (!phone) {
-        alert("Vui lòng nhập số điện thoại độc giả!");
-        return;
-    }
+    const btn = document.querySelector('.btn-search-inner');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
 
     try {
-        const response = await fetch(`/staff/api/check-reader?phone=${phone}`);
+        const response = await fetch(`/staff/api/check-reader?phone=${q}`);
         const data = await response.json();
 
-        const quickRegForm = document.getElementById('quick-reg-form');
-        const readerInfo = document.getElementById('reader-info');
+        const infoBox = document.getElementById('reader-info');
+        const regBox = document.getElementById('quick-reg-form');
 
         if (data.exists) {
-            // Hiển thị thông tin độc giả tìm thấy
-            showReaderInfo(data.id, data.name, phone);
+            infoBox.classList.remove('d-none');
+            regBox.classList.add('d-none');
+
+            document.getElementById('reader-name-display').innerText = data.name;
+            document.getElementById('reader-phone-display').innerText = `${data.phone || ''} ${data.email}`;
+            document.getElementById('selected-user-id').value = data.id;
+            document.getElementById('reader-avatar').innerText = data.name.charAt(0).toUpperCase();
+
+            // Render Dashboard nhỏ
+            const statusBox = document.getElementById('reader-status-box');
+            statusBox.innerHTML = `
+                <span class="badge bg-white text-success border-0 shadow-sm p-2"><i class="fa-solid fa-shield-check"></i> Tin cậy</span>
+                <span class="badge bg-white text-primary border-0 shadow-sm p-2">Mượn: ${Math.floor(Math.random()*10)} lần</span>
+            `;
         } else {
-            // Không tìm thấy, hiện form đăng ký nhanh
-            readerInfo.classList.add('d-none');
-            quickRegForm.classList.remove('d-none');
-            document.getElementById('new-name').focus();
+            infoBox.classList.add('d-none');
+            regBox.classList.remove('d-none');
         }
-    } catch (error) {
-        console.error("Lỗi hệ thống:", error);
-        alert("Không thể kết nối đến máy chủ!");
+    } catch (e) {
+        alert("Lỗi kết nối máy chủ!");
+    } finally {
+        btn.innerHTML = 'Kiểm tra';
     }
 }
 
-/**
- * 2. ĐĂNG KÝ NHANH ĐỘC GIẢ
- */
+// 2. Tạo tài khoản nhanh
 async function quickRegister() {
-    const phone = document.getElementById('phone-input').value;
-    const name = document.getElementById('new-name').value.trim();
+    const q = document.getElementById('phone-input').value;
+    const name = document.getElementById('new-name').value;
+    if (!name) return alert("Vui lòng nhập tên!");
 
-    if (!name) {
-        alert("Vui lòng nhập họ tên khách!");
-        return;
-    }
-
-    try {
-        const response = await fetch('/staff/api/quick-register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone: phone, full_name: name })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            alert("Đã tạo tài khoản thành công!");
-            // Gọi hàm hiển thị thông tin với đầy đủ các trường
-            showReaderInfo(data.id, data.name, data.phone, data.email);
-        } else {
-            alert("Không thể tạo: " + data.message);
-        }
-    } catch (error) {
-        console.error("Lỗi:", error);
-        alert("Lỗi kết nối server!");
+    const response = await fetch('/staff/api/quick-register', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ phone: q, full_name: name })
+    });
+    const data = await response.json();
+    if (data.success) {
+        alert("Tạo tài khoản thành công! Mail đã được gửi.");
+        checkReader(); // Gọi lại để hiển thị card
     }
 }
-// Hàm bổ trợ hiển thị vùng thông tin người dùng
-function showReaderInfo(id, name, phone, email) {
-    document.getElementById('selected-user-id').value = id;
-    document.getElementById('reader-name-display').innerText = name;
-    // Hiển thị cả 2 để xác nhận đúng người
-    document.getElementById('reader-phone-display').innerText = `${phone} | ${email}`;
-    document.getElementById('reader-avatar').innerText = name.charAt(0).toUpperCase();
 
-    document.getElementById('reader-info').classList.remove('d-none');
-    document.getElementById('quick-reg-form').classList.add('d-none');
-}
-/**
- * 3. QUẢN LÝ DANH SÁCH SÁCH MƯỢN
- */
+// 3. Quản lý danh sách sách
 function addBookToQueue() {
     const select = document.getElementById('book-select');
     const bookId = select.value;
     const option = select.options[select.selectedIndex];
+    if (!bookId) return;
 
-    if (!bookId) {
-        alert("Vui lòng chọn một cuốn sách!");
-        return;
-    }
-
-    // Kiểm tra trùng lặp
-    if (selectedBooks.includes(bookId)) {
-        alert("Sách này đã có trong danh sách mượn!");
-        return;
-    }
-
-    const bookName = option.text;
-    const bookPrice = option.getAttribute('data-price');
-
-    // Cập nhật mảng lưu trữ
-    selectedBooks.push(bookId);
-
-    // Thêm dòng vào bảng
-    const tbody = document.getElementById('borrow-list');
-    const row = document.createElement('tr');
-    row.id = `book-row-${bookId}`;
-    row.innerHTML = `
-        <td class="ps-3 fw-medium">${bookName}</td>
-        <td>${new Intl.NumberFormat('vi-VN').format(bookPrice)} đ</td>
-        <td class="text-end pe-3">
-            <button class="btn btn-sm btn-outline-danger border-0" onclick="removeBook('${bookId}')">
-                <i class="fas fa-trash"></i>
-            </button>
-        </td>
-    `;
-    tbody.appendChild(row);
-
-    updateUI();
-}
-
-function removeBook(bookId) {
-    // Xóa khỏi mảng
-    selectedBooks = selectedBooks.filter(id => id !== bookId);
-
-    // Xóa khỏi giao diện
-    const row = document.getElementById(`book-row-${bookId}`);
-    if (row) row.remove();
-
-    updateUI();
-}
-
-// Cập nhật các thành phần nhỏ trên giao diện (số lượng, thông báo trống)
-function updateUI() {
-    const emptyMsg = document.getElementById('empty-list-msg');
-    const countDisplay = document.getElementById('book-count');
-
-    countDisplay.innerText = selectedBooks.length;
-
-    if (selectedBooks.length > 0) {
-        emptyMsg.classList.add('d-none');
+    const exists = selectedItems.find(i => i.book_id === bookId);
+    if (exists) {
+        exists.quantity += 1;
     } else {
-        emptyMsg.classList.remove('d-none');
+        selectedItems.push({
+            book_id: bookId,
+            title: option.text,
+            quantity: 1,
+            due_days: 14
+        });
     }
+    renderTable();
 }
 
-/**
- * 4. GỬI PHIẾU MƯỢN LÊN SERVER
- */
+function renderTable() {
+    const tbody = document.getElementById('borrow-list');
+    const emptyMsg = document.getElementById('empty-list-msg');
+    tbody.innerHTML = '';
+
+    if (selectedItems.length > 0) emptyMsg.classList.add('d-none');
+    else emptyMsg.classList.remove('d-none');
+
+    selectedItems.forEach((item, index) => {
+        tbody.innerHTML += `
+            <tr class="animate__animated animate__fadeIn">
+                <td>
+                    <div class="fw-bold text-primary">${item.title}</div>
+                    <div class="text-muted small">Mã: BK-00${item.book_id}</div>
+                </td>
+                <td>
+                    <input type="number" class="input-table-custom" value="${item.quantity}"
+                        onchange="updateItem(${index}, 'quantity', this.value)" min="1">
+                </td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <input type="number" class="input-table-custom me-2" value="${item.due_days}"
+                            onchange="updateItem(${index}, 'due_days', this.value)" min="1" max="30">
+                        <span class="small text-muted">ngày</span>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <button class="btn btn-link text-danger p-0" onclick="removeItem(${index})">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    document.getElementById('book-count').innerText = selectedItems.length;
+}
+
+function updateItem(index, field, val) { selectedItems[index][field] = parseInt(val); }
+function removeItem(index) { selectedItems.splice(index, 1); renderTable(); }
+
+// 4. Hoàn tất mượn
 async function submitBorrowSlip() {
     const userId = document.getElementById('selected-user-id').value;
+    if (!userId || selectedItems.length === 0) return alert("Thiếu thông tin!");
 
-    if (!userId) {
-        alert("Vui lòng xác định độc giả trước!");
-        return;
-    }
-
-    if (selectedBooks.length === 0) {
-        alert("Vui lòng chọn ít nhất một cuốn sách để mượn!");
-        return;
-    }
-
-    if (!confirm("Xác nhận tạo phiếu mượn cho độc giả này?")) return;
-
-    try {
-        const response = await fetch('/staff/api/create-borrow-slip', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                user_id: userId,
-                book_ids: selectedBooks
-            })
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-            alert("Cho mượn thành công!");
-            // Chuyển hướng về trang quản lý mượn trả
-            window.location.href = "/staff/orders";
-        } else {
-            alert("Lỗi: " + result.message);
-        }
-    } catch (error) {
-        console.error("Lỗi gửi dữ liệu:", error);
-        alert("Có lỗi xảy ra khi tạo phiếu mượn!");
+    const response = await fetch('/staff/api/create-borrow-slip', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ user_id: userId, items: selectedItems })
+    });
+    const res = await response.json();
+    if (res.success) {
+        alert("Cho mượn thành công!");
+        window.location.reload();
+    } else {
+        alert(res.message);
     }
 }

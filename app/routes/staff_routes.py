@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash,jsonify
-from app.models import BorrowRequest, RequestStatusEnum, Book, User, RoleEnum,BorrowStatusEnum, BorrowSlip,GenderEnum
+from app.models import BorrowRequest, RequestStatusEnum, Book, User, RoleEnum,\
+        BorrowStatusEnum, BorrowSlip,GenderEnum, Invoice, InvoiceStatusEnum
 from app.services.staff_service import StaffService
 from flask_login import login_required
 from sqlalchemy import or_
@@ -148,18 +149,21 @@ def delete_book(id):
 @staff_bp.route('/api/book/<int:id>')
 def get_book_api(id):
     book = Book.query.get_or_404(id)
-    return {
+    return jsonify({
         "id": book.id,
         "title": book.title,
         "author": book.author,
+        "category_id": book.category_id,
         "category_name": book.category.name,
         "isbn": book.isbn,
+        "language": book.language,
+        "publication_info": book.publication_info,
         "price": book.price,
         "total_quantity": book.total_quantity,
         "available_quantity": book.available_quantity,
         "description": book.description,
         "image": book.image
-    }
+    })
 
 
 @staff_bp.route('/create-borrow')
@@ -230,6 +234,30 @@ def api_quick_register():
         db.session.add(new_user)
         db.session.commit()
 
+        try:
+            # Nếu là email ảo (@library.com) thì không gửi được thật
+            if "@library.com" not in final_email:
+                msg = Message(
+                    subject="Chào mừng bạn đến với Thư viện số!",
+                    recipients=[final_email]
+                )
+                msg.body = f"""
+                        Chào {full_name},
+
+                        Tài khoản thư viện của bạn đã được khởi tạo bởi Thủ thư.
+
+                        Thông tin đăng nhập:
+                        - Username: {final_username}
+                        - Mật khẩu mặc định: {default_password}
+
+                        Vui lòng đăng nhập và đổi mật khẩu để bảo mật tài khoản.
+                        Trân trọng!
+                        """
+                mail.send(msg)
+                print(f"Đã gửi mail thông báo tới {final_email}")
+        except Exception as mail_err:
+            print(f"Lỗi gửi mail: {mail_err}")
+
         return jsonify({
             "success": True,
             "id": new_user.id,
@@ -240,7 +268,7 @@ def api_quick_register():
 
     except Exception as e:
         db.session.rollback()
-        print(f"LỖI DATABASE: {str(e)}") # Bạn xem lỗi cụ thể ở Terminal nhé
+        print(f"LỖI DATABASE: {str(e)}")
         return jsonify({"success": False, "message": "Username hoặc Email đã tồn tại!"}), 500
 
 
@@ -249,28 +277,46 @@ def api_quick_register():
 def api_create_borrow_slip():
     data = request.json
     user_id = data.get('user_id')
-    book_ids = data.get('book_ids')  # Danh sách ID sách
+    items = data.get('items')
 
     try:
-        # VÌ MODEL CỦA BẠN: Một BorrowSlip chỉ chứa MỘT book_id
-        # Nên nếu khách mượn 3 cuốn, ta phải tạo 3 BorrowSlip (đúng logic model của bạn)
-        for b_id in book_ids:
-            book = Book.query.get(b_id)
-            if book and book.available_quantity > 0:
-                book.available_quantity -= 1
+        user = User.query.get(user_id)
 
-                new_slip = BorrowSlip(
-                    user_id=user_id,
-                    book_id=b_id,
-                    due_date=datetime.now().date() + timedelta(days=14),
-                    quantity=1,
-                    status=BorrowStatusEnum.Borrowing
-                )
-                db.session.add(new_slip)
+        overdue_slips = [s for s in user.borrow_slips if s.status == BorrowStatusEnum.Overdue]
+        unpaid_invoices = [i for i in Invoice.query.filter_by(status=InvoiceStatusEnum.Pending).all()
+                           if i.borrow_slip.user_id == user_id]
+
+        if overdue_slips or unpaid_invoices:
+            return jsonify({
+                "success": False,
+                "message": "Độc giả đang có sách quá hạn hoặc nợ tiền phạt. Không thể cho mượn!"
+            }), 400
+
+        for item in items:
+            book = Book.query.get(item['book_id'])
+            qty = int(item['quantity'])
+            due_days = int(item['due_days'])
+
+            if book.available_quantity < qty:
+                return jsonify({"success": False, "message": f"Sách '{book.title}' không đủ số lượng trong kho!"}), 400
+
+            if due_days > 30:
+                due_days = 30
+
+            book.available_quantity -= qty
+
+            new_slip = BorrowSlip(
+                user_id=user_id,
+                book_id=book.id,
+                quantity=qty,  
+                borrow_date=datetime.now().date(),
+                due_date=datetime.now().date() + timedelta(days=due_days),
+                status=BorrowStatusEnum.Borrowing
+            )
+            db.session.add(new_slip)
 
         db.session.commit()
         return jsonify({"success": True})
     except Exception as e:
         db.session.rollback()
-        print(f"Lỗi tạo phiếu: {e}")
         return jsonify({"success": False, "message": str(e)}), 500

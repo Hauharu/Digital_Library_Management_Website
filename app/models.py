@@ -51,6 +51,9 @@ class PaymentMethodEnum(enum.Enum):
     MoMo = "MoMo"
     ZaloPay = "ZaloPay"
     VNPay = "VNPay"
+class IncidentTypeEnum(enum.Enum):
+    LOST =" Đã mất"
+    DAMAGED="Hư hỏng"
 
 
 # ================= BASE =================
@@ -287,9 +290,9 @@ class IncidentReport(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     borrow_slip_id = db.Column(db.Integer, db.ForeignKey('borrow_slip.id'), nullable=False)
     type = db.Column(db.Enum(IncidentTypeEnum), nullable=False)
-    description = db.Column(db.Text, nullable=False)  # Mô tả tình trạng hư hỏng
-    fine_amount = db.Column(db.Float, default=0.0)  # Số tiền yêu cầu bồi thường
+    description = db.Column(db.Text, nullable=False)
+    fine_amount = db.Column(db.Float, default=0.0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    status = db.Column(db.String(20), default="Pending")  # Pending, Resolved
+    status = db.Column(db.String(20), default="Pending")
 
     borrow_slip = db.relationship('BorrowSlip', backref='incidents')

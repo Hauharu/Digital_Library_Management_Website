@@ -151,41 +151,48 @@
 
 <div class="modal fade" id="bookModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <form id="bookForm" method="POST" enctype="multipart/form-data"
-              class="modal-content border-0 shadow-lg rounded-4">
+        <form id="bookForm" method="POST" enctype="multipart/form-data" class="modal-content border-0 shadow-lg rounded-4">
             <div class="modal-header border-0 pb-0">
                 <h5 class="fw-bold px-2 mt-3" id="modalTitle">Thêm sách mới</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <div class="row g-3">
-                    <div class="col-md-8">
+                    <div class="col-md-6">
                         <label class="form-label fw-bold small">Tiêu đề sách</label>
-                        <input type="text" name="title" class="form-control bg-light border-0" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold small">Tác giả</label>
-                        <input type="text" name="author" class="form-control bg-light border-0" required>
+                        <input type="text" name="title" id="form-title" class="form-control bg-light border-0" required>
                     </div>
                     <div class="col-md-6">
+                        <label class="form-label fw-bold small">Tác giả</label>
+                        <input type="text" name="author" id="form-author" class="form-control bg-light border-0" required>
+                    </div>
+                    <div class="col-md-4">
                         <label class="form-label fw-bold small">Thể loại</label>
-                        <select name="category_id" class="form-select bg-light border-0">
+                        <select name="category_id" id="form-category" class="form-select bg-light border-0">
                             {% for cat in categories %}
                             <option value="{{ cat.id }}">{{ cat.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Ngôn ngữ</label>
+                        <input type="text" name="language" id="form-language" class="form-control bg-light border-0" placeholder="VD: Tiếng Việt">
+                    </div>
+                    <div class="col-md-4">
                         <label class="form-label fw-bold small">ISBN</label>
-                        <input type="text" name="isbn" class="form-control bg-light border-0">
+                        <input type="text" name="isbn" id="form-isbn" class="form-control bg-light border-0">
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold small">Thông tin xuất bản</label>
+                        <input type="text" name="publication_info" id="form-pub" class="form-control bg-light border-0" placeholder="NXB Trẻ, 2023...">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-bold small">Giá bìa (VNĐ)</label>
-                        <input type="number" name="price" class="form-control bg-light border-0" required>
+                        <input type="number" name="price" id="form-price" class="form-control bg-light border-0" required>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-bold small">Số lượng tổng</label>
-                        <input type="number" name="total_quantity" class="form-control bg-light border-0" required>
+                        <input type="number" name="total_quantity" id="form-total" class="form-control bg-light border-0" required>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-bold small">Ảnh bìa</label>
@@ -193,7 +200,7 @@
                     </div>
                     <div class="col-12">
                         <label class="form-label fw-bold small">Mô tả nội dung</label>
-                        <textarea name="description" class="form-control bg-light border-0" rows="3"></textarea>
+                        <textarea name="description" id="form-desc" class="form-control bg-light border-0" rows="3"></textarea>
                     </div>
                 </div>
             </div>
@@ -231,7 +238,7 @@
             <div class="modal-body p-4">
                 <div class="row">
                     <div class="col-md-4 text-center mb-3">
-                        <img id="view-book-image" src="" class="img-fluid rounded-3 shadow" style="max-height: 350px; object-fit: cover;">
+                        <img id="view-book-image" src="" class="img-fluid rounded-3 shadow" style="max-height: 350px; width: 100%; object-fit: cover;">
                     </div>
                     <div class="col-md-8">
                         <h3 id="view-book-title" class="fw-bold text-dark mb-1"></h3>
@@ -239,31 +246,36 @@
 
                         <div class="row g-3">
                             <div class="col-6">
-                                <label class="small text-muted text-uppercase fw-bold">Thể loại</label>
-                                <p id="view-book-category" class="fw-bold text-primary"></p>
+                                <label class="small text-muted text-uppercase fw-bold d-block">Thể loại</label>
+                                <span id="view-book-category" class="badge bg-soft-primary text-primary fs-6"></span>
                             </div>
                             <div class="col-6">
-                                <label class="small text-muted text-uppercase fw-bold">Mã ISBN</label>
+                                <label class="small text-muted text-uppercase fw-bold d-block">Ngôn ngữ</label>
+                                <p id="view-book-language" class="fw-bold"></p>
+                            </div>
+                            <div class="col-12">
+                                <label class="small text-muted text-uppercase fw-bold d-block">Xuất bản</label>
+                                <p id="view-book-pub" class="fw-bold text-dark"></p>
+                            </div>
+                            <div class="col-4">
+                                <label class="small text-muted text-uppercase fw-bold d-block">ISBN</label>
                                 <p id="view-book-isbn" class="fw-bold"></p>
                             </div>
-                            <div class="col-6">
-                                <label class="small text-muted text-uppercase fw-bold">Giá bìa</label>
+                            <div class="col-4">
+                                <label class="small text-muted text-uppercase fw-bold d-block">Giá bìa</label>
                                 <p id="view-book-price" class="fw-bold text-success"></p>
                             </div>
-                            <div class="col-6">
-                                <label class="small text-muted text-uppercase fw-bold">Trạng thái kho</label>
+                            <div class="col-4">
+                                <label class="small text-muted text-uppercase fw-bold d-block">Kho</label>
                                 <p id="view-book-stock" class="fw-bold"></p>
                             </div>
                             <div class="col-12">
-                                <label class="small text-muted text-uppercase fw-bold">Mô tả nội dung</label>
-                                <p id="view-book-description" class="text-dark bg-light p-3 rounded-3 mt-1" style="white-space: pre-line;"></p>
+                                <label class="small text-muted text-uppercase fw-bold d-block">Mô tả</label>
+                                <div id="view-book-description" class="bg-light p-3 rounded-3 small text-dark" style="max-height: 150px; overflow-y: auto;"></div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Đóng cửa sổ</button>
             </div>
         </div>
     </div>

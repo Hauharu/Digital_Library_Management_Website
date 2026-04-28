@@ -1,70 +1,105 @@
-document.querySelector('[data-bs-target="#addBookModal"]')?.addEventListener('click', () => {
-    const form = document.getElementById('bookForm');
-    form.reset();
-    form.action = '/staff/add-book';
-    document.getElementById('modalTitle').innerText = 'Thêm sách mới';
-    document.getElementById('btnSubmit').innerText = 'Lưu dữ liệu';
-    new bootstrap.Modal(document.getElementById('bookModal')).show();
+// Đợi DOM load xong mới thực thi
+document.addEventListener('DOMContentLoaded', function() {
+
+    // 1. Xử lý nút "Thêm sách mới"
+    const addBtn = document.querySelector('[data-bs-target="#addBookModal"]');
+    if (addBtn) {
+        addBtn.addEventListener('click', (e) => {
+            // Ngăn chặn hành vi mặc định nếu cần
+            const form = document.getElementById('bookForm');
+            form.reset();
+            // Đảm bảo action đúng với route thêm sách trong Python
+            form.action = '/staff/add-book';
+            document.getElementById('modalTitle').innerText = 'Thêm ấn phẩm mới';
+            document.getElementById('btnSubmit').innerText = 'Lưu dữ liệu';
+
+            // Nếu bạn dùng chung modal 'bookModal' cho cả thêm và sửa:
+            const myModal = new bootstrap.Modal(document.getElementById('bookModal'));
+            myModal.show();
+        });
+    }
 });
 
+// 2. Hàm mở Modal chỉnh sửa (Sửa lại selector để lấy đủ các trường mới)
 async function openEditModal(bookId) {
     console.log("Đang lấy dữ liệu cho sách ID:", bookId);
     try {
+        // Lưu ý: nên dùng đường dẫn tuyệt đối /staff/api/... để tránh lỗi route
         const response = await fetch(`/staff/api/book/${bookId}`);
-        if (!response.ok) throw new Error("Mạng có vấn đề");
+        if (!response.ok) throw new Error("Không thể kết nối với máy chủ");
 
         const book = await response.json();
-        console.log("Dữ liệu nhận được:", book);
-
         const form = document.getElementById('bookForm');
-        // Quan trọng: Đổi action của form sang route edit
-        form.action = `/staff/edit-book/${book.id}`;
 
-        document.getElementById('modalTitle').innerText = 'Chỉnh sửa thông tin: ' + book.title;
+        // Đổi action sang route edit
+        form.action = `/staff/edit-book/${book.id}`;
+        document.getElementById('modalTitle').innerText = 'Chỉnh sửa: ' + book.title;
         document.getElementById('btnSubmit').innerText = 'Cập nhật thay đổi';
 
-        // Điền dữ liệu vào các ô input
-        form.querySelector('[name="title"]').value = book.title;
-        form.querySelector('[name="author"]').value = book.author;
-        form.querySelector('[name="isbn"]').value = book.isbn;
-        form.querySelector('[name="price"]').value = book.price;
-        form.querySelector('[name="total_quantity"]').value = book.total_quantity;
+        // Điền dữ liệu vào các ô input (Dùng querySelector để chính xác)
+        form.querySelector('[name="title"]').value = book.title || '';
+        form.querySelector('[name="author"]').value = book.author || '';
+        form.querySelector('[name="isbn"]').value = book.isbn || '';
+        form.querySelector('[name="price"]').value = book.price || 0;
+        form.querySelector('[name="total_quantity"]').value = book.total_quantity || 0;
         form.querySelector('[name="category_id"]').value = book.category_id;
-        form.querySelector('[name="description"]').value = book.description;
+        form.querySelector('[name="description"]').value = book.description || '';
 
-        // Kích hoạt Modal của Bootstrap
+        // --- THÊM CÁC TRƯỜNG MỚI THEO MODEL ---
+        if(form.querySelector('[name="language"]'))
+            form.querySelector('[name="language"]').value = book.language || '';
+        if(form.querySelector('[name="publication_info"]'))
+            form.querySelector('[name="publication_info"]').value = book.publication_info || '';
+
         const myModal = new bootstrap.Modal(document.getElementById('bookModal'));
         myModal.show();
     } catch (e) {
         console.error(e);
-        alert("Lỗi: Không thể tải dữ liệu sách. Hãy kiểm tra console!");
+        alert("Lỗi: " + e.message);
     }
 }
+
+// 3. Hàm xem chi tiết (Thêm hiển thị Ngôn ngữ & NXB)
 async function openViewModal(bookId) {
     try {
-        const response = await fetch(`./api/book/${bookId}`);
-        if (!response.ok) throw new Error("Lỗi mạng");
+        const response = await fetch(`/staff/api/book/${bookId}`);
+        if (!response.ok) throw new Error("Lỗi tải thông tin");
         const book = await response.json();
 
+        // Gán dữ liệu vào Modal View
         document.getElementById('view-book-title').innerText = book.title;
-        document.getElementById('view-book-author').innerText = `Tác giả: ${book.author}`;
-        document.getElementById('view-book-category').innerText = book.category_name; // Nhớ check API trả về tên hay ID
-        document.getElementById('view-book-isbn').innerText = book.isbn || 'N/A';
-        document.getElementById('view-book-price').innerText = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(book.price);
-        document.getElementById('view-book-stock').innerText = `Còn ${book.available_quantity} / Tổng ${book.total_quantity}`;
-        document.getElementById('view-book-description').innerText = book.description || 'Không có mô tả chi tiết.';
-        
-        const imgTag = document.getElementById('view-book-image');
-        imgTag.src = book.image ? book.image : 'https://via.placeholder.com/300x450?text=No+Cover';
+        document.getElementById('view-book-author').innerText = book.author;
+        document.getElementById('view-book-category').innerText = book.category_name;
+        document.getElementById('view-book-isbn').innerText = book.isbn || '---';
 
-        new bootstrap.Modal(document.getElementById('viewBookModal')).show();
+        // Hiển thị thêm các trường mới
+        if(document.getElementById('view-book-language'))
+            document.getElementById('view-book-language').innerText = book.language || 'Tiếng Việt';
+        if(document.getElementById('view-book-pub'))
+            document.getElementById('view-book-pub').innerText = book.publication_info || 'Chưa rõ NXB';
+
+        // Format tiền tệ Việt Nam
+        document.getElementById('view-book-price').innerText = new Intl.NumberFormat('vi-VN').format(book.price) + ' đ';
+
+        document.getElementById('view-book-stock').innerText = `${book.available_quantity} / ${book.total_quantity}`;
+        document.getElementById('view-book-description').innerText = book.description || 'Không có mô tả.';
+
+        const imgTag = document.getElementById('view-book-image');
+        // Nếu có ảnh thì dùng, không thì dùng ảnh mặc định của bạn
+        imgTag.src = book.image ? book.image : '/static/images/sachmau.png';
+
+        const viewModal = new bootstrap.Modal(document.getElementById('viewBookModal'));
+        viewModal.show();
     } catch (e) {
         console.error(e);
-        alert("Không thể tải thông tin chi tiết!");
+        alert("Lỗi: " + e.message);
     }
 }
+
+// 4. Xác nhận xóa
 function confirmDelete(bookId) {
     const form = document.getElementById('deleteForm');
     form.action = `/staff/delete-book/${bookId}`;
-    new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    deleteModal.show();
 }

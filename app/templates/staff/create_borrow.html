@@ -1,101 +1,81 @@
 {% extends "layout/base_staff.html" %}
 
 {% block extra_css %}
-<style>
-    :root { --navy: #1e293b; --primary-blue: #2563eb; }
-    body { background-color: #f8fafc; }
-    .text-navy { color: var(--navy); }
-    .step-badge {
-        width: 32px; height: 32px; background: var(--navy); color: white;
-        border-radius: 50%; display: flex; align-items: center;
-        justify-content: center; font-weight: bold; margin-right: 10px;
-    }
-    .avatar-reader {
-        width: 50px; height: 50px; background: var(--primary-blue);
-        color: white; border-radius: 12px; display: flex;
-        align-items: center; justify-content: center;
-        font-size: 20px; font-weight: bold;
-    }
-    .bg-primary-subtle { background-color: #eff6ff !important; border: 1px solid #dbeafe; }
-    .bg-danger-subtle { background-color: #fef2f2 !important; border: 1px solid #fee2e2; }
-    .btn-navy { background-color: var(--navy); color: white; border-radius: 50px; }
-    .btn-navy:hover { background-color: #0f172a; color: white; }
-    .table thead th { background-color: #f1f5f9; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
-    .card { border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border-radius: 1rem; }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/create_borrow.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4 px-4">
-    <div class="row mb-4">
-        <div class="col">
-            <h2 class="fw-bold text-navy"><i class="fa-solid fa-hand-holding-hand me-2"></i>Hỗ Trợ Mượn Tại Quầy</h2>
-            <p class="text-muted">Tìm kiếm độc giả bằng SĐT/Email và lập phiếu mượn nhanh.</p>
-        </div>
-    </div>
-
-    <div class="row g-4">
-        <div class="col-lg-4">
-            <div class="card h-100">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center mb-4">
-                        <div class="step-badge">1</div>
-                        <h5 class="fw-bold mb-0">Độc giả</h5>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label small fw-bold text-muted">SĐT hoặc Email</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-0"><i class="fas fa-search"></i></span>
-                            <input type="text" id="phone-input" class="form-control bg-light border-0" placeholder="Nhập SĐT hoặc Email...">
-                            <button class="btn btn-primary" type="button" onclick="checkReader()">Tìm</button>
-                        </div>
-                    </div>
-
-                    <div id="reader-info" class="d-none">
-                        <div class="p-3 rounded-4 bg-primary-subtle">
-                            <div class="d-flex align-items-center">
-                                <div class="avatar-reader me-3" id="reader-avatar">?</div>
-                                <div>
-                                    <div class="fw-bold text-primary fs-5" id="reader-name-display"></div>
-                                    <div class="text-muted small" id="reader-phone-display"></div>
-                                    <input type="hidden" id="selected-user-id">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mt-3 text-center">
-                            <span class="badge bg-success-subtle text-success border border-success-simple px-3 py-2">
-                                <i class="fas fa-user-check me-1"></i> Đã xác thực
-                            </span>
-                        </div>
-                    </div>
-
-                    <div id="quick-reg-form" class="d-none">
-                        <div class="p-3 rounded-4 bg-danger-subtle">
-                            <p class="text-danger small fw-bold mb-2"><i class="fas fa-exclamation-circle me-1"></i> Chưa có tài khoản!</p>
-                            <label class="small mb-1">Họ và Tên độc giả:</label>
-                            <input type="text" id="new-name" class="form-control mb-3 border-0 shadow-sm" placeholder="Nguyễn Văn A...">
-                            <button class="btn btn-danger w-100 rounded-pill fw-bold" onclick="quickRegister()">
-                                Tạo tài khoản ngay
-                            </button>
-                        </div>
-                    </div>
-                </div>
+<div class="main-wrapper py-5">
+    <div class="container">
+        <div class="d-flex align-items-center mb-5 justify-content-between">
+            <div>
+                <h2 class="title-main mb-1"><i class="fa-solid fa-book-bookmark me-3 text-primary"></i>Lập Phiếu Mượn Tại Quầy</h2>
+                <p class="text-muted mb-0">Hệ thống hỗ trợ mượn sách nhanh và kiểm tra độc giả thông minh</p>
+            </div>
+            <div class="current-date-badge">
+                <i class="fa-regular fa-calendar-check me-2"></i> {{ today_date }}
             </div>
         </div>
 
-        <div class="col-lg-8">
-            <div class="card h-100">
-                <div class="card-body p-4">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="modern-card p-4 h-100">
                     <div class="d-flex align-items-center mb-4">
-                        <div class="step-badge">2</div>
-                        <h5 class="fw-bold mb-0">Danh sách mượn</h5>
+                        <span class="step-num">01</span>
+                        <h5 class="fw-bold m-0 ms-2">Xác thực độc giả</h5>
                     </div>
 
-                    <div class="row g-2 mb-4">
-                        <div class="col-md-9">
-                            <select id="book-select" class="form-select border-0 bg-light">
-                                <option value="">-- Chọn sách muốn mượn --</option>
+                    <div class="search-box-v2 mb-4">
+                        <label class="small fw-bold text-muted mb-2 d-block">SĐT HOẶC EMAIL</label>
+                        <div class="input-group-custom">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="phone-input" placeholder="038... hoặc email@..." autocomplete="off">
+                            <button onclick="checkReader()" class="btn-search-inner">Kiểm tra</button>
+                        </div>
+                    </div>
+
+                    <div id="reader-info" class="reader-card-result d-none animate__animated animate__fadeIn">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="avatar-circle" id="reader-avatar">T</div>
+                            <div class="ms-3">
+                                <div class="fw-bold text-dark fs-5" id="reader-name-display">---</div>
+                                <div class="text-muted small" id="reader-phone-display">---</div>
+                                <input type="hidden" id="selected-user-id">
+                            </div>
+                        </div>
+                        <div id="reader-status-box" class="d-flex gap-2">
+                            </div>
+                    </div>
+
+                    <div id="quick-reg-form" class="quick-reg-container d-none">
+                        <div class="alert alert-soft-blue border-0 small">
+                            <i class="fa-solid fa-user-plus me-2"></i>Độc giả mới? Nhập tên để tạo nhanh:
+                        </div>
+                        <input type="text" id="new-name" class="input-minimal mb-3" placeholder="Nhập họ và tên...">
+                        <button onclick="quickRegister()" class="btn-primary-v2 w-100">
+                            Tạo & Tiếp tục <i class="fa-solid fa-chevron-right ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="modern-card p-4 h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div class="d-flex align-items-center">
+                            <span class="step-num">02</span>
+                            <h5 class="fw-bold m-0 ms-2">Danh sách sách mượn</h5>
+                        </div>
+                        <span class="badge-total-books">Đang chọn: <b id="book-count">0</b></span>
+                    </div>
+
+                    <div class="d-flex gap-3 mb-4">
+                        <div class="flex-grow-1 position-relative">
+                            <i class="fa-solid fa-book-open select-icon-inside"></i>
+                            <select id="book-select" class="select-modern">
+                                <option value="">--- Tìm tên sách hoặc ISBN ---</option>
                                 {% for book in books %}
                                 <option value="{{ book.id }}" data-price="{{ book.price }}">
                                     {{ book.title }} (Còn: {{ book.available_quantity }})
@@ -103,38 +83,36 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="col-md-3">
-                            <button class="btn btn-navy w-100" onclick="addBookToQueue()">
-                                <i class="fas fa-plus"></i> Thêm
-                            </button>
-                        </div>
+                        <button onclick="addBookToQueue()" class="btn-add-item">
+                            <i class="fa-solid fa-plus me-2"></i>Thêm sách
+                        </button>
                     </div>
 
-                    <div class="table-responsive" style="min-height: 200px;">
-                        <table class="table align-middle">
+                    <div class="table-scroll-area">
+                        <table class="table-modern">
                             <thead>
                                 <tr>
-                                    <th class="ps-3 border-0">Tên sách</th>
-                                    <th class="border-0">Giá bìa</th>
-                                    <th class="border-0 text-end pe-3">Xóa</th>
+                                    <th>THÔNG TIN ẤN PHẨM</th>
+                                    <th width="120">SỐ LƯỢNG</th>
+                                    <th width="150">HẠN MƯỢN</th>
+                                    <th width="60" class="text-center">XÓA</th>
                                 </tr>
                             </thead>
                             <tbody id="borrow-list">
                                 </tbody>
                         </table>
-                        <div id="empty-list-msg" class="text-center py-5 text-muted opacity-50">
-                            <i class="fas fa-shopping-basket fa-3x mb-2"></i>
-                            <p>Chưa chọn sách nào</p>
+                        <div id="empty-list-msg" class="empty-placeholder py-5">
+                            <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="60" class="mb-3 opacity-25">
+                            <p class="text-muted">Chưa có sách nào trong phiếu mượn</p>
                         </div>
                     </div>
 
-                    <div class="mt-4 pt-4 border-top">
-                        <div class="d-flex justify-content-between mb-3">
-                            <span class="text-muted">Tổng số lượng: <strong id="book-count" class="text-dark">0</strong></span>
-                            <span class="text-muted">Thời hạn trả: <strong class="text-primary">14 ngày</strong></span>
+                    <div class="mt-4 pt-4 border-top d-flex justify-content-between align-items-center">
+                        <div class="text-muted small">
+                            <i class="fa-solid fa-circle-info me-1"></i> Mặc định hạn trả là 14 ngày.
                         </div>
-                        <button class="btn btn-primary btn-lg w-100 rounded-4 py-3 fw-bold shadow" onclick="submitBorrowSlip()">
-                            HOÀN TẤT & CHO MƯỢN
+                        <button onclick="submitBorrowSlip()" class="btn-submit-final">
+                            XÁC NHẬN CHO MƯỢN <i class="fa-solid fa-check-double ms-2"></i>
                         </button>
                     </div>
                 </div>
@@ -142,8 +120,7 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/borrow_process.js') }}"></script>
+{% endblock %}
 {% endblock %}
