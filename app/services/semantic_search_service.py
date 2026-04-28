@@ -26,7 +26,7 @@ class SemanticSearchService:
             return {}
 
         model = cls.get_model()
-        texts = [f"{b.title} {b.description or ''}" for b in books]
+        texts = [f"{b.title} {b.author} {b.category.name} {b.description or ''}" for b in books]
         embeddings = model.encode(texts, show_progress_bar=False)
         
         cache = {b.id: emb for b, emb in zip(books, embeddings)}
@@ -55,7 +55,7 @@ class SemanticSearchService:
         if new_books:
             print(f"--- Đang phân tích ý nghĩa cho {len(new_books)} sách mới... ---")
             model = cls.get_model()
-            new_texts = [f"{b.title} {b.description or ''}" for b in new_books]
+            new_texts = [f"{b.title} {b.author} {b.category.name} {b.description or ''}" for b in new_books]
             new_embeddings = model.encode(new_texts, show_progress_bar=False)
             
             for b, emb in zip(new_books, new_embeddings):

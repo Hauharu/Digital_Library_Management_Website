@@ -57,8 +57,13 @@ pip install -r requirements.txt
 CREATE DATABASE library_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-#### 4. Cấu hình biến môi trường (.env)
-Dự án sử dụng file `.env` để quản lý các cấu hình bảo mật.
+#### 4. Cấu hình thông tin dự án (`app/config.py` hoặc `.env`)
+Bạn có 2 cách để cấu hình các thông số kết nối (Database, Email, Cloudinary...):
+
+**Cách 1: Sửa trực tiếp trong code (Dành cho môi trường dev)**
+- Mở file `app/config.py` và thay đổi trực tiếp các giá trị mặc định trong hàm `os.getenv()` thành thông tin của bạn.
+
+**Cách 2: Sử dụng file `.env` (Khuyên dùng, bảo mật cao)**
 1. Tạo một file tên là `.env` ở thư mục gốc của project (ngang hàng với `index.py`).
 2. Copy và dán đoạn code sau vào file `.env`, đồng thời **thay thế các giá trị bằng thông tin thực tế** của bạn:
 
