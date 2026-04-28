@@ -28,6 +28,8 @@ class BorrowStatusEnum(enum.Enum):
     Borrowing = "Đang mượn"
     Returned = "Đã trả"
     Overdue = "Quá hạn"
+    Lost = "Đã mất"
+    Damaged = "Hư hỏng"
 
 
 class InvoiceStatusEnum(enum.Enum):
@@ -49,6 +51,9 @@ class PaymentMethodEnum(enum.Enum):
     MoMo = "MoMo"
     ZaloPay = "ZaloPay"
     VNPay = "VNPay"
+class IncidentTypeEnum(enum.Enum):
+    LOST =" Đã mất"
+    DAMAGED="Hư hỏng"
 
 
 # ================= BASE =================
@@ -100,7 +105,7 @@ class Book(Base):
         db.CheckConstraint('available_quantity >= 0'),
         db.CheckConstraint('total_quantity >= available_quantity'),
     )
-    isbn = db.Column(db.String(20))
+    isbn = db.Column(db.String(20), unique=True)
     title = db.Column(db.String(255), nullable=False)
     author = db.Column(db.String(255))
     description = db.Column(db.Text)
@@ -156,6 +161,10 @@ class BorrowSlip(Base):
 
     borrow_request_id = db.Column(db.Integer, db.ForeignKey("borrow_request.id"))
     borrow_request = db.relationship("BorrowRequest", backref=db.backref("borrow_slip", uselist=False))
+
+    @property
+    def total_fine(self):
+        return sum(inv.amount for inv in self.invoices)
 
 
 # ================= INVOICE =================
@@ -267,10 +276,23 @@ class Notification(Base):
 # ================= VIEW HISTORY =================
 class ViewHistory(Base):
     __tablename__ = 'view_history'
-    
+
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
     viewed_at = db.Column(db.DateTime, default=datetime.now)
 
     book = db.relationship('Book', backref='view_logs', lazy='selectin')
-    user = db.relationship('User', backref='view_history', lazy='selectin')
+    user = db.relationship('User', backref='view_history', lazy='selectin')
+
+
+
+class IncidentReport(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    borrow_slip_id = db.Column(db.Integer, db.ForeignKey('borrow_slip.id'), nullable=False)
+    type = db.Column(db.Enum(IncidentTypeEnum), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    fine_amount = db.Column(db.Float, default=0.0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(20), default="Pending")
+
+    borrow_slip = db.relationship('BorrowSlip', backref='incidents')

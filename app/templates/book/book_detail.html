@@ -69,7 +69,7 @@
         <button class="btn-borrow disabled" disabled>Đang chờ duyệt</button>
 
         {% elif st and st.request_status == 'approved' %}
-        <a class="btn-borrow approved" href="{{ url_for('user.request_list') }}">Đã duyệt - Xem</a>
+        <a class="btn-borrow approved" href="{{ url_for('main.borrow_history') }}">Đã duyệt - Xem</a>
 
         {% else %}
         {% if book.quantity is not none and book.quantity <= 0 %} <button class="btn-borrow disabled" disabled>Hết

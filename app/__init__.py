@@ -8,7 +8,7 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from authlib.integrations.flask_client import OAuth
 import cloudinary
-
+from flask_apscheduler import APScheduler
 
 
 
@@ -19,7 +19,7 @@ socketio = SocketIO(cors_allowed_origins="*", async_mode='eventlet')
 migrate = Migrate()
 mail = Mail()
 oauth = OAuth()
-
+scheduler = APScheduler()
 
 def create_app(config_name=None):
     app = Flask(__name__)
@@ -45,6 +45,8 @@ def create_app(config_name=None):
     oauth.init_app(app)
 
     CORS(app)
+    scheduler.init_app(app)
+    scheduler.start()
 
     # Cloudinary Config
     cloudinary.config(
@@ -129,6 +131,13 @@ def create_app(config_name=None):
         # Đếm số lượng bình luận chưa đọc thực tế
         unread_reviews_count = Review.query.filter_by(is_read=False).count()
         return dict(recent_discussions=recent, unread_reviews_count=unread_reviews_count)
+
+    @scheduler.task('cron', id='do_notify_overdue', hour=8, minute=0)
+    def scheduled_overdue_job():
+        with app.app_context():
+            from app.services.staff_service import StaffService
+            StaffService.notify_overdue_slips()
+            print("Đã thực hiện gửi mail nhắc quá hạn tự động lúc 8h sáng.")
 
     return app
 

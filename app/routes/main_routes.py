@@ -10,6 +10,7 @@ from app.services.book_service import BookService
 from flask import jsonify
 from datetime import datetime, date, timedelta
 from sqlalchemy import func
+from app.services.email_service import EmailService
 from app.services.recommendation_service import RecommendationService
 from app.services.semantic_search_service import SemanticSearchService
 from app.services.prediction_service import PredictionService
@@ -20,19 +21,19 @@ main_bp = Blueprint('main', __name__)
 def index():
     featured_books = Book.query.order_by(Book.view_count.desc()).limit(10).all()
     related_books = Book.query.order_by(db.func.random()).limit(10).all()
-    
+
     recommended_books = []
     user_fav_ids = []
-    
+
     if current_user.is_authenticated:
         from app.models import Favorite
         user_favs = Favorite.query.filter_by(user_id=current_user.id).all()
         user_fav_ids = [f.book_id for f in user_favs]
-        
+
         recommended_books = RecommendationService.get_recommendations(current_user.id, limit=10)
-    
-    return render_template('index.html', 
-                           featured_books=featured_books, 
+
+    return render_template('index.html',
+                           featured_books=featured_books,
                            related_books=related_books,
                            recommended_books=recommended_books,
                            user_fav_ids=user_fav_ids)
@@ -82,13 +83,13 @@ def book_detail(book_id):
     if not book.view_count:
         book.view_count = 0
     book.view_count += 1
-    
+
     # Ghi nhận lịch sử xem cá nhân nếu đã đăng nhập
     if current_user.is_authenticated:
         from app.models import ViewHistory
         new_view = ViewHistory(user_id=current_user.id, book_id=book.id)
         db.session.add(new_view)
-        
+
     db.session.commit()
             
     related_books = Book.query.filter(Book.id != book.id).all()
@@ -131,6 +132,7 @@ def book_detail(book_id):
 
     from app.models import Review
     discussions = Review.query.filter_by(book_id=book.id).order_by(Review.created_at.asc()).all()
+
     
     return render_template(
         'book/book_detail.html',
@@ -191,7 +193,6 @@ def staff_dashboard():
                            current_time=now,
                            low_stock_books=low_stock_books,
                            top_books=top_books,
-                           predicted_demands=predicted_demands,
                            now=datetime.now())
 
 
@@ -210,7 +211,7 @@ def search():
     
     filters = {}
     active_filter_labels = {}
-    
+
     if category and category.strip():
         cat_id = int(category) if category.isdigit() else category
         filters['category'] = cat_id
@@ -218,7 +219,7 @@ def search():
         cat_obj = Category.query.get(cat_id) if isinstance(cat_id, int) else None
         if cat_obj:
             active_filter_labels['category'] = cat_obj.name
-            
+
     if language and language.strip():
         filters['language'] = language
         active_filter_labels['language'] = language
@@ -239,10 +240,10 @@ def search():
         "filters": filters,
         "active_filter_labels": active_filter_labels
     }
-    
+
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return render_template("book/partials/_search_results_grid.html", **template_data)
-    
+
     return render_template("book/search_results.html", filter_options=filter_options, **template_data)
 
 
@@ -262,18 +263,18 @@ def search_semantic():
     query = request.args.get('q', '').strip()
     if not query:
         return redirect(url_for('main.search'))
-    
+
     books = SemanticSearchService.search(query, limit=12)
-    
+
     template_data = {
         "search_query": query,
         "books": books,
         "is_semantic": True
     }
-    
+
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return render_template("book/partials/_search_results_grid.html", **template_data)
-    
+
     return render_template("book/search_results.html", **template_data)
 
 
@@ -327,6 +328,13 @@ def approve_borrow_request(request_id):
     borrow_request.book.available_quantity -= quantity
     db.session.commit()
 
+    EmailService.send_approve_notification(
+        borrow_request.reader.first_name,
+        borrow_request.reader.email,
+        borrow_request.book.title,
+        due_date.strftime('%d/%m/%Y')
+    )
+
     flash('Đã duyệt yêu cầu mượn và trừ tồn kho thành công.', 'success')
     return redirect(url_for('main.staff_dashboard'))
 
@@ -344,6 +352,15 @@ def reject_borrow_request(request_id):
 
     borrow_request.status = RequestStatusEnum.Rejected
     db.session.commit()
+
+    from app.services.email_service import EmailService
+    EmailService.send_reject_notification(
+        borrow_request.reader.first_name,
+        borrow_request.reader.email,
+        borrow_request.book.title,
+        "Yêu cầu không phù hợp hoặc sách hiện không khả dụng."
+    )
+
     flash('Đã từ chối yêu cầu mượn.', 'info')
     return redirect(url_for('main.staff_dashboard'))
 
@@ -466,7 +483,7 @@ def mark_all_notifications_read():
 def toggle_favorite(book_id):
     from app.models import Favorite
     favorite = Favorite.query.filter_by(user_id=current_user.id, book_id=book_id).first()
-    
+
     if favorite:
         db.session.delete(favorite)
         db.session.commit()
