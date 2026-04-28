@@ -29,7 +29,7 @@ class PredictionService:
                 'view_count': b.view_count or 0,
                 'rating': b.average_rating,
                 'current_available': b.available_quantity,
-                'target_borrow_count': borrow_dict.get(b.id, 0) # Đây là label
+                'target_borrow_count': borrow_dict.get(b.id, 0) 
             })
         
         import pandas as pd
