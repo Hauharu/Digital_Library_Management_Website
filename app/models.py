@@ -52,10 +52,6 @@ class PaymentMethodEnum(enum.Enum):
     ZaloPay = "ZaloPay"
     VNPay = "VNPay"
 
-class IncidentTypeEnum(enum.Enum):
-    LOST = "Mất sách"
-    DAMAGED = "Hư hỏng"
-
 
 # ================= BASE =================
 class Base(db.Model):
@@ -108,7 +104,7 @@ class Book(Base):
     )
     isbn = db.Column(db.String(20), unique=True)
     title = db.Column(db.String(255), nullable=False)
-    author = db.Column(db.String(100))
+    author = db.Column(db.String(255))
     description = db.Column(db.Text)
     language = db.Column(db.String(50))
     total_quantity = db.Column(db.Integer, default=0)
@@ -256,6 +252,10 @@ class Favorite(Base):
     __table_args__ = (db.UniqueConstraint('user_id', 'book_id', name='unique_favorite'),)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+
+    book = db.relationship('Book', backref='favorited_by', lazy='selectin')
+    user = db.relationship('User', backref='favorites', lazy='selectin')
 
 
 # ================= NOTIFICATION =================
@@ -268,6 +268,19 @@ class Notification(Base):
     is_read = db.Column(db.Boolean, default=False)
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+
+# ================= VIEW HISTORY =================
+class ViewHistory(Base):
+    __tablename__ = 'view_history'
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    viewed_at = db.Column(db.DateTime, default=datetime.now)
+
+    book = db.relationship('Book', backref='view_logs', lazy='selectin')
+    user = db.relationship('User', backref='view_history', lazy='selectin')
+
 
 
 class IncidentReport(db.Model):

@@ -34,3 +34,11 @@
     max-width: 1400px;
     margin: 0 auto;
 }
+
+.hover-primary:hover {
+    color: #2563eb !important;
+}
+
+.transition-all {
+    transition: all 0.2s ease;
+}

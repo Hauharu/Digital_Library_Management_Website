@@ -204,6 +204,52 @@
                 </div>
             </div>
 
+            <div class="card border-0 shadow-sm rounded-4 mt-4 bg-light">
+                <div class="card-header bg-white py-3">
+                    <h6 class="fw-bold mb-0 text-info"><i class="fa-solid fa-brain me-2"></i>Dự báo nhu cầu mượn</h6>
+                </div>
+                <div class="card-body">
+                    {% for demand in predicted_demands %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small fw-medium text-truncate" style="max-width: 70%;">{{ demand.title }}</span>
+                            <span class="badge {{ 'bg-danger' if demand.risk_level == 'High' else 'bg-success' }} small">
+                                {{ demand.risk_level }}
+                            </span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar {{ 'bg-warning' if demand.predicted_demand > demand.current_stock else 'bg-info' }}"
+                                 role="progressbar"
+                                 style="width: {{ [100, (demand.predicted_demand * 20)]|min }}%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between x-small text-muted mt-1">
+                            <span>Dự báo: {{ demand.predicted_demand|round(1) }} lượt</span>
+                            <span>Tồn: {{ demand.current_stock }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <div class="d-grid mt-3">
+                        <button class="btn btn-sm btn-outline-info rounded-pill">Xem chi tiết phân tích</button>
+                    </div>
+                </div>
+            </div>
+
+    <div class="card shadow border-0">
+        <div class="card-header bg-dark text-white">DANH SÁCH YÊU CẦU MƯỢN SÁCH ĐANG CHỜ</div>
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Độc giả</th>
+                        <th>Tên sách</th>
+                        <th>Ngày yêu cầu</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in requests %}
+                    <tr>
+                        <td>{{ req.reader.first_name }} {{ req.reader.last_name }}</td>
             <div class="card shadow border-0">
                 <div class="card-header bg-dark text-white">DANH SÁCH YÊU CẦU MƯỢN SÁCH ĐANG CHỜ</div>
                 <div class="card-body p-0">
