@@ -49,3 +49,11 @@ class Config:
 
     GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
+    VNPAY_TMN_CODE = os.environ.get("VNPAY_TMN_CODE")
+    VNPAY_HASH_SECRET = os.environ.get("VNPAY_HASH_SECRET")
+    VNPAY_PAYMENT_URL = os.environ.get("VNPAY_PAYMENT_URL")
+    VNPAY_RETURN_URL = os.environ.get("VNPAY_RETURN_URL")
+
+    PAYPAL_CLIENT_ID = os.environ.get("PAYPAL_CLIENT_ID")
+    PAYPAL_CLIENT_SECRET = os.environ.get("PAYPAL_CLIENT_SECRET")
+

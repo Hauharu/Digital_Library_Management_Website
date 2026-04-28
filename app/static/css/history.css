@@ -1,0 +1,9 @@
+/* CSS cho trang lịch sử mượn sách */
+body { background-color: #f8f9fa; }
+.card { transition: transform 0.2s; }
+.table thead th { font-size: 0.75rem; letter-spacing: 0.5px; color: #6c757d; }
+.bg-warning-subtle { background-color: #fff3cd !important; }
+.bg-success-subtle { background-color: #d1e7dd !important; }
+.bg-danger-subtle { background-color: #f8d7da !important; }
+.book-cover img { transition: scale 0.2s; }
+.book-cover img:hover { scale: 1.1; }

@@ -107,6 +107,19 @@
                         {% else %}
                         <span class="badge-status status-borrowing"><i class="fa-solid fa-circle-dot me-1"></i>ĐANG MƯỢN</span>
                         {% endif %}
+                        
+                        {% if slip.invoices %}
+                            {% set inv = slip.invoices[0] %}
+                            <div class="mt-2">
+                                {% if inv.status.name == 'Pending' %}
+                                    <span class="badge bg-warning text-dark small"><i class="fas fa-clock me-1"></i>Nợ: {{ "{:,.0f}".format(inv.amount) }}đ</span>
+                                {% elif inv.status.name == 'Offline' %}
+                                    <span class="badge bg-info text-white small"><i class="fas fa-money-bill me-1"></i>Chờ nộp tiền: {{ "{:,.0f}".format(inv.amount) }}đ</span>
+                                {% elif inv.status.name == 'Paid' %}
+                                    <span class="badge bg-success text-white small"><i class="fas fa-check-circle me-1"></i>Đã xong</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
                     </td>
                     <td class="text-end pe-4">
                         <div class="dropdown">
@@ -132,6 +145,16 @@
                                         <i class="fa-solid fa-triangle-exclamation"></i> Báo mất hoặc hư hỏng
                                     </a>
                                 </li>
+                                {% if slip.invoices and slip.invoices[0].status.name in ['Pending', 'Offline'] %}
+                                <li><hr class="dropdown-divider mx-2"></li>
+                                <li>
+                                    <form action="{{ url_for('staff.confirm_payment', invoice_id=slip.invoices[0].id) }}" method="POST">
+                                        <button type="submit" class="dropdown-item dropdown-item-premium text-primary fw-bold">
+                                            <i class="fas fa-hand-holding-dollar me-1"></i> Xác nhận đã thu tiền
+                                        </button>
+                                    </form>
+                                </li>
+                                {% endif %}
                             </ul>
                         </div>
                     </td>

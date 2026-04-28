@@ -33,7 +33,7 @@
                         <th class="py-3 text-uppercase small fw-bold text-center">Trạng thái duyệt</th>
                         <th class="py-3 text-uppercase small fw-bold">Thông tin mượn/trả</th>
                         <th class="py-3 text-uppercase small fw-bold text-center">Trả sách</th>
-                        <th class="pe-4 py-3 text-uppercase small fw-bold text-end">Tiền phạt</th>
+                        <th class="ps-5 py-3 text-uppercase small fw-bold text-start">Tiền phạt</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -48,7 +48,7 @@
                                 <div>
                                     <div class="fw-bold text-dark mb-1">{{ req.book.title }}</div>
                                     <div class="text-muted small"><i class="far fa-calendar-alt me-1"></i>Yêu cầu: {{
-                                        req.request_date.strftime('%d/%m/%Y') if req.request_date else 'N/A' }}
+                                         req.request_date.strftime('%d/%m/%Y') if req.request_date else 'N/A' }}
                                     </div>
                                 </div>
                             </div>
@@ -103,23 +103,51 @@
                             {% endif %}
                         </td>
 
-                        <td class="pe-4 text-end">
+                        <td class="ps-5">
                             {% if req.borrow_slip and req.borrow_slip.invoices %}
-                            {% set total_fine = req.borrow_slip.invoices | sum(attribute='amount') %}
+                            {% set unpaid_invoices = req.borrow_slip.invoices | selectattr('status.name', 'in', ['Pending', 'Offline', 'Overdue']) | list %}
+                            {% set total_unpaid = unpaid_invoices | sum(attribute='amount') %}
+                            {% set first_unpaid = unpaid_invoices | first %}
 
-                            {% if total_fine > 0 %}
-                            <span class="fw-bold text-danger">
-                {{ "{:,.0f}".format(total_fine) }} VNĐ
-            </span>
-                            <br>
-                            <small class="text-muted text-nowrap">
-                                (Phạt sự cố/quá hạn)
-                            </small>
+                            {% if total_unpaid > 0 %}
+                            <div class="d-flex flex-column align-items-start gap-2">
+                                <span class="fw-bold text-danger fs-6 mb-0">
+                                    {{ "{:,.0f}".format(total_unpaid) }} VNĐ
+                                </span>
+                                
+                                {% if first_unpaid %}
+                                    {% if first_unpaid.status.name == 'Offline' %}
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3">
+                                            <i class="fas fa-clock me-1"></i> {{ first_unpaid.status.value }}
+                                        </span>
+                                        <a href="{{ url_for('user.select_payment_method', invoice_id=first_unpaid.id) }}" 
+                                           class="btn btn-sm btn-primary shadow-sm rounded-pill px-3">
+                                            <i class="fas fa-exchange-alt me-1"></i> Đổi phương thức
+                                        </a>
+                                    {% else %}
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3">
+                                            <i class="fas fa-exclamation-circle me-1"></i> {{ first_unpaid.status.value }}
+                                        </span>
+                                        <a href="{{ url_for('user.select_payment_method', invoice_id=first_unpaid.id) }}" 
+                                           class="btn btn-sm btn-danger shadow-sm rounded-pill px-4 py-2">
+                                            <i class="fas fa-credit-card me-1"></i> Thanh toán ngay
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
                             {% else %}
-                            <span class="text-success fw-medium">0 VNĐ</span>
+                            <div class="d-flex flex-column align-items-start">
+                                <span class="text-success fw-bold fs-6">0 VNĐ</span>
+                                {% set paid_invoices = req.borrow_slip.invoices | selectattr('status.name', 'equalto', 'Paid') | list %}
+                                {% if paid_invoices %}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 mt-1">
+                                        <i class="fas fa-check-circle me-1"></i> {{ paid_invoices[0].status.value }}
+                                    </span>
+                                {% endif %}
+                            </div>
                             {% endif %}
                             {% else %}
-                            <span class="text-success fw-medium">0 VNĐ</span>
+                            <span class="text-success fw-medium"><i class="fas fa-check-circle me-1"></i>0 VNĐ</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -131,15 +159,5 @@
     </div>
 </div>
 
-<style>
-    /* CSS bổ sung để làm giao diện tinh tế hơn */
-    body { background-color: #f8f9fa; }
-    .card { transition: transform 0.2s; }
-    .table thead th { font-size: 0.75rem; letter-spacing: 0.5px; color: #6c757d; }
-    .bg-warning-subtle { background-color: #fff3cd !important; }
-    .bg-success-subtle { background-color: #d1e7dd !important; }
-    .bg-danger-subtle { background-color: #f8d7da !important; }
-    .book-cover img { transition: scale 0.2s; }
-    .book-cover img:hover { scale: 1.1; }
-</style>
-{% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}">
+{% endblock %}

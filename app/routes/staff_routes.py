@@ -31,6 +31,26 @@ def confirm_return(slip_id):
     flash(f"Đã nhận trả sách: {book_title}", "success")
     return redirect(url_for('staff.manage_orders'))
 
+@staff_bp.route('/confirm-payment/<int:invoice_id>', methods=['POST'])
+@login_required
+def confirm_payment(invoice_id):
+    invoice = Invoice.query.get_or_404(invoice_id)
+    invoice.status = InvoiceStatusEnum.Paid
+    
+    payment = Payment(
+        amount_paid=invoice.amount,
+        method=PaymentMethodEnum.Cash,
+        status=PaymentStatusEnum.Completed,
+        transaction_id=f"STAFF_CONFIRM_{invoice.id}_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+        invoice_id=invoice.id,
+        notes=f"Thủ thư xác nhận thanh toán tiền mặt tại quầy."
+    )
+    db.session.add(payment)
+    db.session.commit()
+    
+    flash("Đã xác nhận thanh toán thành công!", "success")
+    return redirect(url_for('staff.manage_orders'))
+
 @staff_bp.route('/approve-request/<int:request_id>', methods=['POST'])
 @login_required
 def approve_request(request_id):

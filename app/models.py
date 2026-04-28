@@ -37,6 +37,7 @@ class InvoiceStatusEnum(enum.Enum):
     Paid = "Đã thanh toán"
     Cancelled = "Đã hủy"
     Overdue = "Quá hạn nộp"
+    Offline = "Thanh toán offline"
 
 
 class PaymentStatusEnum(enum.Enum):
@@ -48,9 +49,10 @@ class PaymentStatusEnum(enum.Enum):
 
 class PaymentMethodEnum(enum.Enum):
     Cash = "Tiền mặt"
-    MoMo = "MoMo"
-    ZaloPay = "ZaloPay"
     VNPay = "VNPay"
+    PayPal = "PayPal"
+
+    
 class IncidentTypeEnum(enum.Enum):
     LOST =" Đã mất"
     DAMAGED="Hư hỏng"
