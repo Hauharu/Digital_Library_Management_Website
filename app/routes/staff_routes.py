@@ -169,7 +169,6 @@ def get_book_api(id):
 @staff_bp.route('/create-borrow')
 @login_required
 def create_borrow():
-    # Lấy danh sách sách còn trong kho để hiện ở ô Select
     books = Book.query.filter(Book.available_quantity > 0).all()
     return render_template('staff/create_borrow.html', books=books)
 
@@ -179,7 +178,6 @@ def create_borrow():
 def check_reader():
     try:
         q = request.args.get('phone')
-        # Tìm theo phone_number HOẶC email
         user = User.query.filter(or_(User.phone_number == q, User.email == q)).first()
 
         if user:
@@ -200,25 +198,20 @@ def check_reader():
 def api_quick_register():
     data = request.json
     try:
-        input_val = data.get('phone') # Giá trị từ ô nhập (SĐT hoặc Email)
+        input_val = data.get('phone')
         full_name = data.get('full_name', '').strip()
 
-        # 1. Xử lý Email thông minh
-        # Nếu input_val đã có chữ '@' thì đó là email, giữ nguyên.
-        # Nếu không có thì mới tạo email ảo từ SĐT.
         if "@" in input_val:
             final_email = input_val
-            final_username = input_val.split('@')[0] # Lấy phần trước @ làm username
+            final_username = input_val.split('@')[0]
         else:
             final_email = f"{input_val}@library.com"
             final_username = input_val
 
-        # 2. Tách tên
         name_parts = full_name.split()
         f_name = name_parts[-1] if name_parts else "Reader"
         l_name = " ".join(name_parts[:-1]) if len(name_parts) > 1 else "Người dùng"
 
-        # 3. Tạo User
         new_user = User(
             first_name=f_name,
             last_name=l_name,
@@ -235,7 +228,6 @@ def api_quick_register():
         db.session.commit()
 
         try:
-            # Nếu là email ảo (@library.com) thì không gửi được thật
             if "@library.com" not in final_email:
                 msg = Message(
                     subject="Chào mừng bạn đến với Thư viện số!",
