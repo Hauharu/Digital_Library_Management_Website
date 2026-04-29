@@ -38,7 +38,7 @@
                 <label class="filter-label"><i class="fa-solid fa-layer-group me-2"></i>Trạng thái</label>
                 <select name="status" class="form-select input-premium shadow-none">
                     <option value="">Tất cả</option>
-                    <option value="Borrowing">Đang mượn </option>
+                    <option value="Borrowing">Đang mượn</option>
                     <option value="Overdue">Đã quá hạn</option>
                 </select>
             </div>
@@ -65,7 +65,7 @@
                     <th class="ps-4">Mã phiếu</th>
                     <th>Độc giả mượn sách</th>
                     <th>Thông tin ấn phẩm</th>
-                    <th>Thời hạn </th>
+                    <th>Thời hạn</th>
                     <th class="text-center">Tình trạng</th>
                     <th class="text-end pe-4">Thao tác</th>
                 </tr>
@@ -74,36 +74,31 @@
                 {% for slip in active_slips %}
                 <tr>
                     <td class="ps-4">
-                            <span class="badge bg-light text-dark fw-800 p-2 px-3 border"
-                                  style="font-family: 'JetBrains Mono';">
-                                MS-{{ "%04d"|format(slip.id) }}
-                            </span>
+                        <span class="badge bg-light text-dark fw-800 p-2 px-3 border" style="font-family: 'JetBrains Mono';">
+                            MS-{{ "%04d"|format(slip.id) }}
+                        </span>
                     </td>
                     <td>
                         <div class="d-flex align-items-center">
                             <div class="avatar-circle me-3 bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center"
                                  style="width: 40px; height: 40px; border-radius: 50%;">
-                                {{ slip.user.first_name[0]|upper }}
+                                {{ slip.user.first_name[0]|upper if slip.user.first_name else 'U' }}
                             </div>
                             <div>
-                                <div class="fw-bold text-dark fs-6">{{ slip.user.last_name }} {{ slip.user.first_name
-                                    }}
-                                </div>
-                                <div class="text-muted small"><i class="fa-solid fa-envelope me-1"></i>{{
-                                    slip.user.email }}
-                                </div>
+                                <div class="fw-bold text-dark fs-6">{{ slip.user.last_name }} {{ slip.user.first_name }}</div>
+                                <div class="text-muted small"><i class="fa-solid fa-envelope me-1"></i>{{ slip.user.email }}</div>
                             </div>
                         </div>
                     </td>
                     <td>
                         <div class="fw-bold text-dark small mb-1">{{ slip.book.title }}</div>
                         <div class="text-muted x-small">
-                            <i class="fa-solid fa-clock me-1"></i>Mượn từ: {{ slip.borrow_date.strftime('%d/%m/%Y') }}
+                            <i class="fa-solid fa-clock me-1"></i>Mượn từ: {{ slip.borrow_date.strftime('%d/%m/%Y') if slip.borrow_date else 'N/A' }}
                         </div>
                     </td>
                     <td>
-                        <div class=" {{ 'text-danger' if slip.is_late else 'text-dark' }}">
-                            <i class="fa-solid fa-calendar-check me-1"></i>{{ slip.due_date.strftime('%d/%m/%Y') }}
+                        <div class="{{ 'text-danger fw-bold' if slip.is_late else 'text-dark' }}">
+                            <i class="fa-solid fa-calendar-check me-1"></i>{{ slip.due_date.strftime('%d/%m/%Y') if slip.due_date else 'N/A' }}
                         </div>
                     </td>
                     <td class="text-center">
@@ -112,17 +107,28 @@
                         {% else %}
                         <span class="badge-status status-borrowing"><i class="fa-solid fa-circle-dot me-1"></i>ĐANG MƯỢN</span>
                         {% endif %}
+                        
+                        {% if slip.invoices %}
+                            {% set inv = slip.invoices[0] %}
+                            <div class="mt-2">
+                                {% if inv.status.name == 'Pending' %}
+                                    <span class="badge bg-warning text-dark small"><i class="fas fa-clock me-1"></i>Nợ: {{ "{:,.0f}".format(inv.amount) }}đ</span>
+                                {% elif inv.status.name == 'Offline' %}
+                                    <span class="badge bg-info text-white small"><i class="fas fa-money-bill me-1"></i>Chờ nộp tiền: {{ "{:,.0f}".format(inv.amount) }}đ</span>
+                                {% elif inv.status.name == 'Paid' %}
+                                    <span class="badge bg-success text-white small"><i class="fas fa-check-circle me-1"></i>Đã xong</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
                     </td>
                     <td class="text-end pe-4">
                         <div class="dropdown">
-                            <button class="btn btn-action-dots ms-auto" type="button" data-bs-toggle="dropdown"
-                                    aria-expanded="false">
+                            <button class="btn btn-action-dots ms-auto" type="button" data-bs-toggle="dropdown">
                                 <i class="fa-solid fa-ellipsis-vertical"></i>
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-premium border-0 shadow-lg animate slideIn">
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-premium border-0 shadow-lg">
                                 <li>
-                                    <button class="dropdown-item dropdown-item-premium"
-                                            onclick="openDetailModal({{ slip.id }})">
+                                    <button class="dropdown-item dropdown-item-premium" onclick="openDetailModal({{ slip.id }})">
                                         <i class="fa-solid fa-circle-info text-primary"></i> Xem chi tiết & Lịch sử
                                     </button>
                                 </li>
@@ -132,104 +138,67 @@
                                         <i class="fa-solid fa-check-double"></i> Xác nhận trả sách
                                     </button>
                                 </li>
+                                <li><hr class="dropdown-divider mx-2"></li>
                                 <li>
-                                    <hr class="dropdown-divider mx-2">
-                                </li>
-                                <li>
-                                    <button class="dropdown-item dropdown-item-premium text-danger"
-                                            onclick="reportIssue('{{ slip.id }}', '{{ slip.book.title|e }}')">
+                                    <a href="{{ url_for('staff.incident_report_page', slip_id=slip.id) }}"
+                                       class="dropdown-item dropdown-item-premium text-danger">
                                         <i class="fa-solid fa-triangle-exclamation"></i> Báo mất hoặc hư hỏng
-                                    </button>
+                                    </a>
                                 </li>
+                                {% if slip.invoices and slip.invoices[0].status.name in ['Pending', 'Offline'] %}
+                                <li><hr class="dropdown-divider mx-2"></li>
+                                <li>
+                                    <form action="{{ url_for('staff.confirm_payment', invoice_id=slip.invoices[0].id) }}" method="POST">
+                                        <button type="submit" class="dropdown-item dropdown-item-premium text-primary fw-bold">
+                                            <i class="fas fa-hand-holding-dollar me-1"></i> Xác nhận đã thu tiền
+                                        </button>
+                                    </form>
+                                </li>
+                                {% endif %}
                             </ul>
                         </div>
                     </td>
                 </tr>
 
-                <div class="modal fade modal-premium" id="modalDetail{{ slip.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal fade modal-premium" id="modalDetail{{ slip.id }}" tabindex="-1">
                     <div class="modal-dialog modal-dialog-centered modal-xl">
                         <div class="modal-content border-0 shadow-2xl">
                             <div class="modal-header">
-                                <h5 class="modal-title fw-900 fs-4">Thông tin chi tiết phiếu mượn BS-{{
-                                    "%04d"|format(slip.id) }}</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
+                                <h5 class="modal-title fw-900 fs-4">Chi tiết phiếu MS-{{ "%04d"|format(slip.id) }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body p-0">
                                 <div class="row g-0">
-                                    <div class="col-lg-4">
-                                        <div class="book-info-card m-4">
-                                            <div class="text-center">
-                                                <img src="{{ slip.book.image or url_for('static', filename='img/default_book.png') }}"
-                                                     class="book-cover-large mb-4">
-                                                <h4 class="fw-bold text-dark">{{ slip.book.title }}</h4>
-                                                <p class="text-muted small mb-4">Tác giả: {{ slip.book.author or 'Nhiều
-                                                    tác giả' }}</p>
-                                            </div>
-                                            <div class="info-list mt-4">
-                                                <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
-                                                    <span class="text-muted">Mã số sách:</span>
-                                                    <span class="fw-bold">{{ slip.book.isbn or 'N/A' }}</span>
-                                                </div>
-                                                <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
-                                                    <span class="text-muted">Ngày mượn:</span>
-                                                    <span class="fw-bold">{{ slip.borrow_date.strftime('%d/%m/%Y') }}</span>
-                                                </div>
-                                                <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
-                                                    <span class="text-muted">Hạn trả:</span>
-                                                    <span class="fw-bold text-primary">{{ slip.due_date.strftime('%d/%m/%Y') }}</span>
-                                                </div>
-                                                <div class="d-flex justify-content-between">
-                                                    <span class="text-muted">Tiền phạt quá hạn:</span>
-                                                    <span class="fw-bold text-danger fs-5">{{ "{:,.0f}".format(slip.fine) }} VNĐ</span>
-                                                </div>
+                                    <div class="col-lg-4 border-end">
+                                        <div class="book-info-card m-4 text-center">
+                                            <img src="{{ slip.book.image or url_for('static', filename='images/sachmau.png') }}" class="book-cover-large mb-4" style="width: 150px; height: 220px; object-fit: cover; border-radius: 10px;">
+                                            <h4 class="fw-bold">{{ slip.book.title }}</h4>
+                                            <div class="info-list mt-4 text-start">
+                                                <p><strong>Ngày mượn:</strong> {{ slip.borrow_date.strftime('%d/%m/%Y') }}</p>
+                                                <p><strong>Hạn trả:</strong> {{ slip.due_date.strftime('%d/%m/%Y') }}</p>
+                                                <p class="text-danger"><strong>Tiền phạt hiện tại:</strong> {{ "{:,.0f}".format(slip.fine) }} VNĐ</p>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-lg-8">
-                                        <div class="p-5">
-                                            <h5 class="fw-bold mb-4 text-primary"><i
-                                                    class="fa-solid fa-clock-rotate-left me-2"></i>Lịch sử giao dịch của
-                                                độc giả</h5>
-                                            <div class="timeline-premium mt-4">
+                                        <div class="p-4">
+                                            <h5 class="fw-bold text-primary mb-3">Lịch sử mượn của độc giả này</h5>
+                                            <div class="timeline-premium">
                                                 {% for h in slip.user_history %}
-                                                <div class="timeline-item position-relative mb-4">
-                                                    <div class="timeline-point"></div>
-                                                    <div class="timeline-box shadow-sm">
-                                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                                            <span class="fw-bold text-dark fs-6">{{ h.book.title }}</span>
-                                                            <span class="badge bg-success-subtle text-success border border-success-subtle p-2">ĐÃ TRẢ SÁCH</span>
-                                                        </div>
-                                                        <div class="d-flex justify-content-between small text-muted">
-                                                            <span>Mã phiếu: BS-{{ "%04d"|format(h.id) }}</span>
-                                                            <span>
-        Ngày trả:
-        {% if h.return_date %}
-            {{ h.return_date.strftime('%d/%m/%Y') }}
-        {% else %}
-            <span class="text-warning">Chưa cập nhật</span>
-        {% endif %}
-    </span>
-                                                        </div>
+                                                <div class="p-3 mb-2 bg-light rounded-3 border">
+                                                    <div class="d-flex justify-content-between">
+                                                        <strong>{{ h.book.title }}</strong>
+                                                        <span class="badge bg-success">Đã trả</span>
                                                     </div>
+                                                    <small class="text-muted">Ngày trả: {{ h.return_date.strftime('%d/%m/%Y') if h.return_date else 'N/A' }}</small>
                                                 </div>
                                                 {% else %}
-                                                <div class="text-center py-5">
-                                                    <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png"
-                                                         style="width: 80px; opacity: 0.3;" class="mb-3">
-                                                    <p class="text-muted fw-bold">Độc giả này chưa có lịch sử mượn trả
-                                                        trước đó.</p>
-                                                </div>
+                                                <p class="text-muted">Chưa có lịch sử giao dịch.</p>
                                                 {% endfor %}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="modal-footer bg-light-subtle">
-                                <button type="button" class="btn btn-secondary rounded-pill px-5 fw-bold"
-                                        data-bs-dismiss="modal">Đóng cửa sổ
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -245,107 +214,35 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow-2xl border-0">
             <div class="modal-body text-center p-5">
-                <div class="icon-circle bg-success-subtle text-success mx-auto mb-4 d-flex align-items-center justify-content-center"
-                     style="width: 100px; height: 100px; border-radius: 50%;">
-                    <i class="fa-solid fa-book-open-reader fa-3x"></i>
+                <div class="icon-circle bg-success-subtle text-success mx-auto mb-4 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; border-radius: 50%;">
+                    <i class="fa-solid fa-book-open-reader fa-2x"></i>
                 </div>
                 <h3 class="fw-900 mb-3 text-dark">Thu hồi sách về kho?</h3>
-                <p class="text-muted fs-6">Bạn đang thực hiện xác nhận độc giả đã trả cuốn sách <br><b id="retBookTitle"
-                                                                                                       class="text-primary fs-5"></b>.
-                </p>
-                <div class="alert alert-warning mt-4 text-start border-0 rounded-4 p-3">
-                    <small class="fw-bold"><i class="fa-solid fa-circle-info me-2"></i>Lưu ý:</small>
-                    <p class="mb-0 x-small">Hãy kiểm tra kỹ hiện trạng sách (rách, bẩn, mất trang) trước khi bấm xác
-                        nhận. Phiếu mượn sẽ được đóng vĩnh viễn.</p>
-                </div>
-                <div class="d-flex gap-3 mt-5">
-                    <button type="button" class="btn btn-light rounded-pill flex-grow-1 py-3 fw-bold"
-                            data-bs-dismiss="modal">Để sau
-                    </button>
+                <p class="text-muted">Độc giả đã trả cuốn sách: <br><b id="retBookTitle" class="text-primary"></b></p>
+                <div class="d-flex gap-3 mt-4">
+                    <button type="button" class="btn btn-light rounded-pill flex-grow-1" data-bs-dismiss="modal">Hủy</button>
                     <form id="formConfirmReturn" method="POST" class="flex-grow-1">
-                        <button type="submit" class="btn btn-primary rounded-pill w-100 py-3 fw-bold shadow-lg">Xác nhận
-                            thu hồi
-                        </button>
+                        <button type="submit" class="btn btn-primary rounded-pill w-100 fw-bold">Xác nhận trả</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<div class="modal fade modal-premium" id="reportModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-2xl">
-            <form id="formReportIssue" method="POST">
-                <div class="modal-header bg-danger-subtle py-4 px-5">
-                    <h5 class="modal-title fw-900 text-danger fs-4"><i
-                            class="fa-solid fa-triangle-exclamation me-2"></i>Báo cáo sự cố ấn phẩm</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-5">
-                    <div class="mb-4">
-                        <label class="filter-label fw-bold">Ấn phẩm gặp sự cố:</label>
-                        <div class="p-3 bg-light rounded-3 border fw-bold text-dark" id="repBookTitleDisplay"></div>
-                    </div>
-                    <div class="mb-4">
-                        <label class="filter-label"><i class="fa-solid fa-list-check me-2"></i>Loại sự cố phát
-                            sinh</label>
-                        <select name="issue_type" class="form-select input-premium shadow-none fw-bold text-danger">
-                            <option value="damaged">Sách bị hư hỏng (Rách, bẩn, mất trang...)</option>
-                            <option value="lost">Sách bị mất (Độc giả báo mất hoàn toàn)</option>
-                        </select>
-                    </div>
-                    <div class="mb-2">
-                        <label class="filter-label"><i class="fa-solid fa-pen-nib me-2"></i>Mô tả tình trạng chi
-                            tiết</label>
-                        <textarea name="note" class="form-control input-premium shadow-none" rows="4"
-                                  placeholder="Nhập ghi chú chi tiết về mức độ hư hại để tính toán mức phạt..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light p-4">
-                    <button type="button" class="btn btn-secondary rounded-pill px-4 fw-bold" data-bs-dismiss="modal">
-                        Hủy bỏ
-                    </button>
-                    <button type="submit" class="btn btn-danger rounded-pill px-5 fw-bold shadow">Ghi nhận & Phạt độc
-                        giả
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // Hàm mở Modal chi tiết
     function openDetailModal(id) {
         const modal = new bootstrap.Modal(document.getElementById('modalDetail' + id));
         modal.show();
     }
 
-    // Hàm mở Modal xác nhận trả
     function confirmReturn(id, title) {
         document.getElementById('retBookTitle').innerText = title;
-        document.getElementById('formConfirmReturn').action = "/staff/confirm-return/" + id;
+        document.getElementById('formConfirmReturn').action = "/staff/confirm-return/" + id; // Đảm bảo route này tồn tại
         const modal = new bootstrap.Modal(document.getElementById('returnModal'));
         modal.show();
     }
-
-    // Hàm mở Modal báo mất/hỏng
-    function reportIssue(id, title) {
-        document.getElementById('repBookTitleDisplay').innerText = title;
-        document.getElementById('formReportIssue').action = "/staff/report-issue/" + id;
-        const modal = new bootstrap.Modal(document.getElementById('reportModal'));
-        modal.show();
-    }
-
-    // Hiệu ứng Fade In cho dropdown
-    document.querySelectorAll('.dropdown').forEach(item => {
-        item.addEventListener('show.bs.dropdown', function () {
-            this.querySelector('.dropdown-menu').classList.add('animate__fadeIn');
-        });
-    });
 </script>
 {% endblock %}

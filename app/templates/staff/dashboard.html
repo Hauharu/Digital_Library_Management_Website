@@ -85,13 +85,18 @@
                             <td class="small">{{ req.book.title }}</td>
                             <td class="small text-center fw-bold">{{ req.quantity or 1 }}</td>
                             <td class="text-center">
-                                <form method="post" action="{{ url_for('main.approve_borrow_request', request_id=req.id) }}" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-success btn-action approve border-0 px-2">
+                                <form method="post"
+                                      action="{{ url_for('main.approve_borrow_request', request_id=req.id) }}"
+                                      class="d-inline">
+                                    <button type="submit"
+                                            class="btn btn-sm btn-success btn-action approve border-0 px-2">
                                         <i class="fa-solid fa-check"></i>
                                     </button>
                                 </form>
 
-                                <form method="post" action="{{ url_for('main.reject_borrow_request', request_id=req.id) }}" class="d-inline">
+                                <form method="post"
+                                      action="{{ url_for('main.reject_borrow_request', request_id=req.id) }}"
+                                      class="d-inline">
                                     <button type="submit" class="btn btn-sm btn-danger btn-action reject border-0 px-2">
                                         <i class="fa-solid fa-x"></i>
                                     </button>
@@ -125,7 +130,8 @@
                             <td class="small">{{ slip.book.title }}</td>
                             <td class="small text-center fw-bold">{{ slip.quantity or 1 }}</td>
                             <td class="text-center">
-                                <form method="post" action="{{ url_for('main.approve_return_request', request_id=slip.borrow_request_id) }}">
+                                <form method="post"
+                                      action="{{ url_for('main.approve_return_request', request_id=slip.borrow_request_id) }}">
                                     <button type="submit" class="btn btn-sm btn-primary">Duyệt trả</button>
                                 </form>
                             </td>
@@ -175,9 +181,11 @@
                     </div>
                     <p class="small opacity-75">Gửi Email nhắc nhở cho {{ overdue_count }} người đang giữ sách quá
                         hạn.</p>
-                    <button class="btn btn-white w-100 rounded-pill fw-bold py-2 mt-2">
-                        Gửi ngay lập tức
-                    </button>
+                    <a href="{{ url_for('staff.run_overdue_check') }}" class="text-decoration-none">
+                        <button class="btn btn-white w-100 rounded-pill fw-bold py-2 mt-2">
+                            <i class="fas fa-paper-plane me-2"></i> Gửi ngay lập tức
+                        </button>
+                    </a>
                 </div>
             </div>
 
@@ -196,39 +204,72 @@
                 </div>
             </div>
 
-    <div class="card shadow border-0">
-        <div class="card-header bg-dark text-white">DANH SÁCH YÊU CẦU MƯỢN SÁCH ĐANG CHỜ</div>
-        <div class="card-body p-0">
-            <table class="table table-hover mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Độc giả</th>
-                        <th>Tên sách</th>
-                        <th>Ngày yêu cầu</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for req in requests %}
-                    <tr>
-                        <td>{{ req.reader.first_name }} {{ req.reader.last_name }}</td>
-
-                        <td>{{ req.book.title }}</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-success">Duyệt</button>
-                            <button class="btn btn-sm btn-outline-danger">Từ chối</button>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="4" class="text-center py-4 text-muted">Hiện tại không có yêu cầu nào cần xử lý.
-                        </td>
-                    </tr>
+            <div class="card border-0 shadow-sm rounded-4 mt-4 bg-light">
+                <div class="card-header bg-white py-3">
+                    <h6 class="fw-bold mb-0 text-info"><i class="fa-solid fa-brain me-2"></i>Dự báo nhu cầu mượn</h6>
+                </div>
+                <div class="card-body">
+                    {% for demand in predicted_demands %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small fw-medium text-truncate" style="max-width: 70%;">{{ demand.title }}</span>
+                            <span class="badge {{ 'bg-danger' if demand.risk_level == 'High' else 'bg-success' }} small">
+                                {{ demand.risk_level }}
+                            </span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar {{ 'bg-warning' if demand.predicted_demand > demand.current_stock else 'bg-info' }}"
+                                 role="progressbar"
+                                 style="width: {{ [100, (demand.predicted_demand * 20)]|min }}%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between x-small text-muted mt-1">
+                            <span>Dự báo: {{ demand.predicted_demand|round(1) }} lượt</span>
+                            <span>Tồn: {{ demand.current_stock }}</span>
+                        </div>
+                    </div>
                     {% endfor %}
-                </tbody>
-            </table>
+                    <div class="d-grid mt-3">
+                        <button class="btn btn-sm btn-outline-info rounded-pill">Xem chi tiết phân tích</button>
+                    </div>
+                </div>
+            </div>
 
-        </div>
+    <div class="card shadow border-0">
+    <div class="card-header bg-dark text-white">
+        DANH SÁCH YÊU CẦU MƯỢN SÁCH ĐANG CHỜ
+    </div>
+
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Độc giả</th>
+                    <th>Tên sách</th>
+                    <th>Ngày yêu cầu</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td>{{ req.reader.first_name }} {{ req.reader.last_name }}</td>
+                    <td>{{ req.book.title }}</td>
+                    <td>{{ req.created_at }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-success">Duyệt</button>
+                        <button class="btn btn-sm btn-outline-danger">Từ chối</button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center py-4 text-muted">
+                        Hiện tại không có yêu cầu nào cần xử lý.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}

@@ -1,0 +1,89 @@
+{% extends "layout/base_staff.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/incident_report.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <div class="glass-card">
+                    <div class="report-header">
+                        <i class="fa-solid fa-file-invoice-dollar fa-3x mb-3"></i>
+                        <h3>Lập Biên Bản Sự Cố</h3>
+                        <p class="opacity-75 mb-0">Hệ thống quản lý tài sản thư viện kỹ thuật số</p>
+                    </div>
+
+                    <div class="container px-5">
+                        <div class="book-preview-box">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <div class="info-label">Đang xử lý ấn phẩm</div>
+                                    <div class="info-value mb-3">{{ slip.book.title }}</div>
+                                    <div class="d-flex gap-4">
+                                        <div>
+                                            <div class="info-label">Độc giả</div>
+                                            <div class="fw-bold">{{ slip.user.last_name }} {{ slip.user.first_name }}</div>
+                                        </div>
+                                        <div>
+                                            <div class="info-label">Giá bìa gốc</div>
+                                            <div class="price-badge">{{ "{:,.0f}".format(slip.book.price) }} VNĐ</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-end d-none d-md-block">
+                                    <img src="{{ slip.book.image or url_for('static', filename='images/sachmau.png') }}"
+                                         style="width: 80px; height: 110px; object-fit: cover; border-radius: 8px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <form action="{{ url_for('staff.report_incident', slip_id=slip.id) }}" method="POST">
+                            <div class="row g-4">
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Mức độ thiệt hại</label>
+                                    <select name="damage_ratio" id="damageRatio"
+                                            class="form-select custom-select"
+                                            data-book-price="{{ slip.book.price }}"
+                                            onchange="calculateFine()">
+                                        <option value="0.3">Hư hỏng nhẹ (Rách bìa, vẽ bậy) - Phạt 30%</option>
+                                        <option value="0.5">Hư hỏng vừa (Mất trang, bẩn nặng) - Phạt 50%</option>
+                                        <option value="1.0">Mất sách / Hư hỏng nặng - Phạt 100%</option>
+                                        <option value="custom">Tùy chỉnh số tiền (Nhập tay)</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Số tiền phạt dự kiến (VNĐ)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text border-0 bg-light fw-bold">₫</span>
+                                        <input type="number" name="fine_amount" id="fineAmount" class="form-control custom-input" required readonly>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Ghi chú chi tiết tình trạng</label>
+                                    <textarea name="description" class="form-control custom-input" rows="4" required></textarea>
+                                </div>
+
+                                <div class="col-12 mt-5">
+                                    <button type="submit" class="btn btn-submit w-100 shadow-lg">Xác nhận & Xuất hóa đơn</button>
+                                    <a href="{{ url_for('staff.manage_orders') }}" class="btn btn-link w-100 mt-2 text-muted fw-bold text-decoration-none">Hủy bỏ</a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/incident_report.js') }}"></script>
+{% endblock %}

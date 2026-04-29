@@ -27,80 +27,131 @@
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="bg-light">
-                        <tr>
-                            <th class="ps-4 py-3 text-uppercase small fw-bold">Thông tin sách</th>
-                            <th class="py-3 text-uppercase small fw-bold text-center">Số lượng mượn</th>
-                            <th class="py-3 text-uppercase small fw-bold text-center">Trạng thái duyệt</th>
-                            <th class="py-3 text-uppercase small fw-bold">Thông tin mượn/trả</th>
-                            <th class="py-3 text-uppercase small fw-bold text-center">Trả sách</th>
-                            <th class="pe-4 py-3 text-uppercase small fw-bold text-end">Tiền phạt</th>
-                        </tr>
+                    <tr>
+                        <th class="ps-4 py-3 text-uppercase small fw-bold">Thông tin sách</th>
+                        <th class="py-3 text-uppercase small fw-bold text-center">Số lượng mượn</th>
+                        <th class="py-3 text-uppercase small fw-bold text-center">Trạng thái duyệt</th>
+                        <th class="py-3 text-uppercase small fw-bold">Thông tin mượn/trả</th>
+                        <th class="py-3 text-uppercase small fw-bold text-center">Trả sách</th>
+                        <th class="ps-5 py-3 text-uppercase small fw-bold text-start">Tiền phạt</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        {% for req in history %}
-                        <tr>
-                            <td class="ps-4 py-3">
-                                <div class="d-flex align-items-center">
-                                    <div class="book-cover me-3">
-                                        <img src="{{ req.book.image }}" class="rounded shadow-sm" style="width: 50px; height: 70px; object-fit: cover;">
-                                    </div>
-                                    <div>
-                                        <div class="fw-bold text-dark mb-1">{{ req.book.title }}</div>
-                                        <div class="text-muted small"><i class="far fa-calendar-alt me-1"></i>Yêu cầu: {{ req.request_date.strftime('%d/%m/%Y') }}</div>
+                    {% for req in history %}
+                    <tr>
+                        <td class="ps-4 py-3">
+                            <div class="d-flex align-items-center">
+                                <div class="book-cover me-3">
+                                    <img src="{{ req.book.image }}" class="rounded shadow-sm"
+                                         style="width: 50px; height: 70px; object-fit: cover;">
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark mb-1">{{ req.book.title }}</div>
+                                    <div class="text-muted small"><i class="far fa-calendar-alt me-1"></i>Yêu cầu: {{
+                                         req.request_date.strftime('%d/%m/%Y') if req.request_date else 'N/A' }}
                                     </div>
                                 </div>
-                            </td>
+                            </div>
+                        </td>
 
-                            <td class="text-center">
-                                <span class="fw-semibold">{{ req.quantity or 1 }}</span>
-                            </td>
+                        <td class="text-center">
+                            <span class="fw-semibold">{{ req.quantity or 1 }}</span>
+                        </td>
 
-                            <td class="text-center">
-                                {% if req.borrow_slip and req.borrow_slip.status.name == 'Borrowing' and req.borrow_slip.return_requested %}
-                                    <span class="badge rounded-pill bg-info-subtle text-info border border-info-subtle px-3">Đang duyệt trả sách</span>
-                                {% elif req.borrow_slip and req.borrow_slip.status.name == 'Returned' %}
-                                    <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3">Đã trả sách</span>
-                                {% elif req.status.name == 'Pending' %}
-                                    <span class="badge rounded-pill bg-warning-subtle text-warning border border-warning-subtle px-3">Đang chờ duyệt</span>
-                                {% elif req.status.name == 'Approved' %}
-                                    <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3">Đã duyệt</span>
-                                {% else %}
-                                    <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-3">{{ req.status.value }}</span>
+                        <td class="text-center">
+                            {% if req.borrow_slip and req.borrow_slip.status.name == 'Borrowing' and
+                            req.borrow_slip.return_requested %}
+                            <span class="badge rounded-pill bg-info-subtle text-info border border-info-subtle px-3">Đang duyệt trả sách</span>
+                            {% elif req.borrow_slip and req.borrow_slip.status.name == 'Returned' %}
+                            <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3">Đã trả sách</span>
+                            {% elif req.status.name == 'Pending' %}
+                            <span class="badge rounded-pill bg-warning-subtle text-warning border border-warning-subtle px-3">Đang chờ duyệt</span>
+                            {% elif req.status.name == 'Approved' %}
+                            <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3">Đã duyệt</span>
+                            {% else %}
+                            <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-3">{{ req.status.value }}</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if req.borrow_slip %}
+                            {% set slip = req.borrow_slip %}
+                            <div class="d-flex flex-column gap-1">
+                                <div class="small"><i class="fas fa-hourglass-end me-1 text-danger"></i>Hạn trả:
+                                    <strong>{{ slip.due_date.strftime('%d/%m/%Y') if slip.due_date else 'Chưa xác định'
+                                        }}</strong></div>
+                                <div class="small text-primary"><i class="fas fa-info-circle me-1"></i>{{
+                                    slip.status.value }}
+                                </div>
+                            </div>
+                            {% else %}
+                            <span class="text-muted italic small">Chưa có thông tin</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-center">
+                            {% if req.borrow_slip and req.borrow_slip.status.name == 'Borrowing' and not
+                            req.borrow_slip.return_requested %}
+                            <form method="post" action="{{ url_for('main.return_book', request_id=req.id) }}">
+                                <button type="submit" class="btn btn-sm btn-primary">Yêu cầu trả sách</button>
+                            </form>
+                            {% elif req.borrow_slip and req.borrow_slip.status.name == 'Borrowing' and
+                            req.borrow_slip.return_requested %}
+                            <button type="button" class="btn btn-sm btn-secondary" disabled>Đang duyệt trả</button>
+                            {% else %}
+                            <button type="button" class="btn btn-sm btn-secondary" disabled>Trả sách</button>
+                            {% endif %}
+                        </td>
+
+                        <td class="ps-5">
+                            {% if req.borrow_slip and req.borrow_slip.invoices %}
+                            {% set unpaid_invoices = req.borrow_slip.invoices | selectattr('status.name', 'in', ['Pending', 'Offline', 'Overdue']) | list %}
+                            {% set total_unpaid = unpaid_invoices | sum(attribute='amount') %}
+                            {% set first_unpaid = unpaid_invoices | first %}
+
+                            {% if total_unpaid > 0 %}
+                            <div class="d-flex flex-column align-items-start gap-2">
+                                <span class="fw-bold text-danger fs-6 mb-0">
+                                    {{ "{:,.0f}".format(total_unpaid) }} VNĐ
+                                </span>
+                                
+                                {% if first_unpaid %}
+                                    {% if first_unpaid.status.name == 'Offline' %}
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3">
+                                            <i class="fas fa-clock me-1"></i> {{ first_unpaid.status.value }}
+                                        </span>
+                                        <a href="{{ url_for('user.select_payment_method', invoice_id=first_unpaid.id) }}" 
+                                           class="btn btn-sm btn-primary shadow-sm rounded-pill px-3">
+                                            <i class="fas fa-exchange-alt me-1"></i> Đổi phương thức
+                                        </a>
+                                    {% else %}
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3">
+                                            <i class="fas fa-exclamation-circle me-1"></i> {{ first_unpaid.status.value }}
+                                        </span>
+                                        <a href="{{ url_for('user.select_payment_method', invoice_id=first_unpaid.id) }}" 
+                                           class="btn btn-sm btn-danger shadow-sm rounded-pill px-4 py-2">
+                                            <i class="fas fa-credit-card me-1"></i> Thanh toán ngay
+                                        </a>
+                                    {% endif %}
                                 {% endif %}
-                            </td>
-
-                            <td>
-                                {% if req.borrow_slip %}
-                                    {% set slip = req.borrow_slip %}
-                                    <div class="d-flex flex-column gap-1">
-                                        <div class="small"><i class="fas fa-hourglass-end me-1 text-danger"></i>Hạn trả: <strong>{{ slip.due_date.strftime('%d/%m/%Y') }}</strong></div>
-                                        <div class="small text-primary"><i class="fas fa-info-circle me-1"></i>{{ slip.status.value }}</div>
-                                    </div>
-                                {% else %}
-                                    <span class="text-muted italic small">Chưa có thông tin</span>
+                            </div>
+                            {% else %}
+                            <div class="d-flex flex-column align-items-start">
+                                <span class="text-success fw-bold fs-6">0 VNĐ</span>
+                                {% set paid_invoices = req.borrow_slip.invoices | selectattr('status.name', 'equalto', 'Paid') | list %}
+                                {% if paid_invoices %}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 mt-1">
+                                        <i class="fas fa-check-circle me-1"></i> {{ paid_invoices[0].status.value }}
+                                    </span>
                                 {% endif %}
-                            </td>
-
-                            <td class="text-center">
-                                {% if req.borrow_slip and req.borrow_slip.status.name == 'Borrowing' and not req.borrow_slip.return_requested %}
-                                    <form method="post" action="{{ url_for('main.return_book', request_id=req.id) }}">
-                                        <button type="submit" class="btn btn-sm btn-primary">Yêu cầu trả sách</button>
-                                    </form>
-                                {% elif req.borrow_slip and req.borrow_slip.status.name == 'Borrowing' and req.borrow_slip.return_requested %}
-                                    <button type="button" class="btn btn-sm btn-secondary" disabled>Đang duyệt trả</button>
-                                {% else %}
-                                    <button type="button" class="btn btn-sm btn-secondary" disabled>Trả sách</button>
-                                {% endif %}
-                            </td>
-
-                            <td class="pe-4 text-end">
-                                {% if req.borrow_slip and req.borrow_slip.invoices %}
-                                    <span class="fw-bold text-danger">50,000 VNĐ</span> {% else %}
-                                    <span class="text-success fw-medium">0 VNĐ</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% else %}
+                            <span class="text-success fw-medium"><i class="fas fa-check-circle me-1"></i>0 VNĐ</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -108,15 +159,5 @@
     </div>
 </div>
 
-<style>
-    /* CSS bổ sung để làm giao diện tinh tế hơn */
-    body { background-color: #f8f9fa; }
-    .card { transition: transform 0.2s; }
-    .table thead th { font-size: 0.75rem; letter-spacing: 0.5px; color: #6c757d; }
-    .bg-warning-subtle { background-color: #fff3cd !important; }
-    .bg-success-subtle { background-color: #d1e7dd !important; }
-    .bg-danger-subtle { background-color: #f8d7da !important; }
-    .book-cover img { transition: scale 0.2s; }
-    .book-cover img:hover { scale: 1.1; }
-</style>
-{% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}">
+{% endblock %}

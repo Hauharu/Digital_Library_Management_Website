@@ -9,6 +9,7 @@ class Config:
     
     _db_user = os.getenv('DB_USER', 'root')
     _db_pass = quote_plus(os.getenv('DB_PASSWORD', 'admin'))
+    _db_pass = quote_plus(os.getenv('DB_PASSWORD', '1234578@'))
     _db_host = os.getenv('DB_HOST', 'localhost')
     _db_port = os.getenv('DB_PORT', '3306')
     _db_name = os.getenv('DB_NAME', 'library_db')
@@ -47,4 +48,12 @@ class Config:
 
 
     GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+
+    VNPAY_TMN_CODE = os.environ.get("VNPAY_TMN_CODE")
+    VNPAY_HASH_SECRET = os.environ.get("VNPAY_HASH_SECRET")
+    VNPAY_PAYMENT_URL = os.environ.get("VNPAY_PAYMENT_URL")
+    VNPAY_RETURN_URL = os.environ.get("VNPAY_RETURN_URL")
+
+    PAYPAL_CLIENT_ID = os.environ.get("PAYPAL_CLIENT_ID")
+    PAYPAL_CLIENT_SECRET = os.environ.get("PAYPAL_CLIENT_SECRET")
 

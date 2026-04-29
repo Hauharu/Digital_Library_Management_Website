@@ -1,0 +1,126 @@
+{% extends "layout/base_staff.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/create_borrow.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="main-wrapper py-5">
+    <div class="container">
+        <div class="d-flex align-items-center mb-5 justify-content-between">
+            <div>
+                <h2 class="title-main mb-1"><i class="fa-solid fa-book-bookmark me-3 text-primary"></i>Lập Phiếu Mượn Tại Quầy</h2>
+                <p class="text-muted mb-0">Hệ thống hỗ trợ mượn sách nhanh và kiểm tra độc giả thông minh</p>
+            </div>
+            <div class="current-date-badge">
+                <i class="fa-regular fa-calendar-check me-2"></i> {{ today_date }}
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="modern-card p-4 h-100">
+                    <div class="d-flex align-items-center mb-4">
+                        <span class="step-num">01</span>
+                        <h5 class="fw-bold m-0 ms-2">Xác thực độc giả</h5>
+                    </div>
+
+                    <div class="search-box-v2 mb-4">
+                        <label class="small fw-bold text-muted mb-2 d-block">SĐT HOẶC EMAIL</label>
+                        <div class="input-group-custom">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="phone-input" placeholder="038... hoặc email@..." autocomplete="off">
+                            <button onclick="checkReader()" class="btn-search-inner">Kiểm tra</button>
+                        </div>
+                    </div>
+
+                    <div id="reader-info" class="reader-card-result d-none animate__animated animate__fadeIn">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="avatar-circle" id="reader-avatar">T</div>
+                            <div class="ms-3">
+                                <div class="fw-bold text-dark fs-5" id="reader-name-display">---</div>
+                                <div class="text-muted small" id="reader-phone-display">---</div>
+                                <input type="hidden" id="selected-user-id">
+                            </div>
+                        </div>
+                        <div id="reader-status-box" class="d-flex gap-2">
+                            </div>
+                    </div>
+
+                    <div id="quick-reg-form" class="quick-reg-container d-none">
+                        <div class="alert alert-soft-blue border-0 small">
+                            <i class="fa-solid fa-user-plus me-2"></i>Độc giả mới? Nhập tên để tạo nhanh:
+                        </div>
+                        <input type="text" id="new-name" class="input-minimal mb-3" placeholder="Nhập họ và tên...">
+                        <button onclick="quickRegister()" class="btn-primary-v2 w-100">
+                            Tạo & Tiếp tục <i class="fa-solid fa-chevron-right ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="modern-card p-4 h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div class="d-flex align-items-center">
+                            <span class="step-num">02</span>
+                            <h5 class="fw-bold m-0 ms-2">Danh sách sách mượn</h5>
+                        </div>
+                        <span class="badge-total-books">Đang chọn: <b id="book-count">0</b></span>
+                    </div>
+
+                    <div class="d-flex gap-3 mb-4">
+                        <div class="flex-grow-1 position-relative">
+                            <i class="fa-solid fa-book-open select-icon-inside"></i>
+                            <select id="book-select" class="select-modern">
+                                <option value="">--- Tìm tên sách hoặc ISBN ---</option>
+                                {% for book in books %}
+                                <option value="{{ book.id }}" data-price="{{ book.price }}">
+                                    {{ book.title }} (Còn: {{ book.available_quantity }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button onclick="addBookToQueue()" class="btn-add-item">
+                            <i class="fa-solid fa-plus me-2"></i>Thêm sách
+                        </button>
+                    </div>
+
+                    <div class="table-scroll-area">
+                        <table class="table-modern">
+                            <thead>
+                                <tr>
+                                    <th>THÔNG TIN ẤN PHẨM</th>
+                                    <th width="120">SỐ LƯỢNG</th>
+                                    <th width="150">HẠN MƯỢN</th>
+                                    <th width="60" class="text-center">XÓA</th>
+                                </tr>
+                            </thead>
+                            <tbody id="borrow-list">
+                                </tbody>
+                        </table>
+                        <div id="empty-list-msg" class="empty-placeholder py-5">
+                            <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="60" class="mb-3 opacity-25">
+                            <p class="text-muted">Chưa có sách nào trong phiếu mượn</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-top d-flex justify-content-between align-items-center">
+                        <div class="text-muted small">
+                            <i class="fa-solid fa-circle-info me-1"></i> Mặc định hạn trả là 14 ngày.
+                        </div>
+                        <button onclick="submitBorrowSlip()" class="btn-submit-final">
+                            XÁC NHẬN CHO MƯỢN <i class="fa-solid fa-check-double ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/borrow_process.js') }}"></script>
+{% endblock %}
+{% endblock %}

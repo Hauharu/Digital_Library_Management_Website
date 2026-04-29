@@ -105,6 +105,22 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Hiện lại khung nhập liệu (vì mỗi người chỉ có 1 bài, xóa đi thì được viết lại)
             document.querySelector('.chat-input-area')?.classList.remove('d-none');
+
+            // Cập nhật Sao trên icon đầu trang với điểm trung bình mới
+            if (typeof data.new_avg !== 'undefined') {
+                const starsDisplay = document.getElementById('top-stars-display');
+                const ratingText = document.getElementById('top-rating-text');
+                if (starsDisplay) {
+                    const rVal = Math.floor(data.new_avg);
+                    let starsHtml = '';
+                    for (let i = 0; i < rVal; i++) starsHtml += '<i class="fa-solid fa-star" style="color: #f39c12 !important;"></i>';
+                    for (let i = 0; i < (5 - rVal); i++) starsHtml += '<i class="fa-regular fa-star" style="color: #f39c12 !important;"></i>';
+                    starsDisplay.innerHTML = starsHtml;
+                }
+                if (ratingText) {
+                    ratingText.innerText = `${data.new_avg.toFixed(1)}/5`;
+                }
+            }
         }
     });
 

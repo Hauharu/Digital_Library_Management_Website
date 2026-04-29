@@ -46,7 +46,7 @@
                 <div class="detail-header">
                     <h3>{{ selected_notif.title }}</h3>
                     <div class="detail-meta">
-                        <span><i class="fa-regular fa-clock me-1"></i> {{ selected_notif.sent_date.strftime('%d/%m/%Y %H:%M') }}</span>
+                        <span><i class="fa-regular fa-clock me-1"></i> {{ selected_notif.sent_date.strftime('%d/%m/%Y %H:%M') if selected_notif.sent_date else 'N/A' }}</span>
                     </div>
                 </div>
 

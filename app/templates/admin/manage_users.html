@@ -1,0 +1,235 @@
+{% extends "layout/base_admin.html" %}
+
+{% block content %}
+<div class="container-fluid py-4 px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-navy mb-1">Quản lý Tài khoản</h2>
+            <p class="text-muted small mb-0">Phân quyền Nhân viên & Độc giả</p>
+        </div>
+        <button class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="openAddUserModal()">
+            <i class="fas fa-user-plus me-2"></i>Thêm thành viên
+        </button>
+    </div>
+
+    <ul class="nav nav-pills nav-custom mb-4" id="userTabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#staff-panel">
+                <i class="fas fa-user-shield me-2"></i>Nhân viên
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#reader-panel">
+                <i class="fas fa-users me-2"></i>Độc giả
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="staff-panel">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Nhân viên</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th class="text-end pe-4">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for staff in staff_list %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ staff.avatar }}" class="rounded-circle me-3" width="40" height="40">
+                                <span class="fw-bold">{{ staff.last_name }} {{ staff.first_name }}</span>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ staff.username }}</span></td>
+                        <td class="small">{{ staff.email }}</td>
+                        <td class="text-end pe-4">
+                            <button class="btn btn-sm btn-light border" onclick="openViewUserModal('{{ staff.id }}')"><i
+                                    class="fas fa-eye"></i></button>
+                            <button class="btn btn-sm btn-primary" onclick="openEditUserModal('{{ staff.id }}')"><i
+                                    class="fas fa-edit"></i></button>
+                            {% if staff.id != current_user.id %}
+                            <button class="btn btn-sm btn-outline-danger border-0"
+                                    onclick="confirmDeleteUser('{{ staff.id }}')"><i class="fas fa-trash"></i></button>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="reader-panel">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Độc giả</th>
+                        <th>SĐT</th>
+                        <th>Sách đang mượn</th>
+                        <th class="text-end pe-4">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for reader in readers %}
+                    <tr>
+                        <td class="ps-4 fw-bold">{{ reader.last_name }} {{ reader.first_name }}</td>
+                        <td>{{ reader.phone_number or '---' }}</td>
+                        <td class="text-center">
+                        <span class="badge bg-info-subtle text-info rounded-pill px-3">
+                            {{ reader.borrow_slips|length }} cuốn
+                        </span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <button class="btn btn-sm btn-light border" onclick="openViewUserModal('{{ reader.id }}')">
+                                <i class="fas fa-eye"></i></button>
+                            <button class="btn btn-sm btn-primary" onclick="openEditUserModal('{{ reader.id }}')"><i
+                                    class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-danger" onclick="confirmDeleteUser('{{ reader.id }}')"><i
+                                    class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if reader_pagination and reader_pagination.pages > 1 %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {{ 'disabled' if not reader_pagination.has_prev }}">
+                        <a class="page-link border-0 shadow-sm rounded-start-pill px-3"
+                           href="{{ url_for('admin.manage_users', page=reader_pagination.prev_num) }}">Trước</a>
+                    </li>
+
+                    {% for p in reader_pagination.iter_pages() %}
+                    {% if p %}
+                    <li class="page-item {{ 'active' if p == reader_pagination.page }}">
+                        <a class="page-link border-0 shadow-sm mx-1 rounded-3"
+                           href="{{ url_for('admin.manage_users', page=p) }}">{{ p }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link border-0">...</span></li>
+                    {% endif %}
+                    {% endfor %}
+
+                    <li class="page-item {{ 'disabled' if not reader_pagination.has_next }}">
+                        <a class="page-link border-0 shadow-sm rounded-end-pill px-3"
+                           href="{{ url_for('admin.manage_users', page=reader_pagination.next_num) }}">Sau</a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="userModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <form id="userForm" method="POST" class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="fw-bold px-2 mt-3" id="userModalTitle">Thêm thành viên mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Họ</label>
+                        <input type="text" name="last_name" class="form-control bg-light border-0" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Tên</label>
+                        <input type="text" name="first_name" class="form-control bg-light border-0" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Username</label>
+                        <input type="text" name="username" class="form-control bg-light border-0" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Email</label>
+                        <input type="email" name="email" class="form-control bg-light border-0" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Số điện thoại</label>
+                        <input type="text" name="phone_number" class="form-control bg-light border-0">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Giới tính</label>
+                        <select name="gender" class="form-select bg-light border-0">
+                            <option value="MALE">Nam</option>
+                            <option value="FEMALE">Nữ</option>
+                            <option value="OTHER">Khác</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Vai trò</label>
+                        <select name="role" class="form-select bg-light border-0">
+                            <option value="READER">Độc giả</option>
+                            <option value="STAFF">Nhân viên</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                <button type="submit" class="btn btn-primary rounded-pill px-4" id="userBtnSubmit">Lưu tài khoản
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="viewUserModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-body p-4 text-center">
+                <img id="v-avatar" src="" class="rounded-circle mb-3 border p-1" width="100" height="100">
+                <h4 id="v-full-name" class="fw-bold mb-1"></h4>
+                <p id="v-role" class="badge bg-soft-primary text-primary mb-4"></p>
+
+                <div class="text-start bg-light p-3 rounded-3">
+                    <div class="d-flex justify-content-between mb-2 small">
+                        <span class="text-muted">Username:</span> <span id="v-username" class="fw-bold"></span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2 small">
+                        <span class="text-muted">Email:</span> <span id="v-email" class="fw-bold"></span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2 small">
+                        <span class="text-muted">Số điện thoại:</span> <span id="v-phone" class="fw-bold"></span>
+                    </div>
+                    <div class="d-flex justify-content-between small">
+                        <span class="text-muted">Trạng thái:</span> <span id="v-status" class="text-success fw-bold">Hoạt động</span>
+                    </div>
+                </div>
+                <button class="btn btn-dark w-100 rounded-pill mt-4" data-bs-dismiss="modal">Đóng cửa sổ</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="deleteUserModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <form id="deleteUserForm" method="POST" class="modal-content border-0 rounded-4">
+            <div class="modal-body text-center p-4">
+                <div class="text-danger mb-3"><i class="fas fa-exclamation-triangle fa-3x"></i></div>
+                <h5 class="fw-bold">Xác nhận xóa?</h5>
+                <p class="text-muted small">Tài khoản này sẽ bị xóa vĩnh viễn khỏi hệ thống.</p>
+                <div class="d-flex gap-2 justify-content-center mt-4">
+                    <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-3">Xóa ngay</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/manage_users.js') }}"></script>
+{% endblock %}
+{% endblock %}

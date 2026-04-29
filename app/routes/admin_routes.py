@@ -1,11 +1,13 @@
 from sqlalchemy import func
 from datetime import datetime
 from app import db
-from app.models import User, Book, Category, BorrowSlip, BorrowRequest, Invoice, RoleEnum, RequestStatusEnum, BorrowStatusEnum
-from flask import Blueprint, render_template, request, abort, redirect, url_for, flash
-from flask_login import login_required
+from app.models import User, Book, Category, BorrowSlip, BorrowRequest, Invoice, RoleEnum,\
+    RequestStatusEnum, BorrowStatusEnum, GenderEnum
+from flask import Blueprint, render_template, request, abort, redirect, url_for, flash,jsonify
+from flask_login import login_required,current_user
 from app.decorators import role_required
 import cloudinary.uploader
+from werkzeug.security import generate_password_hash
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -114,3 +116,90 @@ def manage_books():
     pagination = Book.query.order_by(Book.id.desc()).paginate(page=page, per_page=per_page, error_out=False)
     books = pagination.items
     return render_template('admin/manage_books.html', books=books, pagination=pagination)
+
+
+@admin_bp.route('/users')
+@login_required
+@role_required(RoleEnum.ADMIN)
+def manage_users():
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
+    reader_pagination = User.query.filter_by(role=RoleEnum.READER) \
+        .order_by(User.id.desc()) \
+        .paginate(page=page, per_page=per_page, error_out=False)
+
+    staff_list = User.query.filter_by(role=RoleEnum.STAFF).all()
+
+    return render_template('admin/manage_users.html',
+                           staff_list=staff_list,
+                           reader_pagination=reader_pagination,
+                           readers=reader_pagination.items)
+
+@admin_bp.route('/api/user/<int:user_id>')
+@login_required
+@role_required(RoleEnum.ADMIN)
+def get_user_api(user_id):
+    u = User.query.get_or_404(user_id)
+    return jsonify({
+        "id": u.id,
+        "first_name": u.first_name,
+        "last_name": u.last_name,
+        "username": u.username,
+        "email": u.email,
+        "phone_number": u.phone_number,
+        "gender": u.gender.value if u.gender else "OTHER",
+        "role": u.role.value if u.role else "READER",
+        "is_active": u.is_active,
+        "avatar": u.avatar
+    })
+
+
+@admin_bp.route('/users/add', methods=['POST'])
+@login_required
+@role_required(RoleEnum.ADMIN)
+def add_user():
+    try:
+        data = request.form
+        phone = data.get('phone_number')
+        if not phone or phone.strip() == "":
+            phone = None
+
+        if User.query.filter((User.username == data['username']) | (User.email == data['email'])).first():
+            flash("Username hoặc Email đã tồn tại!", "danger")
+            return redirect(url_for('admin.manage_users'))
+
+        new_user = User(
+            first_name=data['first_name'],
+            last_name=data['last_name'],
+            username=data['username'],
+            email=data['email'],
+            phone_number=phone,
+            gender=GenderEnum(data['gender']),
+            role=RoleEnum(data['role']),
+            password=generate_password_hash("123456")
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        flash("Thêm người dùng mới thành công!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Lỗi: {str(e)}", "danger")
+
+    return redirect(url_for('admin.manage_users'))
+
+
+@admin_bp.route('/users/delete/<int:user_id>', methods=['POST'])
+@login_required
+@role_required(RoleEnum.ADMIN)
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+
+    if user.id == current_user.id:
+        flash("Bạn không thể tự xóa chính mình!", "danger")
+    else:
+        db.session.delete(user)
+        db.session.commit()
+        flash(f"Đã xóa tài khoản {user.username} thành công!", "success")
+
+    return redirect(url_for('admin.manage_users'))
