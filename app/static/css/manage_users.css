@@ -1,0 +1,50 @@
+.nav-custom {
+    background: #e2e8f0;
+    padding: 6px;
+    border-radius: 14px;
+    display: inline-flex;
+}
+
+.nav-custom .nav-link {
+    border-radius: 10px;
+    color: #64748b;
+    font-weight: 600;
+    padding: 10px 24px;
+    transition: all 0.3s;
+}
+
+.nav-custom .nav-link.active {
+    background: #ffffff !important;
+    color: #2563eb !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.avatar-sm-text {
+    width: 40px; height: 40px;
+    background: #6366f1; color: white;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 12px; font-weight: bold;
+}
+
+.bg-light-subtle { background-color: #f8fafc !important; }
+
+/* Trạng thái badges */
+.bg-soft-info { background-color: #e0f2fe; color: #0284c7; }
+.bg-success-subtle { background-color: #dcfce7; color: #15803d; }
+
+.table thead th {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    border: none;
+}
+
+.pagination .page-link {
+    color: #4b5563;
+    font-weight: 500;
+}
+.pagination .page-item.active .page-link {
+    background-color: #2563eb;
+    color: white;
+}
