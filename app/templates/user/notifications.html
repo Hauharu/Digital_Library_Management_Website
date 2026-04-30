@@ -52,6 +52,14 @@
 
                 <div class="detail-content">
                     {{ selected_notif.content | safe }}
+                    
+                    {% if selected_notif.type == 'FAVORITE' %}
+                    <div class="mt-4">
+                        <a href="{{ url_for('main.favorites_list') }}" class="btn btn-primary rounded-pill px-4">
+                            <i class="fa-solid fa-heart me-2"></i> Xem danh sách yêu thích
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
                 {% else %}
                 <div class="detail-empty">

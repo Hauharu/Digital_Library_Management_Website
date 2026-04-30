@@ -349,6 +349,7 @@ def handle_reply_review(data):
             'unread_count': unread_count,
             'new_notification': {
                 'title': notif.title,
+                'content': notif.content,
                 'time': 'Vừa xong',
                 'id': notif.id
             }

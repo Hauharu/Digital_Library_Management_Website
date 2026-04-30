@@ -321,7 +321,7 @@ def approve_borrow_request(request_id):
         flash('Không đủ số lượng sách để duyệt yêu cầu.', 'danger')
         return redirect(url_for('main.staff_dashboard'))
 
-    borrow_request.status = RequestStatusEnum.Approved
+    borrow_request.status = RequestStatusEnum.Completed
     borrow_date = borrow_request.borrow_from_date or date.today()
     due_date = borrow_request.borrow_to_date or (borrow_date + timedelta(days=7))
 
@@ -542,12 +542,64 @@ def toggle_favorite(book_id):
 
     if favorite:
         db.session.delete(favorite)
+        
+        # Thêm thông báo xóa khỏi yêu thích
+        from app.models import Notification, Book
+        from app import socketio
+        book = Book.query.get(book_id)
+        notif = Notification(
+            user_id=current_user.id,
+            title="Đã xóa khỏi yêu thích",
+            content=f"Bạn đã xóa cuốn sách '{book.title}' khỏi danh sách yêu thích.",
+            type="FAVORITE"
+        )
+        db.session.add(notif)
         db.session.commit()
+        
+        # SocketIO
+        unread_count = Notification.query.filter_by(user_id=current_user.id, is_read=False).count()
+        socketio.emit('update_notifications', {
+            'unread_count': unread_count,
+            'new_notification': {
+                'title': notif.title,
+                'content': notif.content,
+                'time': 'Vừa xong',
+                'id': notif.id,
+                'type': 'FAVORITE'
+            }
+        }, room=f"user_{current_user.id}")
+
         return jsonify({'status': 'removed', 'message': 'Đã xóa khỏi danh sách yêu thích'})
     else:
         new_favorite = Favorite(user_id=current_user.id, book_id=book_id)
         db.session.add(new_favorite)
+        
+        # Thêm thông báo
+        from app.models import Notification, Book
+        from app import socketio
+        book = Book.query.get(book_id)
+        notif = Notification(
+            user_id=current_user.id,
+            title="Đã thêm vào yêu thích",
+            content=f"Bạn đã thêm cuốn sách '{book.title}' vào danh sách yêu thích của mình.",
+            type="FAVORITE"
+        )
+        db.session.add(notif)
         db.session.commit()
+        
+        # SocketIO
+        unread_count = Notification.query.filter_by(user_id=current_user.id, is_read=False).count()
+        socketio.emit('update_notifications', {
+            'unread_count': unread_count,
+            'new_notification': {
+                'title': notif.title,
+                'content': notif.content,
+                'time': 'Vừa xong',
+                'id': notif.id,
+                'type': 'FAVORITE'
+            }
+        }, room=f"user_{current_user.id}")
+        
         return jsonify({'status': 'added', 'message': 'Đã thêm vào danh sách yêu thích'})
 
 

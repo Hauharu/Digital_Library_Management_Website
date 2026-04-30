@@ -73,12 +73,16 @@ class StaffService:
                 existing_invoice.amount += fine_amount
                 existing_invoice.updated_at = now
             else:
-                new_invoice = Invoice(amount=fine_amount, issue_date=now, status=InvoiceStatusEnum.Paid,
+                new_invoice = Invoice(amount=fine_amount, issue_date=now, status=InvoiceStatusEnum.Pending,
                                       borrow_slip_id=slip.id)
                 db.session.add(new_invoice)
 
         slip.status = BorrowStatusEnum.Returned
         slip.return_date = now.date()
+        
+        # Cập nhật trạng thái yêu cầu mượn nếu có
+        if slip.borrow_request:
+            slip.borrow_request.status = RequestStatusEnum.Completed
         
         # Kiểm tra an toàn: Không để số lượng hiện có vượt quá tổng số lượng trong kho
         new_available = book.available_quantity + slip.quantity
@@ -88,6 +92,27 @@ class StaffService:
             book.available_quantity = new_available
             
         db.session.commit()
+        
+        if fine_amount > 0:
+            notif = Notification(
+                user_id=slip.user_id,
+                title="Thông báo phí phạt trả muộn",
+                content=f"Bạn bị phạt {fine_amount:,.0f} VNĐ do trả sách '{book.title}' muộn {days_late} ngày.",
+                type="FINE"
+            )
+            db.session.add(notif)
+            db.session.commit()
+            
+            unread_count = Notification.query.filter_by(user_id=slip.user_id, is_read=False).count()
+            socketio.emit('update_notifications', {
+                'unread_count': unread_count,
+                'new_notification': {
+                    'title': notif.title,
+                    'content': notif.content,
+                    'time': 'Vừa xong',
+                    'id': notif.id
+                }
+            }, room=f"user_{slip.user_id}")
 
         # Gửi Email qua EmailService
         EmailService.send_return_confirmation(slip.user.first_name, slip.user.email, book.title, fine_amount)
@@ -194,7 +219,15 @@ class StaffService:
                 slip.due_date,
                 fine
             )
+            notif = Notification(
+                user_id=slip.user_id,
+                title="Cảnh báo sách quá hạn",
+                content=f"Sách '{slip.book.title}' của bạn đã quá hạn. Phí phạt hiện tại là {fine:,.0f} VNĐ.",
+                type="WARNING"
+            )
+            db.session.add(notif)
             count += 1
+        db.session.commit()
         return count
 
     @staticmethod
@@ -241,6 +274,28 @@ class StaffService:
             db.session.add(new_invoice)
 
         db.session.commit()
+
+        # Tạo thông báo hệ thống
+        notif = Notification(
+            user_id=slip.user_id,
+            title=f"Phạt vi phạm: {inc_type.value}",
+            content=f"Phạt {amount:,.0f} VNĐ cho sách '{slip.book.title}'. Lý do: {description}",
+            type="FINE"
+        )
+        db.session.add(notif)
+        db.session.commit()
+
+        # SocketIO
+        unread_count = Notification.query.filter_by(user_id=slip.user_id, is_read=False).count()
+        socketio.emit('update_notifications', {
+            'unread_count': unread_count,
+            'new_notification': {
+                'title': notif.title,
+                'content': notif.content,
+                'time': 'Vừa xong',
+                'id': notif.id
+            }
+        }, room=f"user_{slip.user_id}")
 
         EmailService.send_general_notification(
             slip.user.first_name,

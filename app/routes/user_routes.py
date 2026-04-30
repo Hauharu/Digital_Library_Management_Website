@@ -13,11 +13,11 @@ user_bp = Blueprint('user', __name__, url_prefix='/user')
 def user_profile():
     user = current_user 
 
-    # Đếm số yêu cầu đang chờ hoặc đã duyệt
-    active_requests = sum(1 for r in user.borrow_requests if r.status in (RequestStatusEnum.Pending, RequestStatusEnum.Approved))
+    # Đếm số yêu cầu đang chờ xử lý
+    active_requests = sum(1 for r in user.borrow_requests if r.status == RequestStatusEnum.Pending)
     
-    # Đếm số sách đang mượn từ borrow_slips
-    borrow_count = sum(1 for s in user.borrow_slips if s.status == BorrowStatusEnum.Borrowing)
+    # Đếm số sách đang nắm giữ hoặc chịu trách nhiệm (chưa trả)
+    borrow_count = sum(1 for s in user.borrow_slips if s.status != BorrowStatusEnum.Returned)
 
     full_name = " ".join([part.strip() for part in [user.last_name or "", user.first_name or ""] if part and part.strip()])
     display_name = full_name or user.username or user.email
