@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash,jsonify
 from app.models import BorrowRequest, RequestStatusEnum, Book, User, RoleEnum,\
-        BorrowStatusEnum, BorrowSlip,GenderEnum, Invoice, InvoiceStatusEnum
+        BorrowStatusEnum, BorrowSlip,GenderEnum, Invoice, InvoiceStatusEnum, Payment, \
+        PaymentMethodEnum, PaymentStatusEnum, Category
 from app.services.staff_service import StaffService
 from flask_login import login_required
 from sqlalchemy import or_
@@ -332,3 +333,63 @@ def api_create_borrow_slip():
     except Exception as e:
         db.session.rollback()
         return jsonify({"success": False, "message": str(e)}), 500
+
+
+@staff_bp.route('/manage-categories')
+@login_required
+def manage_categories():
+    categories = Category.query.all()
+    return render_template('staff/manage_categories.html', categories=categories)
+
+
+@staff_bp.route('/add-category', methods=['POST'])
+@login_required
+def add_category():
+    name = request.form.get('name', '').strip()
+    if not name:
+        flash('Tên thể loại không được để trống!', 'danger')
+        return redirect(url_for('staff.manage_categories'))
+
+    existing = Category.query.filter_by(name=name).first()
+    if existing:
+        flash('Thể loại này đã tồn tại!', 'warning')
+        return redirect(url_for('staff.manage_categories'))
+
+    new_cat = Category(name=name)
+    db.session.add(new_cat)
+    db.session.commit()
+    flash(f'Đã thêm thể loại "{name}" thành công!', 'success')
+    return redirect(url_for('staff.manage_categories'))
+
+
+@staff_bp.route('/edit-category/<int:id>', methods=['POST'])
+@login_required
+def edit_category(id):
+    category = Category.query.get_or_404(id)
+    new_name = request.form.get('name', '').strip()
+
+    if new_name:
+        existing = Category.query.filter(Category.name == new_name, Category.id != id).first()
+        if existing:
+            flash('Tên thể loại đã tồn tại!', 'warning')
+        else:
+            category.name = new_name
+            db.session.commit()
+            flash('Cập nhật thể loại thành công!', 'success')
+
+    return redirect(url_for('staff.manage_categories'))
+
+
+@staff_bp.route('/delete-category/<int:id>', methods=['POST'])
+@login_required
+def delete_category(id):
+    category = Category.query.get_or_404(id)
+
+    if category.books:
+        flash(f'Không thể xóa vì vẫn còn {len(category.books)} cuốn sách thuộc thể loại này!', 'danger')
+    else:
+        db.session.delete(category)
+        db.session.commit()
+        flash('Đã xóa thể loại thành công!', 'success')
+
+    return redirect(url_for('staff.manage_categories'))
