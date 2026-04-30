@@ -267,4 +267,96 @@
 .password-toggle:hover {
     color: #881642; /* ou-primary */
 }
+
+/* --- FLASH TOAST PREMIUM (Center Screen) --- */
+.flash-toast-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    pointer-events: none;
+    width: 100%;
+    max-width: 450px;
+    padding: 20px;
+}
+
+.flash-toast {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 20px 25px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    transform: scale(0.7) translateY(20px);
+    opacity: 0;
+    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.flash-toast-show {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+.flash-toast-success { border-bottom: 5px solid #10b981; }
+.flash-toast-danger { border-bottom: 5px solid #ef4444; }
+.flash-toast-warning { border-bottom: 5px solid #f59e0b; }
+.flash-toast-info { border-bottom: 5px solid #3b82f6; }
+
+.flash-toast-icon {
+    font-size: 26px;
+    width: 50px;
+    height: 50px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.flash-toast-success .flash-toast-icon { background: #d1fae5; color: #059669; }
+.flash-toast-danger .flash-toast-icon { background: #fee2e2; color: #dc2626; }
+.flash-toast-warning .flash-toast-icon { background: #fef3c7; color: #d97706; }
+.flash-toast-info .flash-toast-icon { background: #dbeafe; color: #2563eb; }
+
+.flash-toast-msg {
+    color: #111827;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+.flash-toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 5px;
+    width: 100%;
+    background: rgba(0,0,0,0.05);
+}
+
+.flash-toast-progress::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: currentColor;
+    animation: toastProgress 3s linear forwards;
+}
+
+@keyframes toastProgress {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
 

@@ -90,6 +90,8 @@ def create_app(config_name=None):
         diff = now - dt
         
         seconds = diff.total_seconds()
+        if seconds < 30:
+            return "Vừa xong"
         if seconds < 60:
             return f"{int(seconds)} giây trước"
         minutes = seconds // 60
@@ -289,6 +291,7 @@ def handle_like_review(data):
                 'unread_count': unread_count,
                 'new_notification': {
                     'title': notif.title,
+                    'content': notif.content,
                     'time': 'Vừa xong',
                     'id': notif.id
                 }

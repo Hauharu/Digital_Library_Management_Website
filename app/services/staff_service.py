@@ -125,7 +125,12 @@ class StaffService:
         unread_count = Notification.query.filter_by(user_id=borrow_req.user_id, is_read=False).count()
         socketio.emit('update_notifications', {
             'unread_count': unread_count,
-            'new_notification': {'title': notif.title, 'time': 'Vừa xong', 'id': notif.id}
+            'new_notification': {
+                'title': notif.title, 
+                'content': notif.content,
+                'time': 'Vừa xong', 
+                'id': notif.id
+            }
         }, room=f"user_{borrow_req.user_id}")
 
         # Email thông báo
@@ -153,7 +158,11 @@ class StaffService:
         unread_count = Notification.query.filter_by(user_id=req.user_id, is_read=False).count()
         socketio.emit('update_notifications', {
             'unread_count': unread_count,
-            'new_notification': {'title': notif.title, 'time': 'Vừa xong'}
+            'new_notification': {
+                'title': notif.title,
+                'content': notif.content,
+                'time': 'Vừa xong'
+            }
         }, room=f"user_{req.user_id}")
 
         # Email

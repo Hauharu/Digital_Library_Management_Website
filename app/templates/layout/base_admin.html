@@ -76,28 +76,73 @@
                     <input type="text" class="border-0 bg-transparent" placeholder="Tìm kiếm tài khoản, mã hóa đơn...">
                 </div>
 
-                <div class="user-info dropdown">
-                    <div class="d-flex align-items-center gap-2" style="cursor: pointer;" data-bs-toggle="dropdown">
-                        <div class="text-end d-none d-sm-block">
-                            <p class="mb-0 fw-bold small text-dark">{{ current_user.last_name }} {{
-                                current_user.first_name
-                                }}</p>
-                            <span class="badge bg-danger-subtle text-danger x-small">Administrator</span>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Thông báo Bell cho Admin -->
+                    <div class="dropdown">
+                        <button class="btn btn-link text-muted p-0 position-relative shadow-none no-caret" type="button"
+                            data-bs-toggle="dropdown">
+                            <i class="fa-solid fa-bell fs-5"></i>
+                            {% if unread_count > 0 %}
+                            <span
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger badge-count"
+                                style="font-size: 10px;">
+                                {{ unread_count }}
+                            </span>
+                            {% endif %}
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end notification-dropdown border-0 shadow-lg mt-3 p-0 rounded-4"
+                            style="width: 320px;">
+                            <div class="notification-header">
+                                <span class="fw-bold">Thông báo</span>
+                                <a href="/notifications/mark-all-read?ajax=1"
+                                    class="small text-decoration-none mark-all-read">Đánh dấu đã đọc</a>
+                            </div>
+                            <div class="notification-list">
+                                {% for notif in notifications %}
+                                <a href="{{ url_for('user.notifications') }}?id={{ notif.id }}"
+                                    class="notification-item {{ 'unread' if not notif.is_read else '' }}">
+                                    <div class="notification-icon">
+                                        <i
+                                            class="fa-solid {{ 'fa-key' if notif.title and 'đăng nhập' in notif.title.lower() else 'fa-info-circle' }}"></i>
+                                    </div>
+                                    <div class="notification-content">
+                                        <span class="title">{{ notif.title }}</span>
+                                        <span class="time">{{ notif.sent_date | time_ago }}</span>
+                                    </div>
+                                </a>
+                                {% else %}
+                                <div class="p-4 text-center text-muted small">Không có thông báo mới</div>
+                                {% endfor %}
+                            </div>
+                            <div class="notification-footer">
+                                <a href="{{ url_for('user.notifications') }}">Xem tất cả thông báo</a>
+                            </div>
                         </div>
-                        <img src="{{ current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}" class="rounded-circle border" width="38" height="38">
                     </div>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
-                        <li><a class="dropdown-item small py-2" href="/admin/profile"><i
-                                    class="fa-solid fa-id-card me-2 text-primary"></i>Hồ sơ Admin</a></li>
-                        <li><a class="dropdown-item small py-2" href="/admin/logs"><i
-                                    class="fa-solid fa-list-check me-2 text-primary"></i>Nhật ký hệ thống</a></li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li><a class="dropdown-item small py-2 text-danger" href="{{ url_for('auth.logout') }}"><i
-                                    class="fa-solid fa-sign-out me-2"></i>Đăng xuất</a></li>
-                    </ul>
-                </div>
+
+                    <div class="user-info dropdown">
+                        <div class="d-flex align-items-center gap-2" style="cursor: pointer;" data-bs-toggle="dropdown">
+                            <div class="text-end d-none d-sm-block">
+                                <p class="mb-0 fw-bold small text-dark">{{ current_user.last_name }} {{
+                                    current_user.first_name
+                                    }}</p>
+                                <span class="badge bg-danger-subtle text-danger x-small">Administrator</span>
+                            </div>
+                            <img src="{{ current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}"
+                                class="rounded-circle border" width="38" height="38">
+                        </div>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
+                            <li><a class="dropdown-item small py-2" href="/admin/profile"><i
+                                        class="fa-solid fa-id-card me-2 text-primary"></i>Hồ sơ Admin</a></li>
+                            <li><a class="dropdown-item small py-2" href="/admin/logs"><i
+                                        class="fa-solid fa-list-check me-2 text-primary"></i>Nhật ký hệ thống</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item small py-2 text-danger" href="{{ url_for('auth.logout') }}"><i
+                                        class="fa-solid fa-sign-out me-2"></i>Đăng xuất</a></li>
+                        </ul>
+                    </div>
             </header>
 
             <main class="p-4">
@@ -117,7 +162,57 @@
         </div>
     </div>
 
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const socket = io();
+        const authUserId = "{{ current_user.id }}";
+        if (authUserId) {
+            socket.emit('join_user', { user_id: parseInt(authUserId) });
+        }
+
+        socket.on('update_notifications', function (data) {
+            const bellBtn = document.querySelector('i.fa-bell').parentElement;
+            let badge = bellBtn.querySelector('.badge-count');
+            if (data.unread_count > 0) {
+                if (badge) {
+                    badge.innerText = data.unread_count;
+                } else {
+                    bellBtn.insertAdjacentHTML('beforeend', `<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger badge-count" style="font-size: 10px;">${data.unread_count}</span>`);
+                }
+            }
+
+            const list = document.querySelector('.notification-list');
+            if (list) {
+                const empty = list.querySelector('.text-center');
+                if (empty) empty.remove();
+
+                const itemHtml = `
+                    <a href="/user/notifications?id=${data.new_notification.id}" class="notification-item unread">
+                        <div class="notification-icon">
+                            <i class="fa-solid fa-info-circle"></i>
+                        </div>
+                        <div class="notification-content">
+                            <span class="title">${data.new_notification.title}</span>
+                            <span class="time">Vừa xong</span>
+                        </div>
+                    </a>
+                `;
+                list.insertAdjacentHTML('afterbegin', itemHtml);
+            }
+        });
+
+        // Mark all as read logic
+        document.querySelector('.mark-all-read')?.addEventListener('click', function (e) {
+            e.preventDefault();
+            fetch(this.href).then(res => res.json()).then(data => {
+                if (data.success) {
+                    document.querySelector('.badge-count')?.remove();
+                    document.querySelectorAll('.notification-list .bg-light').forEach(el => el.classList.remove('bg-light'));
+                }
+            });
+        });
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 

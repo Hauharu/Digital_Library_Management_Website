@@ -118,7 +118,33 @@ class PaymentService:
             notes="Độc giả chọn thanh toán tại quầy."
         )
         db.session.add(payment)
+        
+        # Thông báo cho Staff
+        from app.models import User, RoleEnum, Notification
+        from app import socketio
+        staff_users = User.query.filter(User.role.in_([RoleEnum.STAFF, RoleEnum.ADMIN])).all()
+        user_name = f"{invoice.borrow_slip.user.last_name} {invoice.borrow_slip.user.first_name}"
+        for staff in staff_users:
+            notif = Notification(
+                user_id=staff.id,
+                title="Yêu cầu thanh toán Offline",
+                content=f"Độc giả {user_name} chọn thanh toán tiền mặt cho hóa đơn #{invoice.id}",
+                type="SYSTEM"
+            )
+            db.session.add(notif)
         db.session.commit()
+
+        for staff in staff_users:
+            unread_count = Notification.query.filter_by(user_id=staff.id, is_read=False).count()
+            socketio.emit('update_notifications', {
+                'unread_count': unread_count,
+                'new_notification': {
+                    'title': "Yêu cầu thanh toán Offline",
+                    'content': f"Độc giả {user_name} chọn thanh toán tiền mặt cho hóa đơn #{invoice.id}",
+                    'time': 'Vừa xong'
+                }
+            }, room=f"user_{staff.id}")
+
         return True, ""
 
     @staticmethod
@@ -158,7 +184,33 @@ class PaymentService:
                 notes=f"Thanh toán qua VNPay thành công. Mã GD: {data.get('vnp_BankTranNo')}"
             )
             db.session.add(payment)
+            
+            # Thông báo cho Staff
+            from app.models import User, RoleEnum, Notification
+            from app import socketio
+            staff_users = User.query.filter(User.role.in_([RoleEnum.STAFF, RoleEnum.ADMIN])).all()
+            user_name = f"{invoice.borrow_slip.user.last_name} {invoice.borrow_slip.user.first_name}"
+            for staff in staff_users:
+                notif = Notification(
+                    user_id=staff.id,
+                    title="Thanh toán Online thành công",
+                    content=f"Độc giả {user_name} đã thanh toán thành công hóa đơn #{invoice.id} qua VNPay",
+                    type="SYSTEM"
+                )
+                db.session.add(notif)
             db.session.commit()
+
+            for staff in staff_users:
+                unread_count = Notification.query.filter_by(user_id=staff.id, is_read=False).count()
+                socketio.emit('update_notifications', {
+                    'unread_count': unread_count,
+                    'new_notification': {
+                        'title': "Hóa đơn đã thanh toán",
+                        'content': f"Độc giả {user_name} đã thanh toán thành công hóa đơn #{invoice.id} qua VNPay",
+                        'time': 'Vừa xong'
+                    }
+                }, room=f"user_{staff.id}")
+
             return True, ""
         else:
             return False, f"Thanh toán thất bại. Mã lỗi: {vnp_ResponseCode}"
