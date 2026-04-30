@@ -104,14 +104,29 @@
                         </td>
 
                         <td class="ps-5">
-                            {% if req.borrow_slip and req.borrow_slip.invoices %}
-                                {% set unpaid_invoices = req.borrow_slip.invoices | selectattr('status.name', 'in', ['Pending', 'Offline', 'Overdue']) | list %}
-                                {% set total_unpaid = unpaid_invoices | sum(attribute='amount') %}
+                            {% if req.borrow_slip %}
+                                {% set slip = req.borrow_slip %}
+                                {# 1. Tính tiền quá hạn thực tế nếu chưa trả #}
+                                {% set overdue_fine = 0 %}
+                                {% if slip.status.name != 'Returned' and today > slip.due_date %}
+                                    {% set overdue_fine = (today - slip.due_date).days * 5000 %}
+                                {% endif %}
 
-                                {% if total_unpaid > 0 %}
+                                {# 2. Tính tiền từ các hóa đơn chưa thanh toán #}
+                                {% set invoice_fine = 0 %}
+                                {% set unpaid_invoices = [] %}
+                                {% if slip.invoices %}
+                                    {% set unpaid_invoices = slip.invoices | selectattr('status.name', 'in', ['Pending', 'Offline', 'Overdue']) | list %}
+                                    {% set invoice_fine = unpaid_invoices | sum(attribute='amount') %}
+                                {% endif %}
+
+                                {# 3. Tổng cộng #}
+                                {% set total_fine = overdue_fine + invoice_fine %}
+
+                                {% if total_fine > 0 %}
                                     <div class="d-flex flex-column align-items-start gap-2">
                                         <span class="fw-bold text-danger fs-6 mb-0">
-                                            {{ "{:,.0f}".format(total_unpaid) }} VNĐ
+                                            {{ "{:,.0f}".format(total_fine) }} VNĐ
                                         </span>
                                         
                                         {% set first_unpaid = unpaid_invoices | first %}
@@ -133,10 +148,15 @@
                                                     <i class="fas fa-credit-card me-1"></i> Thanh toán ngay
                                                 </a>
                                             {% endif %}
+                                        {% else %}
+                                            {# Nếu chỉ có tiền quá hạn mà chưa có hóa đơn #}
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3">
+                                                <i class="fas fa-history me-1"></i> Quá hạn (Chờ trả sách)
+                                            </span>
                                         {% endif %}
                                     </div>
                                 {% else %}
-                                    {% set paid_invoices = req.borrow_slip.invoices | selectattr('status.name', 'equalto', 'Paid') | list %}
+                                    {% set paid_invoices = slip.invoices | selectattr('status.name', 'equalto', 'Paid') | list %}
                                     {% if paid_invoices %}
                                         <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">
                                             <i class="fas fa-check-circle me-1"></i> {{ paid_invoices[0].status.value }}

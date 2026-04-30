@@ -161,7 +161,7 @@ def staff_dashboard():
 
     overdue_count = BorrowSlip.query.filter(
         BorrowSlip.due_date < datetime.now().date(),
-        BorrowSlip.status == BorrowStatusEnum.Borrowing
+        BorrowSlip.status != BorrowStatusEnum.Returned
     ).count()
 
     now = datetime.now().strftime('%H:%M - %d/%m/%Y')
@@ -288,7 +288,10 @@ def borrow_history():
     full_name = f"{(current_user.last_name or '').strip()} {(current_user.first_name or '').strip()}".strip()
     user_display_name = full_name or current_user.username or current_user.email
 
-    return render_template('user/history.html', history=history, user_display_name=user_display_name)
+    return render_template('user/history.html', 
+                           history=history, 
+                           user_display_name=user_display_name,
+                           today=date.today())
 
 
 def _is_staff_or_admin():

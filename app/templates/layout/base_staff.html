@@ -83,7 +83,7 @@
                             }}</p>
                         <p class="mb-0 text-muted x-small">Thủ thư hệ thống</p>
                     </div>
-                    <img src="{{ current_user.avatar }}" class="rounded-circle border" width="38" height="38"
+                    <img src="{{ current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}" class="rounded-circle border" width="38" height="38"
                          alt="avatar">
                 </div>
                 <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
