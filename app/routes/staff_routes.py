@@ -46,7 +46,30 @@ def confirm_payment(invoice_id):
         notes=f"Thủ thư xác nhận thanh toán tiền mặt tại quầy."
     )
     db.session.add(payment)
+    
+    # Thông báo cho người dùng
+    from app.models import Notification
+    from app import socketio
+    user_notif = Notification(
+        user_id=invoice.borrow_slip.user_id,
+        title="Thanh toán thành công",
+        content=f"Thủ thư đã xác nhận thanh toán thành công cho hóa đơn #{invoice.id} của bạn. Cảm ơn bạn!",
+        type="SYSTEM"
+    )
+    db.session.add(user_notif)
     db.session.commit()
+    
+    # SocketIO
+    user_unread = Notification.query.filter_by(user_id=invoice.borrow_slip.user_id, is_read=False).count()
+    socketio.emit('update_notifications', {
+        'unread_count': user_unread,
+        'new_notification': {
+            'title': user_notif.title,
+            'content': user_notif.content,
+            'time': 'Vừa xong',
+            'id': user_notif.id
+        }
+    }, room=f"user_{invoice.borrow_slip.user_id}")
     
     flash("Đã xác nhận thanh toán thành công!", "success")
     return redirect(url_for('staff.manage_orders'))

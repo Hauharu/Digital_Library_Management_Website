@@ -94,10 +94,14 @@ class StaffService:
         db.session.commit()
         
         if fine_amount > 0:
+            # Lấy tổng tiền phạt cuối cùng (bao gồm cả các khoản phạt hư hỏng nếu đã báo trước đó)
+            final_invoice = Invoice.query.filter_by(borrow_slip_id=slip.id).first()
+            total_fine = final_invoice.amount if final_invoice else fine_amount
+
             notif = Notification(
                 user_id=slip.user_id,
                 title="Thông báo phí phạt trả muộn",
-                content=f"Bạn bị phạt {fine_amount:,.0f} VNĐ do trả sách '{book.title}' muộn {days_late} ngày.",
+                content=f"Bạn bị phạt {fine_amount:,.0f} VNĐ do trả sách '{book.title}' muộn {days_late} ngày.<br/>Tổng tiền phạt cần thanh toán là {total_fine:,.0f} VNĐ.",
                 type="FINE"
             )
             db.session.add(notif)
@@ -249,6 +253,10 @@ class StaffService:
             inc_type = IncidentTypeEnum.DAMAGED
             slip.status = BorrowStatusEnum.Damaged
 
+        # Xóa các IncidentReport cũ của phiếu này (nếu có) để tránh cộng dồn sai
+        from app.models import IncidentReport
+        IncidentReport.query.filter_by(borrow_slip_id=slip.id).delete()
+
         report = IncidentReport(
             borrow_slip_id=slip.id,
             type=inc_type,
@@ -257,17 +265,23 @@ class StaffService:
         )
         db.session.add(report)
 
-        existing_invoice = Invoice.query.filter_by(borrow_slip_id=slip.id).first()
+        # Tính toán lại tổng tiền phạt: Tiền quá hạn + Tiền sự cố mới
+        today = datetime.now().date()
+        overdue_fine = 0
+        if slip.due_date < today:
+            overdue_fine = (today - slip.due_date).days * 5000
+        
+        total_new_amount = overdue_fine + amount
 
+        existing_invoice = Invoice.query.filter_by(borrow_slip_id=slip.id).first()
         if existing_invoice:
-            existing_invoice.amount += amount
+            existing_invoice.amount = total_new_amount
             existing_invoice.updated_at = datetime.now()
         else:
-
             new_invoice = Invoice(
-                amount=amount,
+                amount=total_new_amount,
                 issue_date=datetime.now(),
-                due_date=(datetime.now() + timedelta(days=7)).date(),
+                due_date=(today + timedelta(days=7)),
                 status=InvoiceStatusEnum.Pending,
                 borrow_slip_id=slip.id
             )
@@ -275,11 +289,14 @@ class StaffService:
 
         db.session.commit()
 
+        # Lấy tổng tiền phạt sau khi đã cập nhật
+        total_fine = total_new_amount
+
         # Tạo thông báo hệ thống
         notif = Notification(
             user_id=slip.user_id,
             title=f"Phạt vi phạm: {inc_type.value}",
-            content=f"Phạt {amount:,.0f} VNĐ cho sách '{slip.book.title}'. Lý do: {description}",
+            content=f"Phạt {amount:,.0f} VNĐ cho sách '{slip.book.title}'. Lý do: {description}.<br/>Tổng tiền phạt hiện tại là {total_fine:,.0f} VNĐ.",
             type="FINE"
         )
         db.session.add(notif)

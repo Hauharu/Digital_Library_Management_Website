@@ -190,8 +190,8 @@ class Payment(Base):
     __tablename__ = 'payment'
 
     amount_paid = db.Column(db.Float, nullable=False)
-    method = db.Column(db.Enum(PaymentMethodEnum), nullable=False)
-    status = db.Column(db.Enum(PaymentStatusEnum), default=PaymentStatusEnum.Pending)
+    method = db.Column(db.Enum(PaymentMethodEnum), nullable=False) 
+    status = db.Column(db.Enum(PaymentStatusEnum), default=PaymentStatusEnum.Pending) 
     transaction_id = db.Column(db.String(255), unique=True)
     payment_date = db.Column(db.DateTime, default=datetime.now)
     notes = db.Column(db.Text)

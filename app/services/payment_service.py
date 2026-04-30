@@ -97,7 +97,7 @@ class PaymentService:
                 "description": f"Thanh toan hoa don {invoice_id}"
             }],
             "redirect_urls": {
-                "return_url": url_for("user.paypal_return", _external=True),
+                "return_url": url_for("user.paypal_return", invoice_id=invoice_id, _external=True),
                 "cancel_url": url_for("user.paypal_cancel", _external=True)
             }
         }
@@ -169,6 +169,86 @@ class PaymentService:
         return True, ""
 
     @staticmethod
+    def process_paypal_result(payment_id, payer_id, invoice_id):
+        if PaymentService.execute_paypal_payment(payment_id, payer_id):
+            from app.models import User, RoleEnum, Notification, Invoice, InvoiceStatusEnum, Payment, PaymentMethodEnum, PaymentStatusEnum
+            from app import socketio
+            
+            invoice = Invoice.query.get(invoice_id)
+            if not invoice:
+                return False, "Không tìm thấy hóa đơn tương ứng."
+            
+            invoice.status = InvoiceStatusEnum.Paid
+            amount = invoice.amount
+            
+            payment = Payment(
+                amount_paid=amount,
+                method=PaymentMethodEnum.PayPal,
+                status=PaymentStatusEnum.Completed,
+                transaction_id=payment_id,
+                invoice_id=invoice.id,
+                notes=f"Thanh toán qua PayPal thành công. PayerID: {payer_id}"
+            )
+            db.session.add(payment)
+            
+            # Thông báo
+            staff_users = User.query.filter(User.role.in_([RoleEnum.STAFF, RoleEnum.ADMIN])).all()
+            user_id = invoice.borrow_slip.user_id
+            user_name = f"{invoice.borrow_slip.user.last_name} {invoice.borrow_slip.user.first_name}"
+            
+            # 1. Thông báo cho chính User
+            user_notif = Notification(
+                user_id=user_id,
+                title="Thanh toán thành công",
+                content=f"Bạn đã thanh toán thành công hóa đơn #{invoice.id} số tiền {amount:,.0f} VNĐ qua PayPal. Cảm ơn bạn!",
+                type="SYSTEM"
+            )
+            db.session.add(user_notif)
+            
+            # 2. Thông báo cho Staff (trừ chính người nộp)
+            for staff in staff_users:
+                if staff.id != user_id:
+                    staff_notif = Notification(
+                        user_id=staff.id,
+                        title="Hóa đơn đã thanh toán",
+                        content=f"Độc giả {user_name} đã thanh toán thành công hóa đơn #{invoice.id} qua PayPal",
+                        type="SYSTEM"
+                    )
+                    db.session.add(staff_notif)
+            
+            db.session.commit()
+
+            # Gửi Real-time
+            # Cho User
+            user_unread = Notification.query.filter_by(user_id=user_id, is_read=False).count()
+            socketio.emit('update_notifications', {
+                'unread_count': user_unread,
+                'new_notification': {
+                    'title': user_notif.title,
+                    'content': user_notif.content,
+                    'time': 'Vừa xong',
+                    'id': user_notif.id
+                }
+            }, room=f"user_{user_id}")
+            
+            # Cho Staff (trừ chính người nộp)
+            for staff in staff_users:
+                if staff.id != user_id:
+                    unread_count = Notification.query.filter_by(user_id=staff.id, is_read=False).count()
+                    socketio.emit('update_notifications', {
+                        'unread_count': unread_count,
+                        'new_notification': {
+                            'title': "Hóa đơn đã thanh toán",
+                            'content': f"Độc giả {user_name} đã thanh toán thành công hóa đơn #{invoice.id} qua PayPal",
+                            'time': 'Vừa xong'
+                        }
+                    }, room=f"user_{staff.id}")
+
+            return True, ""
+        else:
+            return False, "Thanh toán PayPal thất bại."
+            
+    @staticmethod
     def validate_vnpay_return(data):
         from app.services.vnpay_official import vnpay
         vnp = vnpay()
@@ -206,31 +286,61 @@ class PaymentService:
             )
             db.session.add(payment)
             
-            # Thông báo cho Staff
+            # Thông báo
             from app.models import User, RoleEnum, Notification
             from app import socketio
+            
             staff_users = User.query.filter(User.role.in_([RoleEnum.STAFF, RoleEnum.ADMIN])).all()
+            user_id = invoice.borrow_slip.user_id
             user_name = f"{invoice.borrow_slip.user.last_name} {invoice.borrow_slip.user.first_name}"
+            
+            # 1. Thông báo cho chính User
+            user_notif = Notification(
+                user_id=user_id,
+                title="Thanh toán thành công",
+                content=f"Bạn đã thanh toán thành công hóa đơn #{invoice.id} số tiền {amount:,.0f} VNĐ qua VNPay. Cảm ơn bạn!",
+                type="SYSTEM"
+            )
+            db.session.add(user_notif)
+            
+            # 2. Thông báo cho Staff (trừ chính người nộp nếu họ là Staff)
             for staff in staff_users:
-                notif = Notification(
-                    user_id=staff.id,
-                    title="Thanh toán Online thành công",
-                    content=f"Độc giả {user_name} đã thanh toán thành công hóa đơn #{invoice.id} qua VNPay",
-                    type="SYSTEM"
-                )
-                db.session.add(notif)
+                if staff.id != user_id:
+                    staff_notif = Notification(
+                        user_id=staff.id,
+                        title="Hóa đơn đã thanh toán",
+                        content=f"Độc giả {user_name} đã thanh toán thành công hóa đơn #{invoice.id} qua VNPay",
+                        type="SYSTEM"
+                    )
+                    db.session.add(staff_notif)
+            
             db.session.commit()
 
+            # Gửi Real-time
+            # Cho User
+            user_unread = Notification.query.filter_by(user_id=user_id, is_read=False).count()
+            socketio.emit('update_notifications', {
+                'unread_count': user_unread,
+                'new_notification': {
+                    'title': user_notif.title,
+                    'content': user_notif.content,
+                    'time': 'Vừa xong',
+                    'id': user_notif.id
+                }
+            }, room=f"user_{user_id}")
+            
+            # Cho Staff (trừ chính người nộp)
             for staff in staff_users:
-                unread_count = Notification.query.filter_by(user_id=staff.id, is_read=False).count()
-                socketio.emit('update_notifications', {
-                    'unread_count': unread_count,
-                    'new_notification': {
-                        'title': "Hóa đơn đã thanh toán",
-                        'content': f"Độc giả {user_name} đã thanh toán thành công hóa đơn #{invoice.id} qua VNPay",
-                        'time': 'Vừa xong'
-                    }
-                }, room=f"user_{staff.id}")
+                if staff.id != user_id:
+                    unread_count = Notification.query.filter_by(user_id=staff.id, is_read=False).count()
+                    socketio.emit('update_notifications', {
+                        'unread_count': unread_count,
+                        'new_notification': {
+                            'title': "Hóa đơn đã thanh toán",
+                            'content': f"Độc giả {user_name} đã thanh toán thành công hóa đơn #{invoice.id} qua VNPay",
+                            'time': 'Vừa xong'
+                        }
+                    }, room=f"user_{staff.id}")
 
             return True, ""
         else:

@@ -251,11 +251,14 @@ def process_paypal(invoice_id):
 def paypal_return():
     payment_id = request.args.get('paymentId')
     payer_id = request.args.get('PayerID')
-    if PaymentService.execute_paypal_payment(payment_id, payer_id):
-        # flash("Thanh toán PayPal thành công!", "success")
-        pass
+    invoice_id = request.args.get('invoice_id')
+    
+    success, message = PaymentService.process_paypal_result(payment_id, payer_id, invoice_id)
+    if success:
+        flash("Thanh toán PayPal thành công!", "success")
     else:
-        flash("Thanh toán PayPal thất bại.", "danger")
+        flash(message, "danger")
+        
     return redirect(url_for('main.borrow_history'))
 
 @user_bp.route("/payment/paypal-cancel")
