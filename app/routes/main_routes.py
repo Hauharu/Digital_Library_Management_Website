@@ -14,6 +14,7 @@ from app.services.email_service import EmailService
 from app.services.recommendation_service import RecommendationService
 from app.services.semantic_search_service import SemanticSearchService
 from app.services.prediction_service import PredictionService
+from app.services.payment_service import PaymentService
 
 main_bp = Blueprint('main', __name__)
 
@@ -284,6 +285,12 @@ def borrow_history():
 
     history = BorrowRequest.query.filter_by(user_id=current_user.id) \
         .order_by(BorrowRequest.created_at.desc()).all()
+    
+    for req in history:
+        if req.borrow_slip and req.borrow_slip.invoices:
+            for inv in req.borrow_slip.invoices:
+                if inv.status.name != 'Paid':
+                    PaymentService.sync_invoice_amount(inv)
 
     full_name = f"{(current_user.last_name or '').strip()} {(current_user.first_name or '').strip()}".strip()
     user_display_name = full_name or current_user.username or current_user.email

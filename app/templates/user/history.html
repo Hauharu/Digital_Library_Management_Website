@@ -112,16 +112,18 @@
                                     {% set overdue_fine = (today - slip.due_date).days * 5000 %}
                                 {% endif %}
 
-                                {# 2. Tính tiền từ các hóa đơn chưa thanh toán #}
-                                {% set invoice_fine = 0 %}
-                                {% set unpaid_invoices = [] %}
-                                {% if slip.invoices %}
-                                    {% set unpaid_invoices = slip.invoices | selectattr('status.name', 'in', ['Pending', 'Offline', 'Overdue']) | list %}
-                                    {% set invoice_fine = unpaid_invoices | sum(attribute='amount') %}
-                                {% endif %}
-
                                 {# 3. Tổng cộng #}
-                                {% set total_fine = overdue_fine + invoice_fine %}
+                                {% set unpaid_invoices = slip.invoices | selectattr('status.name', 'in', ['Pending', 'Offline', 'Overdue']) | list %}
+                                {% set unpaid_invoice_fine = unpaid_invoices | sum(attribute='amount') %}
+                                
+                                {% if unpaid_invoice_fine > 0 %}
+                                    {# Nếu đã có hóa đơn chưa thanh toán, chúng ta ưu tiên hiển thị số tiền trong hóa đơn #}
+                                    {# (Số tiền này đã được đồng bộ bao gồm cả tiền quá hạn trong route payment) #}
+                                    {% set total_fine = unpaid_invoice_fine %}
+                                {% else %}
+                                    {# Nếu chưa có hóa đơn (hoặc đã trả hết), hiển thị tiền quá hạn thực tế (đang nhảy số) #}
+                                    {% set total_fine = overdue_fine %}
+                                {% endif %}
 
                                 {% if total_fine > 0 %}
                                     <div class="d-flex flex-column align-items-start gap-2">

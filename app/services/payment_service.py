@@ -8,6 +8,27 @@ from app.models import Payment, PaymentMethodEnum, PaymentStatusEnum, Invoice, I
 
 class PaymentService:
     @staticmethod
+    def sync_invoice_amount(invoice):
+        from app.models import IncidentReport, BorrowStatusEnum, db
+        from datetime import date
+        
+        slip = invoice.borrow_slip
+        if not slip:
+            return
+
+        today = date.today()
+        overdue_fine = 0
+        if slip.status.name != 'Returned' and today > slip.due_date:
+            overdue_fine = (today - slip.due_date).days * 5000
+        elif slip.status.name == 'Returned' and slip.return_date and slip.return_date > slip.due_date:
+            overdue_fine = (slip.return_date - slip.due_date).days * 5000
+            
+        incident_fine = db.session.query(db.func.sum(IncidentReport.fine_amount)).filter_by(borrow_slip_id=slip.id).scalar() or 0
+        
+        invoice.amount = incident_fine + overdue_fine
+        db.session.commit()
+
+    @staticmethod
     def generate_vnpay_url(invoice_id, amount, ip_address):
         from app.services.vnpay_official import vnpay
         

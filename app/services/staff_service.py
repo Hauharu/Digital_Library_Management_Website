@@ -38,14 +38,18 @@ class StaffService:
 
         for slip in active_slips:
             slip.is_late = slip.due_date < today
-            # Tính tiền quá hạn tính đến hôm nay
             overdue_fine = (today - slip.due_date).days * 5000 if slip.is_late else 0
-            # Tính tiền từ các hóa đơn đã có (ví dụ: hóa đơn báo hỏng)
-            existing_invoice_fine = sum(inv.amount for inv in slip.invoices if inv.status.name != 'Paid')
-            # Tổng cộng
-            slip.fine = overdue_fine + existing_invoice_fine
+
+            unpaid_invoices = [inv for inv in slip.invoices if inv.status.name in ['Pending', 'Offline', 'Overdue']]
             
-            # Lấy lịch sử 5 lần trả gần nhất của user này
+            if unpaid_invoices:
+                from app.services.payment_service import PaymentService
+                for inv in unpaid_invoices:
+                    PaymentService.sync_invoice_amount(inv)
+                slip.fine = sum(inv.amount for inv in unpaid_invoices)
+            else:
+                slip.fine = overdue_fine
+
             slip.user_history = BorrowSlip.query.filter_by(
                 user_id=slip.user_id, status=BorrowStatusEnum.Returned
             ).order_by(BorrowSlip.return_date.desc()).limit(5).all()

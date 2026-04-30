@@ -5,7 +5,7 @@ from app.services.email_service import EmailService
 from app.services.payment_service import PaymentService
 from app.models import User, RequestStatusEnum, BorrowStatusEnum, GenderEnum, Book, Invoice, Payment, PaymentMethodEnum, InvoiceStatusEnum, PaymentStatusEnum
 from app import db, bcrypt
-from datetime import datetime
+from datetime import datetime, date
 user_bp = Blueprint('user', __name__, url_prefix='/user')
 
 @user_bp.route("/profile")
@@ -206,12 +206,16 @@ def select_payment_method(invoice_id):
         flash("Hóa đơn này đã được thanh toán.", "info")
         return redirect(url_for('main.borrow_history'))
 
+    PaymentService.sync_invoice_amount(invoice)
+
     return render_template("user/payment_select.html", invoice=invoice)
 
 @user_bp.route("/payment/vnpay/<int:invoice_id>")
 @login_required
 def process_vnpay(invoice_id):
     invoice = Invoice.query.get_or_404(invoice_id)
+    PaymentService.sync_invoice_amount(invoice)
+    
     ip_address = request.remote_addr
     payment_url = PaymentService.generate_vnpay_url(invoice.id, invoice.amount, ip_address)
     return redirect(payment_url)
@@ -231,6 +235,9 @@ def vnpay_return():
 @login_required
 def process_paypal(invoice_id):
     invoice = Invoice.query.get_or_404(invoice_id)
+    # Đồng bộ lại giá tiền trước khi thanh toán
+    PaymentService.sync_invoice_amount(invoice)
+    
     paypal_payment = PaymentService.create_paypal_payment(invoice.id, invoice.amount)
     if paypal_payment:
         for link in paypal_payment['links']:
