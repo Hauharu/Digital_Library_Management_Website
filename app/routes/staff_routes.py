@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash,jsonify
 from app.models import BorrowRequest, RequestStatusEnum, Book, User, RoleEnum,\
         BorrowStatusEnum, BorrowSlip,GenderEnum, Invoice, InvoiceStatusEnum, Payment, \
-        PaymentMethodEnum, PaymentStatusEnum, Category
+        PaymentMethodEnum, PaymentStatusEnum, Category, IncidentReport
 from app.services.staff_service import StaffService
 from flask_login import login_required
 from sqlalchemy import or_
@@ -393,3 +393,63 @@ def delete_category(id):
         flash('Đã xóa thể loại thành công!', 'success')
 
     return redirect(url_for('staff.manage_categories'))
+
+
+@staff_bp.route('/invoices')
+@login_required
+def manage_invoices():
+    # Lấy tham số lọc từ URL
+    status_filter = request.args.get('status', 'all')
+    search_query = request.args.get('search', '').strip()
+
+    query = Invoice.query.join(BorrowSlip).join(User)
+
+    if status_filter != 'all':
+        query = query.filter(Invoice.status == InvoiceStatusEnum[status_filter])
+
+    if search_query:
+        query = query.filter(
+            or_(
+                User.first_name.contains(search_query),
+                User.last_name.contains(search_query),
+                Invoice.id == search_query if search_query.isdigit() else False
+            )
+        )
+
+    invoices = query.order_by(Invoice.issue_date.desc()).all()
+
+    return render_template('staff/manage_invoices.html',
+                           invoices=invoices,
+                           status_filter=status_filter,
+                           search_query=search_query)
+
+
+@staff_bp.route('/api/invoice/<int:id>')
+def get_invoice_api(id):
+    inv = Invoice.query.get_or_404(id)
+    slip = inv.borrow_slip
+    user = slip.user
+
+    # Tìm thông tin sự cố (Incident) liên quan đến phiếu mượn này nếu có
+    incident = IncidentReport.query.filter_by(borrow_slip_id=slip.id).first()
+
+    return jsonify({
+        "id": inv.id,
+        "amount": inv.amount,
+        "date": inv.issue_date.strftime('%d/%m/%Y %H:%M'),
+        "status": inv.status.name,
+        "status_val": inv.status.value,
+
+        # Độc giả
+        "user_name": f"{user.last_name} {user.first_name}",
+        "user_phone": user.phone_number or "Chưa cập nhật",
+        "user_email": user.email,
+
+        # Sách & Phiếu mượn
+        "book_title": slip.book.title,
+        "slip_id": slip.id,
+        "due_date": slip.due_date.strftime('%d/%m/%Y'),
+
+        # Lý do chi tiết
+        "incident_desc": incident.description if incident else "Phạt quá hạn trả sách"
+    })
