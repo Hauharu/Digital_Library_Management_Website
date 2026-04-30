@@ -108,15 +108,12 @@
                         <span class="badge-status status-borrowing"><i class="fa-solid fa-circle-dot me-1"></i>ĐANG MƯỢN</span>
                         {% endif %}
                         
-                        {% if slip.invoices %}
-                            {% set inv = slip.invoices[0] %}
+                        {% if slip.fine > 0 %}
                             <div class="mt-2">
-                                {% if inv.status.name == 'Pending' %}
-                                    <span class="badge bg-warning text-dark small"><i class="fas fa-clock me-1"></i>Nợ: {{ "{:,.0f}".format(inv.amount) }}đ</span>
-                                {% elif inv.status.name == 'Offline' %}
-                                    <span class="badge bg-info text-white small"><i class="fas fa-money-bill me-1"></i>Chờ nộp tiền: {{ "{:,.0f}".format(inv.amount) }}đ</span>
-                                {% elif inv.status.name == 'Paid' %}
-                                    <span class="badge bg-success text-white small"><i class="fas fa-check-circle me-1"></i>Đã xong</span>
+                                {% if slip.invoices and slip.invoices[0].status.name == 'Offline' %}
+                                    <span class="badge bg-info text-white small"><i class="fas fa-money-bill me-1"></i>Chờ nộp tiền: {{ "{:,.0f}".format(slip.fine) }}đ</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark small"><i class="fas fa-clock me-1"></i>Tổng nợ: {{ "{:,.0f}".format(slip.fine) }}đ</span>
                                 {% endif %}
                             </div>
                         {% endif %}
