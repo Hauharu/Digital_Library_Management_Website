@@ -92,7 +92,7 @@
                         </div>
                         <div class="notification-list">
                             {% for notif in notifications %}
-                             <a href="{{ url_for('user.notifications', id=notif.id) }}"
+                            <a href="{{ url_for('user.notifications', id=notif.id) }}"
                                 class="notification-item {{ 'unread' if not notif.is_read else '' }}">
                                 <div class="notification-icon">
                                     {% if notif.type == 'FAVORITE' %}
@@ -186,6 +186,12 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         if (typeof socket !== 'undefined') {
+            socket.emit('join_user', {});
+
+            socket.on('connect', function () {
+                socket.emit('join_user', {});
+            });
+
             socket.on('update_header_reviews', function (data) {
                 const envelopeIcon = document.querySelector('i.fa-envelope');
                 if (envelopeIcon && data.unread_count > 0) {

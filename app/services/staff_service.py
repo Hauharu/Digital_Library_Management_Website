@@ -206,31 +206,52 @@ class StaffService:
     def notify_overdue_slips():
         from app.models import BorrowSlip, BorrowStatusEnum
         today = datetime.now().date()
-        # Tìm tất cả phiếu đang mượn và đã quá hạn
+        # Tìm tất cả phiếu chưa trả và đã quá hạn (bao gồm cả trạng thái Đang mượn, Quá hạn, Hư hỏng)
         overdue_slips = BorrowSlip.query.filter(
-            BorrowSlip.status == BorrowStatusEnum.Borrowing,
+            BorrowSlip.status.in_([BorrowStatusEnum.Borrowing, BorrowStatusEnum.Overdue, BorrowStatusEnum.Damaged]),
             BorrowSlip.due_date < today
         ).all()
 
         count = 0
+        
         for slip in overdue_slips:
             days_late = (today - slip.due_date).days
-            fine = days_late * 5000
+            overdue_fine = days_late * 5000
+            
+            # Lấy tổng tiền thực tế từ hóa đơn để thông báo cho khớp 
+            from app.models import Invoice
+            invoice = Invoice.query.filter_by(borrow_slip_id=slip.id).first()
+            display_fine = invoice.amount if invoice else overdue_fine
+            
+            
             EmailService.send_overdue_warning(
                 slip.user.first_name,
                 slip.user.email,
                 slip.book.title,
                 slip.due_date,
-                fine
+                display_fine
             )
             notif = Notification(
                 user_id=slip.user_id,
                 title="Cảnh báo sách quá hạn",
-                content=f"Sách '{slip.book.title}' của bạn đã quá hạn. Phí phạt hiện tại là {fine:,.0f} VNĐ.",
+                content=f"Sách '{slip.book.title}' của bạn đã quá hạn.<br/>Tổng phí phạt hiện tại là {display_fine:,.0f} VNĐ.",
                 type="WARNING"
             )
             db.session.add(notif)
             count += 1
+
+            # Gửi thông báo Real-time
+            from app import socketio
+            unread_count = Notification.query.filter_by(user_id=slip.user_id, is_read=False).count()
+            socketio.emit('update_notifications', {
+                'unread_count': unread_count,
+                'new_notification': {
+                    'title': "Cảnh báo sách quá hạn",
+                    'content': f"Sách '{slip.book.title}' của bạn đã quá hạn.<br/>Tổng phí phạt hiện tại là {display_fine:,.0f} VNĐ.",
+                    'time': 'Vừa xong'
+                }
+            }, room=f"user_{slip.user_id}")
+
         db.session.commit()
         return count
 
