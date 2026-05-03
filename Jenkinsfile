@@ -1,38 +1,20 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'python:3.10'
+        }
+    }
 
     stages {
-        stage('Checkout') {
+        stage('Install') {
             steps {
-                echo 'Cloning source...'
+                sh 'pip install -r requirements.txt'
             }
         }
 
-        stage('Setup Python (local)') {
+        stage('Run') {
             steps {
-                sh '''
-                python3 -m venv venv || true
-                . venv/bin/activate
-                pip install --upgrade pip
-                '''
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                sh '''
-                . venv/bin/activate
-                pip install -r requirements.txt
-                '''
-            }
-        }
-
-        stage('Run App') {
-            steps {
-                sh '''
-                . venv/bin/activate
-                python index.py
-                '''
+                sh 'python index.py'
             }
         }
     }
