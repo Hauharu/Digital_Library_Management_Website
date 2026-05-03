@@ -2,24 +2,37 @@ pipeline {
     agent any
 
     stages {
-        stage('Setup Python') {
+        stage('Checkout') {
+            steps {
+                echo 'Cloning source...'
+            }
+        }
+
+        stage('Setup Python (local)') {
             steps {
                 sh '''
-                apt update
-                apt install -y python3 python3-pip
+                python3 -m venv venv || true
+                . venv/bin/activate
+                pip install --upgrade pip
                 '''
             }
         }
 
-        stage('Install') {
+        stage('Install Dependencies') {
             steps {
-                sh 'pip3 install -r requirements.txt'
+                sh '''
+                . venv/bin/activate
+                pip install -r requirements.txt
+                '''
             }
         }
 
-        stage('Run') {
+        stage('Run App') {
             steps {
-                sh 'python3 main.py'
+                sh '''
+                . venv/bin/activate
+                python index.py
+                '''
             }
         }
     }
