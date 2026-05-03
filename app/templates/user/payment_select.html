@@ -11,13 +11,14 @@
                     <h3 class="mb-0 fw-bold">THANH TOÁN HÓA ĐƠN</h3>
                     <p class="mb-0 opacity-75">Mã hóa đơn: #INV-{{ invoice.id }}</p>
                 </div>
-                
+
                 <div class="card-body p-4">
                     <!-- Thông tin hóa đơn -->
                     <div class="bg-light p-3 rounded-4 mb-4">
                         <div class="mb-2">
                             <span class="text-muted">Nội dung:</span>
-                            <span class="fw-bold text-dark ms-1">Tiền phạt sách: {{ invoice.borrow_slip.book.title }}</span>
+                            <span class="fw-bold text-dark ms-1">Tiền phạt sách: {{ invoice.borrow_slip.book.title
+                                }}</span>
                         </div>
                         <div class="mb-2">
                             <span class="text-muted">Ngày phát hành:</span>
@@ -26,21 +27,22 @@
                         <hr class="my-2 border-secondary opacity-25">
                         <div class="mt-2">
                             <span class="text-muted fw-bold">Tổng tiền thanh toán:</span>
-                            <span class="fs-4 fw-bold text-primary ms-2">{{ "{:,.0f}".format(invoice.amount) }} VNĐ</span>
+                            <span class="fs-4 fw-bold text-primary ms-2">{{ "{:,.0f}".format(invoice.amount) }}
+                                VNĐ</span>
                         </div>
                     </div>
 
                     <h5 class="mb-3 fw-bold"><i class="fas fa-wallet me-2"></i>Chọn phương thức thanh toán</h5>
-                    
+
                     <!-- Phương thức Online -->
                     <div class="list-group list-group-flush gap-3">
                         <!-- VNPay -->
-                        <a href="{{ url_for('user.process_vnpay', invoice_id=invoice.id) }}" 
-                           class="list-group-item list-group-item-action border rounded-4 d-flex align-items-center p-3 transition-all hover-shadow">
+                        <a href="{{ url_for('user.process_vnpay', invoice_id=invoice.id) }}"
+                            class="list-group-item list-group-item-action border rounded-4 d-flex align-items-center p-3 transition-all hover-shadow">
                             <div class="me-3 d-flex align-items-center justify-content-center" style="width: 60px;">
-                                <img src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-VNPAY-QR.png" 
-                                     alt="VNPAY" style="height: 22px; max-width: 100%; object-fit: contain;"
-                                     onerror="this.src='https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png'; this.style.height='20px';">
+                                <img src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-VNPAY-QR.png"
+                                    alt="VNPAY" style="height: 22px; max-width: 100%; object-fit: contain;"
+                                    onerror="this.src='https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png'; this.style.height='20px';">
                             </div>
                             <div class="flex-grow-1">
                                 <h6 class="mb-0 fw-bold">Ví VNPAY / Ngân hàng nội địa</h6>
@@ -50,12 +52,12 @@
                         </a>
 
                         <!-- PayPal -->
-                        <a href="{{ url_for('user.process_paypal', invoice_id=invoice.id) }}" 
-                           class="list-group-item list-group-item-action border rounded-4 d-flex align-items-center p-3 transition-all hover-shadow">
+                        <a href="{{ url_for('user.process_paypal', invoice_id=invoice.id) }}"
+                            class="list-group-item list-group-item-action border rounded-4 d-flex align-items-center p-3 transition-all hover-shadow">
                             <div class="me-3 d-flex align-items-center justify-content-center" style="width: 60px;">
-                                <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg" 
-                                     alt="PayPal" style="height: 25px; object-fit: contain;"
-                                     onerror="this.src='https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png';">
+                                <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg"
+                                    alt="PayPal" style="height: 25px; object-fit: contain;"
+                                    onerror="this.src='https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png';">
                             </div>
                             <div class="flex-grow-1">
                                 <h6 class="mb-0 fw-bold">PayPal / Thẻ quốc tế</h6>
@@ -66,8 +68,8 @@
 
                         <!-- Offline (Cash) -->
                         <form action="{{ url_for('user.process_offline', invoice_id=invoice.id) }}" method="POST">
-                            <button type="submit" 
-                               class="list-group-item list-group-item-action border rounded-4 d-flex align-items-center p-3 transition-all hover-shadow w-100 text-start">
+                            <button type="submit"
+                                class="list-group-item list-group-item-action border rounded-4 d-flex align-items-center p-3 transition-all hover-shadow w-100 text-start">
                                 <div class="me-3 d-flex align-items-center justify-content-center" style="width: 60px;">
                                     <div class="bg-success bg-opacity-10 p-2 rounded-3">
                                         <i class="fas fa-money-bill-wave text-success fs-4"></i>
@@ -84,7 +86,7 @@
 
                     <div class="text-center mt-4">
                         <a href="{{ url_for('main.borrow_history') }}" class="text-decoration-none text-muted">
-                            <i class="fas fa-arrow-left me-1"></i> Quay lại lịch sử mượn sách
+                            <i class="fas fa-arrow-left me-1"></i> Quay lại
                         </a>
                     </div>
                 </div>
@@ -95,4 +97,3 @@
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/payment_select.css') }}">
 {% endblock %}
-

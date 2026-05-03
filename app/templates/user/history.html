@@ -104,50 +104,71 @@
                         </td>
 
                         <td class="ps-5">
-                            {% if req.borrow_slip and req.borrow_slip.invoices %}
-                            {% set unpaid_invoices = req.borrow_slip.invoices | selectattr('status.name', 'in', ['Pending', 'Offline', 'Overdue']) | list %}
-                            {% set total_unpaid = unpaid_invoices | sum(attribute='amount') %}
-                            {% set first_unpaid = unpaid_invoices | first %}
+                            {% if req.borrow_slip %}
+                                {% set slip = req.borrow_slip %}
+                                {# 1. Tính tiền quá hạn thực tế nếu chưa trả #}
+                                {% set overdue_fine = 0 %}
+                                {% if slip.status.name != 'Returned' and today > slip.due_date %}
+                                    {% set overdue_fine = (today - slip.due_date).days * 5000 %}
+                                {% endif %}
 
-                            {% if total_unpaid > 0 %}
-                            <div class="d-flex flex-column align-items-start gap-2">
-                                <span class="fw-bold text-danger fs-6 mb-0">
-                                    {{ "{:,.0f}".format(total_unpaid) }} VNĐ
-                                </span>
+                                {# 3. Tổng cộng #}
+                                {% set unpaid_invoices = slip.invoices | selectattr('status.name', 'in', ['Pending', 'Offline', 'Overdue']) | list %}
+                                {% set unpaid_invoice_fine = unpaid_invoices | sum(attribute='amount') %}
                                 
-                                {% if first_unpaid %}
-                                    {% if first_unpaid.status.name == 'Offline' %}
-                                        <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3">
-                                            <i class="fas fa-clock me-1"></i> {{ first_unpaid.status.value }}
+                                {% if unpaid_invoice_fine > 0 %}
+                                    {# Nếu đã có hóa đơn chưa thanh toán, chúng ta ưu tiên hiển thị số tiền trong hóa đơn #}
+                                    {# (Số tiền này đã được đồng bộ bao gồm cả tiền quá hạn trong route payment) #}
+                                    {% set total_fine = unpaid_invoice_fine %}
+                                {% else %}
+                                    {# Nếu chưa có hóa đơn (hoặc đã trả hết), hiển thị tiền quá hạn thực tế (đang nhảy số) #}
+                                    {% set total_fine = overdue_fine %}
+                                {% endif %}
+
+                                {% if total_fine > 0 %}
+                                    <div class="d-flex flex-column align-items-start gap-2">
+                                        <span class="fw-bold text-danger fs-6 mb-0">
+                                            {{ "{:,.0f}".format(total_fine) }} VNĐ
                                         </span>
-                                        <a href="{{ url_for('user.select_payment_method', invoice_id=first_unpaid.id) }}" 
-                                           class="btn btn-sm btn-primary shadow-sm rounded-pill px-3">
-                                            <i class="fas fa-exchange-alt me-1"></i> Đổi phương thức
-                                        </a>
+                                        
+                                        {% set first_unpaid = unpaid_invoices | first %}
+                                        {% if first_unpaid %}
+                                            {% if first_unpaid.status.name == 'Offline' %}
+                                                <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3">
+                                                    <i class="fas fa-clock me-1"></i> {{ first_unpaid.status.value }}
+                                                </span>
+                                                <a href="{{ url_for('user.select_payment_method', invoice_id=first_unpaid.id) }}" 
+                                                   class="btn btn-sm btn-primary shadow-sm rounded-pill px-3">
+                                                    <i class="fas fa-exchange-alt me-1"></i> Đổi phương thức
+                                                </a>
+                                            {% else %}
+                                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3">
+                                                    <i class="fas fa-exclamation-circle me-1"></i> {{ first_unpaid.status.value }}
+                                                </span>
+                                                <a href="{{ url_for('user.select_payment_method', invoice_id=first_unpaid.id) }}" 
+                                                   class="btn btn-sm btn-danger shadow-sm rounded-pill px-4 py-2">
+                                                    <i class="fas fa-credit-card me-1"></i> Thanh toán ngay
+                                                </a>
+                                            {% endif %}
+                                        {% else %}
+                                            {# Nếu chỉ có tiền quá hạn mà chưa có hóa đơn #}
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3">
+                                                <i class="fas fa-history me-1"></i> Quá hạn (Chờ trả sách)
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    {% set paid_invoices = slip.invoices | selectattr('status.name', 'equalto', 'Paid') | list %}
+                                    {% if paid_invoices %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">
+                                            <i class="fas fa-check-circle me-1"></i> {{ paid_invoices[0].status.value }}
+                                        </span>
                                     {% else %}
-                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3">
-                                            <i class="fas fa-exclamation-circle me-1"></i> {{ first_unpaid.status.value }}
-                                        </span>
-                                        <a href="{{ url_for('user.select_payment_method', invoice_id=first_unpaid.id) }}" 
-                                           class="btn btn-sm btn-danger shadow-sm rounded-pill px-4 py-2">
-                                            <i class="fas fa-credit-card me-1"></i> Thanh toán ngay
-                                        </a>
+                                        <span class="text-muted small italic">Không có</span>
                                     {% endif %}
                                 {% endif %}
-                            </div>
                             {% else %}
-                            <div class="d-flex flex-column align-items-start">
-                                <span class="text-success fw-bold fs-6">0 VNĐ</span>
-                                {% set paid_invoices = req.borrow_slip.invoices | selectattr('status.name', 'equalto', 'Paid') | list %}
-                                {% if paid_invoices %}
-                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 mt-1">
-                                        <i class="fas fa-check-circle me-1"></i> {{ paid_invoices[0].status.value }}
-                                    </span>
-                                {% endif %}
-                            </div>
-                            {% endif %}
-                            {% else %}
-                            <span class="text-success fw-medium"><i class="fas fa-check-circle me-1"></i>0 VNĐ</span>
+                                <span class="text-muted small italic">Không có</span>
                             {% endif %}
                         </td>
                     </tr>

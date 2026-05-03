@@ -14,6 +14,7 @@ from app.services.email_service import EmailService
 from app.services.recommendation_service import RecommendationService
 from app.services.semantic_search_service import SemanticSearchService
 from app.services.prediction_service import PredictionService
+from app.services.payment_service import PaymentService
 
 main_bp = Blueprint('main', __name__)
 
@@ -161,7 +162,7 @@ def staff_dashboard():
 
     overdue_count = BorrowSlip.query.filter(
         BorrowSlip.due_date < datetime.now().date(),
-        BorrowSlip.status == BorrowStatusEnum.Borrowing
+        BorrowSlip.status != BorrowStatusEnum.Returned
     ).count()
 
     now = datetime.now().strftime('%H:%M - %d/%m/%Y')
@@ -284,11 +285,20 @@ def borrow_history():
 
     history = BorrowRequest.query.filter_by(user_id=current_user.id) \
         .order_by(BorrowRequest.created_at.desc()).all()
+    
+    for req in history:
+        if req.borrow_slip and req.borrow_slip.invoices:
+            for inv in req.borrow_slip.invoices:
+                if inv.status.name != 'Paid':
+                    PaymentService.sync_invoice_amount(inv)
 
     full_name = f"{(current_user.last_name or '').strip()} {(current_user.first_name or '').strip()}".strip()
     user_display_name = full_name or current_user.username or current_user.email
 
-    return render_template('user/history.html', history=history, user_display_name=user_display_name)
+    return render_template('user/history.html', 
+                           history=history, 
+                           user_display_name=user_display_name,
+                           today=date.today())
 
 
 def _is_staff_or_admin():
@@ -380,7 +390,31 @@ def return_book(request_id):
         return redirect(url_for('main.borrow_history'))
 
     borrow_slip.return_requested = True
+    
+    # Thông báo cho Staff
+    from app.models import Notification
+    from app import socketio
+    staff_users = User.query.filter(User.role.in_([RoleEnum.STAFF, RoleEnum.ADMIN])).all()
+    for staff in staff_users:
+        notif = Notification(
+            user_id=staff.id,
+            title="Yêu cầu trả sách",
+            content=f"Độc giả {current_user.last_name} {current_user.first_name} muốn trả cuốn '{borrow_slip.book.title}'",
+            type="SYSTEM"
+        )
+        db.session.add(notif)
     db.session.commit()
+
+    for staff in staff_users:
+        unread_count = Notification.query.filter_by(user_id=staff.id, is_read=False).count()
+        socketio.emit('update_notifications', {
+            'unread_count': unread_count,
+            'new_notification': {
+                'title': "Yêu cầu trả sách mới",
+                'content': f"Độc giả {current_user.last_name} {current_user.first_name} muốn trả cuốn '{borrow_slip.book.title}'",
+                'time': 'Vừa xong'
+            }
+        }, room=f"user_{staff.id}")
 
     flash('Đã gửi yêu cầu trả sách. Vui lòng chờ nhân viên duyệt.', 'success')
     return redirect(url_for('main.borrow_history'))
@@ -403,7 +437,29 @@ def approve_return_request(request_id):
     borrow_slip.return_date = date.today()
     borrow_request.status = RequestStatusEnum.Completed
     borrow_request.book.available_quantity += (borrow_slip.quantity or 1)
+    
+    # Thông báo cho User
+    from app.models import Notification
+    from app import socketio
+    notif = Notification(
+        user_id=borrow_request.user_id,
+        title="Trả sách thành công",
+        content=f"Cuốn sách '{borrow_request.book.title}' của bạn đã được nhân viên xác nhận trả.",
+        type="SYSTEM"
+    )
+    db.session.add(notif)
     db.session.commit()
+
+    unread_count = Notification.query.filter_by(user_id=borrow_request.user_id, is_read=False).count()
+    socketio.emit('update_notifications', {
+        'unread_count': unread_count,
+        'new_notification': {
+            'title': notif.title,
+            'content': notif.content,
+            'time': 'Vừa xong',
+            'id': notif.id
+        }
+    }, room=f"user_{borrow_request.user_id}")
 
     flash('Đã duyệt trả sách thành công.', 'success')
     return redirect(request.referrer or url_for('main.staff_dashboard'))

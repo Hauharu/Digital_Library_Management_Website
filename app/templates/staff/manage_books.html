@@ -14,7 +14,7 @@
         </div>
         <div class="col-auto">
             <button class="btn btn-primary rounded-pill px-4 py-2 shadow-sm" data-bs-toggle="modal"
-                    data-bs-target="#addBookModal">
+                data-bs-target="#addBookModal">
                 <i class="fas fa-plus me-2"></i>Thêm ấn phẩm mới
             </button>
         </div>
@@ -27,14 +27,14 @@
                     <div class="input-group">
                         <span class="input-group-text bg-light border-0"><i class="fas fa-search text-muted"></i></span>
                         <input type="text" name="search" class="form-control border-0 bg-light"
-                               placeholder="Tìm theo tên, tác giả, ISBN..." value="{{ search or '' }}">
+                            placeholder="Tìm theo tên, tác giả, ISBN..." value="{{ search or '' }}">
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-4">
                     <select name="category_id" class="form-select border-0 bg-light">
                         <option value="all">Tất cả thể loại</option>
                         {% for cat in categories %}
-                        <option value="{{ cat.id }}" {% if current_cat|string== cat.id|string %}selected{% endif %}>{{
+                        <option value="{{ cat.id }}" {% if current_cat|string==cat.id|string %}selected{% endif %}>{{
                             cat.name }}
                         </option>
                         {% endfor %}
@@ -47,7 +47,7 @@
                 </div>
                 <div class="col-lg-2 col-md-2">
                     <a href="{{ url_for('staff.manage_books') }}"
-                       class="btn btn-refresh w-100 py-2 text-decoration-none">
+                        class="btn btn-refresh w-100 py-2 text-decoration-none">
                         <i class="fas fa-sync-alt me-2"></i>Làm mới
                     </a>
                 </div>
@@ -59,64 +59,67 @@
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light text-uppercase small fw-bold">
-                <tr>
-                    <th class="ps-4 py-3">Thông tin sách</th>
-                    <th>Thể loại</th>
-                    <th>Số lượng</th>
-                    <th>Giá bìa</th>
-                    <th>Tình trạng sách</th>
-                    <th class="text-end pe-4">Thao tác</th>
-                </tr>
+                    <tr>
+                        <th class="ps-4 py-3">Thông tin sách</th>
+                        <th>Thể loại</th>
+                        <th>Số lượng</th>
+                        <th>Giá bìa</th>
+                        <th>Tình trạng sách</th>
+                        <th class="text-end pe-4">Thao tác</th>
+                    </tr>
                 </thead>
                 <tbody>
-                {% for book in books %}
-                <tr>
-                    <td class="ps-4 py-3">
-                        <div class="d-flex align-items-center">
-                            <img src="{{ book.image or url_for('static', filename='images/sachmau.png') }}"
-                                 class="rounded shadow-sm me-3" style="width: 50px; height: 70px; object-fit: cover;">
-                            <div>
-                                <div class="fw-bold text-dark">{{ book.title }}</div>
-                                <div class="text-muted small">Tác giả: {{ book.author }}</div>
+                    {% for book in books %}
+                    <tr>
+                        <td class="ps-4 py-3">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ book.image or url_for('static', filename='images/sachmau.png') }}"
+                                    class="rounded shadow-sm me-3"
+                                    style="width: 50px; height: 70px; object-fit: cover;">
+                                <div>
+                                    <div class="fw-bold text-dark">{{ book.title }}</div>
+                                    <div class="text-muted small">Tác giả: {{ book.author }}</div>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                    <td><span class="badge bg-soft-primary text-primary">{{ book.category.name }}</span></td>
-                    <td>
+                        </td>
+                        <td><span class="badge bg-soft-primary text-primary">{{ book.category.name }}</span></td>
+                        <td>
                             <span class="fw-bold {{ 'text-danger' if book.available_quantity == 0 else 'text-dark' }}">
                                 {{ book.available_quantity }}
                             </span>
-                        <span class="text-muted small">/ {{ book.total_quantity }}</span>
-                    </td>
-                    <td class="fw-medium text-dark">{{ "{:,.0f}".format(book.price) }} đ</td>
-                    <td>
-                        {% set total_incidents = book.borrow_slips | map(attribute='incident_reports') | map('length') |
-                        sum %}
-                        {% if total_incidents > 0 %}
-                        <span class="badge bg-soft-danger text-danger"><i class="fas fa-tools me-1"></i> {{ total_incidents }} sự cố</span>
-                        {% else %}
-                        <span class="badge bg-soft-success text-success">Ổn định</span>
-                        {% endif %}
-                    </td>
-                    <td class="text-end pe-4">
-                        <div class="action-btn-group">
-                            <button class="btn-action-lib btn-view-lib" onclick="openViewModal('{{ book.id }}')"
+                            <span class="text-muted small">/ {{ book.total_quantity }}</span>
+                        </td>
+                        <td class="fw-medium text-dark">{{ "{:,.0f}".format(book.price) }} đ</td>
+                        <td>
+                            {% set total_incidents = book.borrow_slips | map(attribute='incident_reports') |
+                            map('length') |
+                            sum %}
+                            {% if total_incidents > 0 %}
+                            <span class="badge bg-soft-danger text-danger"><i class="fas fa-tools me-1"></i> {{
+                                total_incidents }} sự cố</span>
+                            {% else %}
+                            <span class="badge bg-soft-success text-success">Ổn định</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-4">
+                            <div class="action-btn-group">
+                                <button class="btn-action-lib btn-view-lib" onclick="openViewModal('{{ book.id }}')"
                                     title="Xem chi tiết">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn-action-lib btn-edit-lib" onclick="openEditModal('{{ book.id }}')"
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-action-lib btn-edit-lib" onclick="openEditModal('{{ book.id }}')"
                                     title="Chỉnh sửa">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn-action-lib btn-delete-lib" onclick="confirmDelete('{{ book.id }}')"
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-action-lib btn-delete-lib" onclick="confirmDelete('{{ book.id }}')"
                                     title="Xóa">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                    </td>
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
 
-                </tr>
-                {% endfor %}
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
@@ -127,13 +130,13 @@
         <ul class="pagination justify-content-center">
             <li class="page-item {{ 'disabled' if not pagination.has_prev }}">
                 <a class="page-link"
-                   href="{{ url_for('staff.manage_books', page=pagination.prev_num, search=search, category_id=current_cat) }}">Trước</a>
+                    href="{{ url_for('staff.manage_books', page=pagination.prev_num, search=search, category_id=current_cat) }}">Trước</a>
             </li>
             {% for page_num in pagination.iter_pages() %}
             {% if page_num %}
             <li class="page-item {{ 'active' if page_num == pagination.page }}">
                 <a class="page-link"
-                   href="{{ url_for('staff.manage_books', page=page_num, search=search, category_id=current_cat) }}">{{
+                    href="{{ url_for('staff.manage_books', page=page_num, search=search, category_id=current_cat) }}">{{
                     page_num }}</a>
             </li>
             {% else %}
@@ -142,7 +145,7 @@
             {% endfor %}
             <li class="page-item {{ 'disabled' if not pagination.has_next }}">
                 <a class="page-link"
-                   href="{{ url_for('staff.manage_books', page=pagination.next_num, search=search, category_id=current_cat) }}">Sau</a>
+                    href="{{ url_for('staff.manage_books', page=pagination.next_num, search=search, category_id=current_cat) }}">Sau</a>
             </li>
         </ul>
     </nav>
@@ -151,7 +154,8 @@
 
 <div class="modal fade" id="bookModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <form id="bookForm" method="POST" enctype="multipart/form-data" class="modal-content border-0 shadow-lg rounded-4">
+        <form id="bookForm" method="POST" enctype="multipart/form-data"
+            class="modal-content border-0 shadow-lg rounded-4">
             <div class="modal-header border-0 pb-0">
                 <h5 class="fw-bold px-2 mt-3" id="modalTitle">Thêm sách mới</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -164,7 +168,8 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-bold small">Tác giả</label>
-                        <input type="text" name="author" id="form-author" class="form-control bg-light border-0" required>
+                        <input type="text" name="author" id="form-author" class="form-control bg-light border-0"
+                            required>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-bold small">Thể loại</label>
@@ -176,7 +181,8 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-bold small">Ngôn ngữ</label>
-                        <input type="text" name="language" id="form-language" class="form-control bg-light border-0" placeholder="VD: Tiếng Việt">
+                        <input type="text" name="language" id="form-language" class="form-control bg-light border-0"
+                            placeholder="VD: Tiếng Việt">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-bold small">ISBN</label>
@@ -184,15 +190,18 @@
                     </div>
                     <div class="col-md-12">
                         <label class="form-label fw-bold small">Thông tin xuất bản</label>
-                        <input type="text" name="publication_info" id="form-pub" class="form-control bg-light border-0" placeholder="NXB Trẻ, 2023...">
+                        <input type="text" name="publication_info" id="form-pub" class="form-control bg-light border-0"
+                            placeholder="NXB Trẻ, 2023...">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-bold small">Giá bìa (VNĐ)</label>
-                        <input type="number" name="price" id="form-price" class="form-control bg-light border-0" required>
+                        <input type="number" name="price" id="form-price" class="form-control bg-light border-0"
+                            required>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-bold small">Số lượng tổng</label>
-                        <input type="number" name="total_quantity" id="form-total" class="form-control bg-light border-0" required>
+                        <input type="number" name="total_quantity" id="form-total"
+                            class="form-control bg-light border-0" required>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-bold small">Ảnh bìa</label>
@@ -200,7 +209,8 @@
                     </div>
                     <div class="col-12">
                         <label class="form-label fw-bold small">Mô tả nội dung</label>
-                        <textarea name="description" id="form-desc" class="form-control bg-light border-0" rows="3"></textarea>
+                        <textarea name="description" id="form-desc" class="form-control bg-light border-0"
+                            rows="3"></textarea>
                     </div>
                 </div>
             </div>
@@ -238,7 +248,8 @@
             <div class="modal-body p-4">
                 <div class="row">
                     <div class="col-md-4 text-center mb-3">
-                        <img id="view-book-image" src="" class="img-fluid rounded-3 shadow" style="max-height: 350px; width: 100%; object-fit: cover;">
+                        <img id="view-book-image" src="" class="img-fluid rounded-3 shadow"
+                            style="max-height: 350px; width: 100%; object-fit: cover;">
                     </div>
                     <div class="col-md-8">
                         <h3 id="view-book-title" class="fw-bold text-dark mb-1"></h3>
@@ -271,7 +282,8 @@
                             </div>
                             <div class="col-12">
                                 <label class="small text-muted text-uppercase fw-bold d-block">Mô tả</label>
-                                <div id="view-book-description" class="bg-light p-3 rounded-3 small text-dark" style="max-height: 150px; overflow-y: auto;"></div>
+                                <div id="view-book-description" class="bg-light p-3 rounded-3 small text-dark"
+                                    style="max-height: 150px; overflow-y: auto;"></div>
                             </div>
                         </div>
                     </div>

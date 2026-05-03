@@ -1,0 +1,188 @@
+{% extends "layout/base_admin.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/report.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">Báo cáo doanh thu</h4>
+            <p class="text-muted small mb-0">Phân tích chi tiết nguồn thu từ phí phạt và dịch vụ</p>
+        </div>
+        <button onclick="window.print()" class="btn btn-sm btn-outline-secondary shadow-sm bg-white">
+            <i class="fa-solid fa-print me-2"></i>In báo cáo
+        </button>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-3">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="text-muted x-small fw-bold mb-1">NĂM</label>
+                    <select name="year" class="form-select form-select-sm border-light-subtle rounded-3">
+                        {% for y in range(2023, datetime.now().year + 1) %}
+                        <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>Năm {{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="text-muted x-small fw-bold mb-1">THÁNG</label>
+                    <select name="month" class="form-select form-select-sm border-light-subtle rounded-3">
+                        <option value="">Tất cả các tháng</option>
+                        {% for m in range(1, 13) %}
+                        <option value="{{ m }}" {% if m == current_month %}selected{% endif %}>Tháng {{ m }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-sm btn-primary w-100 rounded-3 fw-bold">
+                        <i class="fa-solid fa-magnifying-glass me-2"></i>Lọc dữ liệu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="stat-card-v2 border-0 shadow-sm bg-primary text-white p-4 rounded-4 position-relative overflow-hidden">
+                <div class="position-relative z-1">
+                    <span class="x-small fw-bold opacity-75">TỔNG DOANH THU KỲ NÀY</span>
+                    <h2 class="mb-0 fw-bold mt-2">{{ "{:,.0f}".format(total_revenue) }}đ</h2>
+                </div>
+                <i class="fa-solid fa-wallet position-absolute end-0 bottom-0 mb-n3 me-n2 opacity-25" style="font-size: 5rem;"></i>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="stat-card-v2 bg-white border-0 shadow-sm p-4 rounded-4 border-start border-success border-4">
+                <span class="text-muted x-small fw-bold">TRUNG BÌNH GIAO DỊCH</span>
+                <h2 class="mb-0 fw-bold text-dark mt-2">{{ "{:,.0f}".format(avg_payment) }}đ</h2>
+                <div class="small mt-2 text-success fw-semibold">Dựa trên {{ payments|length }} giao dịch thành công</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h6 class="fw-bold mb-0">Xu hướng doanh thu</h6>
+                    <span class="badge bg-primary-subtle text-primary">Dữ liệu {{ current_month if current_month else 'năm ' ~ current_year }}</span>
+                </div>
+                <div style="height: 350px;">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white py-3 border-0">
+                    <h6 class="fw-bold mb-0">Top 5 nguồn thu từ sách</h6>
+                </div>
+                <div class="card-body p-0">
+                    {% for book in top_books %}
+                    <div class="d-flex align-items-center p-3 {% if not loop.last %}border-bottom-dashed{% endif %}">
+                        <div class="icon-box-sm bg-light text-primary me-3">
+                            <i class="fa-solid fa-book-bookmark"></i>
+                        </div>
+                        <div class="flex-grow-1 overflow-hidden">
+                            <h6 class="small fw-bold mb-0 text-truncate">{{ book.title }}</h6>
+                            <span class="x-small text-muted">{{ "{:,.0f}".format(book.revenue) }}đ</span>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-success-subtle text-success x-small">+{{ ((book.revenue / total_revenue) * 100)|round(1) if total_revenue > 0 else 0 }}%</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h6 class="fw-bold mb-4">Lịch sử giao dịch chi tiết</h6>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="border-0">Ngày thanh toán</th>
+                                <th class="border-0">Mã hóa đơn</th>
+                                <th class="border-0 text-end">Số tiền</th>
+                                <th class="border-0 text-center">Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in payments %}
+                            <tr>
+                                <td class="text-muted small">{{ p.payment_date.strftime('%d/%m/%Y %H:%M') }}</td>
+                                <td class="fw-bold text-dark">#INV-{{ p.invoice_id }}</td>
+                                <td class="text-end fw-bold text-primary">{{ "{:,.0f}".format(p.amount_paid) }}đ</td>
+                                <td class="text-center">
+                                    <span class="badge bg-success-subtle text-success px-3">Thành công</span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="4" class="text-center py-4 text-muted">Không tìm thấy dữ liệu giao dịch.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    
+    // Labels và Data lấy từ backend truyền qua
+    const labels = [{% for row in chart_data %}"{{ row.date }}",{% endfor %}];
+    const data = [{% for row in chart_data %}{{ row.total }},{% endfor %}];
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Doanh thu',
+                data: data,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.08)',
+                fill: true,
+                tension: 0.4,
+                borderWidth: 3,
+                pointRadius: 4,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    padding: 12,
+                    callbacks: {
+                        label: (ctx) => ` Doanh thu: ${ctx.parsed.y.toLocaleString()}đ`
+                    }
+                }
+            },
+            scales: {
+                y: { 
+                    grid: { borderDash: [5, 5], color: '#f1f5f9' },
+                    ticks: { callback: (v) => v >= 1000 ? v/1000 + 'K' : v }
+                },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

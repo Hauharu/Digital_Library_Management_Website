@@ -1,8 +1,8 @@
-from sqlalchemy import func
-from datetime import datetime
+from sqlalchemy import func, extract, cast, Date
+from datetime import datetime, timedelta
 from app import db
 from app.models import User, Book, Category, BorrowSlip, BorrowRequest, Invoice, RoleEnum,\
-    RequestStatusEnum, BorrowStatusEnum, GenderEnum
+    RequestStatusEnum, BorrowStatusEnum, GenderEnum, Payment,PaymentMethodEnum,PaymentStatusEnum, db
 from flask import Blueprint, render_template, request, abort, redirect, url_for, flash,jsonify
 from flask_login import login_required,current_user
 from app.decorators import role_required
@@ -203,3 +203,58 @@ def delete_user(user_id):
         flash(f"Đã xóa tài khoản {user.username} thành công!", "success")
 
     return redirect(url_for('admin.manage_users'))
+
+
+@admin_bp.route('/revenue_report')
+@login_required
+@role_required(RoleEnum.ADMIN)
+def revenue_report():
+
+    year = request.args.get('year', datetime.now().year, type=int)
+    month = request.args.get('month', type=int)
+
+    base_query = Payment.query.filter(Payment.status == PaymentStatusEnum.Completed)
+
+    if month:
+        base_query = base_query.filter(extract('month', Payment.payment_date) == month)
+    if year:
+        base_query = base_query.filter(extract('year', Payment.payment_date) == year)
+
+    payments = base_query.order_by(Payment.payment_date.desc()).all()
+    total_revenue = sum(p.amount_paid for p in payments)
+    avg_payment = total_revenue / len(payments) if payments else 0
+
+    if month:
+        chart_data = db.session.query(
+            func.date(Payment.payment_date).label('date'),
+            func.sum(Payment.amount_paid).label('total')
+        ).filter(Payment.status == PaymentStatusEnum.Completed,
+                 extract('month', Payment.payment_date) == month,
+                 extract('year', Payment.payment_date) == year) \
+            .group_by(func.date(Payment.payment_date)).all()
+    else:
+        chart_data = db.session.query(
+            extract('month', Payment.payment_date).label('date'),
+            func.sum(Payment.amount_paid).label('total')
+        ).filter(Payment.status == PaymentStatusEnum.Completed,
+                 extract('year', Payment.payment_date) == year) \
+            .group_by(extract('month', Payment.payment_date)).all()
+
+    top_books = db.session.query(
+        Book.title,
+        func.sum(Payment.amount_paid).label('revenue')
+    ).join(BorrowSlip, Book.id == BorrowSlip.book_id) \
+        .join(Invoice, BorrowSlip.id == Invoice.borrow_slip_id) \
+        .join(Payment, Invoice.id == Payment.invoice_id) \
+        .filter(Payment.status == PaymentStatusEnum.Completed) \
+        .group_by(Book.title).order_by(func.sum(Payment.amount_paid).desc()).limit(5).all()
+
+    return render_template('admin/revenue_report.html',
+                           payments=payments,
+                           datetime=datetime,
+                           total_revenue=total_revenue,
+                           avg_payment=avg_payment,
+                           chart_data=chart_data,
+                           top_books=top_books,
+                           current_year=year,
+                           current_month=month)

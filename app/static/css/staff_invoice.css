@@ -1,0 +1,122 @@
+:root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-light: #eff6ff;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --bg-body: #f8fafc;
+    --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.invoice-container {
+    background: var(--bg-body);
+    padding: 1.5rem;
+    border-radius: 20px;
+}
+
+/* Nút Lọc và Refresh */
+.btn-filter {
+    background-color: var(--primary) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 10px !important;
+    font-weight: 600;
+}
+
+.btn-refresh {
+    background-color: white !important;
+    color: var(--text-muted) !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+}
+
+/* Table Design */
+.invoice-table-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    background: white;
+    overflow: hidden;
+}
+
+.invoice-table thead th {
+    background-color: #f1f5f9;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    padding: 1rem 1.5rem;
+}
+
+/* Badge Styling */
+.badge-soft {
+    padding: 6px 12px;
+    border-radius: 9999px;
+    font-weight: 500;
+    font-size: 0.8rem;
+    display: inline-block;
+}
+.badge-soft-success { background: #ecfdf5; color: var(--success); }
+.badge-soft-primary { background: var(--primary-light); color: var(--primary); }
+
+/* Avatar Circle */
+.user-avatar-circle {
+    width: 38px;
+    height: 38px;
+    background: var(--primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+/* Action Buttons */
+.action-btn-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.btn-action-lib {
+    width: 34px !important;
+    height: 34px !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px !important;
+    border: none !important;
+    outline: none !important;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.btn-view-lib { background-color: #f0fdfa !important; color: #0d9488 !important; }
+.btn-edit-lib { background-color: #eff6ff !important; color: #2563eb !important; }
+
+.btn-action-lib:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* Modal Details */
+.modal-content { border-radius: 20px; border: none; }
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+.detail-row span:first-child { color: var(--text-muted); }
+
+.btn-light {
+    background-color: #f8f9fa !important;
+    color: var(--text-muted) !important;
+    border: 1px solid var(--border-color) !important;
+
+}
+}

@@ -1,0 +1,191 @@
+{% extends "layout/base_staff.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/staff_invoice.css') }}">
+
+<div class="container-fluid py-4" style="background-color: #f8fafc; min-height: 100vh;">
+    <div class="d-flex justify-content-between align-items-center mb-4 px-3">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Quản lý Hóa đơn & Tiền phạt</h3>
+            <p class="text-muted small mb-0">Theo dõi các khoản thu tiền mặt tại quầy</p>
+        </div>
+        <a href="{{ url_for('staff.manage_orders') }}" class="btn btn-refresh py-2 px-3">
+            <i class="fas fa-arrow-left me-2"></i>Quay lại
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4 mx-3" style="border-radius: 15px;">
+        <div class="card-body p-3">
+            <form method="GET" action="{{ url_for('staff.manage_invoices') }}" class="row g-3">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0" style="border-radius: 10px 0 0 10px;"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" name="search" class="form-control border-start-0 py-2" placeholder="Tìm tên độc giả hoặc mã hóa đơn..." value="{{ search_query }}" style="border-radius: 0 10px 10px 0;">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select name="status" class="form-select py-2" style="border-radius: 10px;">
+                        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Tất cả trạng thái</option>
+                        <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Chưa thanh toán</option>
+                        <option value="Paid" {% if status_filter == 'Paid' %}selected{% endif %}>Đã thanh toán</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-filter w-100 py-2">Lọc dữ liệu</button>
+                </div>
+                <div class="col-md-2">
+                    <a href="{{ url_for('staff.manage_invoices') }}" class="btn btn-refresh w-100 py-2 text-center" style="text-decoration: none; display: block;">Làm mới</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="invoice-container mx-3">
+        <div class="invoice-table-card">
+            <table class="table invoice-table mb-0">
+                <thead>
+                    <tr>
+                        <th>MÃ HD</th>
+                        <th>ĐỘC GIẢ</th>
+                        <th>SÁCH MƯỢN</th>
+                        <th>SỐ TIỀN</th>
+                        <th class="text-center">TRẠNG THÁI</th>
+                        <th class="text-end">HÀNH ĐỘNG</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inv in invoices %}
+                    <tr>
+                        <td class="fw-bold text-primary">#INV-{{ inv.id }}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="user-avatar-circle me-3">{{ inv.borrow_slip.user.last_name[0] }}</div>
+                                <div>
+                                    <div class="fw-bold text-dark">{{ inv.borrow_slip.user.last_name }} {{ inv.borrow_slip.user.first_name }}</div>
+                                    <div class="text-muted small">{{ inv.borrow_slip.user.phone_number or 'N/A' }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><div class="text-truncate" style="max-width: 150px;">{{ inv.borrow_slip.book.title }}</div></td>
+                        <td class="fw-bold text-danger">{{ "{:,.0f}".format(inv.amount) }}đ</td>
+                        <td class="text-center">
+                            <span class="badge-soft badge-soft-{{ 'success' if inv.status.name == 'Paid' else 'primary' }}">
+                                {{ inv.status.value }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <div class="action-btn-group">
+                                <button class="btn-action-lib btn-view-lib" onclick="showInvoiceDetail({{ inv.id }})"><i class="fas fa-eye"></i></button>
+                                {% if inv.status.name == 'Pending' %}
+                                <button class="btn-action-lib btn-edit-lib" onclick="openConfirmModal('{{ url_for('staff.confirm_payment', invoice_id=inv.id) }}')"><i class="fas fa-check"></i></button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="invoiceDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg"> <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-white border-bottom-0 pb-0">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-library fa-2x text-primary me-2"></i>
+                    <h5 class="fw-bold mb-0">HỆ THỐNG QUẢN LÝ THƯ VIỆN</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <h4 class="fw-bold text-uppercase">Hóa Đơn Thanh Toán Phạt</h4>
+                    <span class="text-muted">Mã hóa đơn: <span id="m_inv_id" class="fw-bold text-dark"></span></span>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <h6 class="text-primary fw-bold border-bottom pb-1">THÔNG TIN ĐỘC GIẢ</h6>
+                        <p class="mb-1">Họ tên: <strong id="m_user"></strong></p>
+                        <p class="mb-1">Số điện thoại: <strong id="m_phone"></strong></p>
+                        <p class="mb-1">Email: <span id="m_email"></span></p>
+                    </div>
+                    <div class="col-6">
+                        <h6 class="text-primary fw-bold border-bottom pb-1">THÔNG TIN MƯỢN SÁCH</h6>
+                        <p class="mb-1">Tên sách: <strong id="m_book"></strong></p>
+                        <p class="mb-1">Mã phiếu mượn: #<span id="m_slip_id"></span></p>
+                        <p class="mb-1 text-danger">Hạn trả: <span id="m_due_date"></span></p>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nội dung thanh toán</th>
+                                <th class="text-end">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="fw-bold" id="m_reason_title">Phạt quá hạn / Vi phạm nội quy</div>
+                                    <small class="text-muted" id="m_description"></small>
+                                </td>
+                                <td class="text-end fw-bold text-danger" id="m_amount">0đ</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th class="text-end">TỔNG CỘNG:</th>
+                                <th class="text-end text-danger fs-5" id="m_total_final">0đ</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-6 text-center">
+                        <p class="small text-muted mb-5">Độc giả</p>
+                        <div class="mt-4">..........................</div>
+                    </div>
+                    <div class="col-6 text-center">
+                        <p class="small text-muted mb-0">Ngày lập: <span id="m_date"></span></p>
+                        <p class="small text-muted mb-5">Thủ thư xác nhận</p>
+                        <div class="mt-4"><strong>{{ current_user.last_name }} {{ current_user.first_name }}</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer border-top-0 justify-content-center pb-4">
+                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary px-4" onclick="window.print()">
+                    <i class="fas fa-print me-2"></i>In hóa đơn (PDF)
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmPaymentModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-4">
+                <div class="mb-3 text-primary"><i class="fas fa-hand-holding-usd fa-3x"></i></div>
+                <h5 class="fw-bold">Thu tiền mặt?</h5>
+                <p class="text-muted small">Xác nhận độc giả đã thanh toán tại quầy?</p>
+                <form id="confirmPaymentForm" method="POST">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary py-2" style="border-radius: 10px;">Xác nhận</button>
+                        <button type="button" class="btn btn-light py-2" data-bs-dismiss="modal" style="border-radius: 10px;">Hủy</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/staff_invoice.js') }}"></script>
+{% endblock %}

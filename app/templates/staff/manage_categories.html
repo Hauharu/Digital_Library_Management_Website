@@ -1,0 +1,65 @@
+{% extends "layout/base_staff.html" %} {% block content %}
+<div class="container mt-4">
+    <h2>Quản lý thể loại sách</h2>
+    
+    <div class="card my-4">
+        <div class="card-body">
+            <form action="{{ url_for('staff.add_category') }}" method="POST" class="row g-3">
+                <div class="col-auto">
+                    <input type="text" name="name" class="form-control" placeholder="Tên thể loại mới" required>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Thêm thể loại</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên thể loại</th>
+                <th>Số lượng sách</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cat in categories %}
+            <tr>
+                <td>{{ cat.id }}</td>
+                <td>{{ cat.name }}</td>
+                <td>{{ cat.books|length }}</td>
+                <td>
+                    <button class="btn btn-sm btn-warning" onclick="editCategory('{{ cat.id }}', '{{ cat.name }}')">Sửa</button>
+                    
+                    <form action="{{ url_for('staff.delete_category', id=cat.id) }}" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+function editCategory(id, oldName) {
+    let newName = prompt("Nhập tên mới cho thể loại:", oldName);
+    if (newName && newName !== oldName) {
+        let form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/staff/edit-category/' + id;
+        
+        let input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'name';
+        input.value = newName;
+        
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

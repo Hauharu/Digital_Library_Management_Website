@@ -1,11 +1,13 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash,jsonify
 from app.models import BorrowRequest, RequestStatusEnum, Book, User, RoleEnum,\
-        BorrowStatusEnum, BorrowSlip,GenderEnum, Invoice, InvoiceStatusEnum
+        BorrowStatusEnum, BorrowSlip,GenderEnum, Invoice, InvoiceStatusEnum, Payment, \
+        PaymentMethodEnum, PaymentStatusEnum, Category, IncidentReport
 from app.services.staff_service import StaffService
 from flask_login import login_required
 from sqlalchemy import or_
 from datetime import datetime, timedelta
 from app import db
+from app.decorators import role_required
 
 staff_bp = Blueprint('staff', __name__, url_prefix='/staff')
 
@@ -16,6 +18,7 @@ def inject_pending_count():
 
 @staff_bp.route('/orders')
 @login_required
+@role_required(RoleEnum.STAFF)
 def manage_orders():
     active_slips = StaffService.get_active_orders(
         search_query=request.args.get('search', '').strip(),
@@ -26,6 +29,7 @@ def manage_orders():
 
 @staff_bp.route('/confirm-return/<int:slip_id>', methods=['POST'])
 @login_required
+@role_required(RoleEnum.STAFF)
 def confirm_return(slip_id):
     book_title = StaffService.process_return(slip_id)
     flash(f"Đã nhận trả sách: {book_title}", "success")
@@ -33,6 +37,7 @@ def confirm_return(slip_id):
 
 @staff_bp.route('/confirm-payment/<int:invoice_id>', methods=['POST'])
 @login_required
+@role_required(RoleEnum.STAFF)
 def confirm_payment(invoice_id):
     invoice = Invoice.query.get_or_404(invoice_id)
     invoice.status = InvoiceStatusEnum.Paid
@@ -53,6 +58,7 @@ def confirm_payment(invoice_id):
 
 @staff_bp.route('/approve-request/<int:request_id>', methods=['POST'])
 @login_required
+@role_required(RoleEnum.STAFF)
 def approve_request(request_id):
     success, message = StaffService.process_approve(request_id)
     if success:
@@ -63,6 +69,7 @@ def approve_request(request_id):
 
 @staff_bp.route('/reject-request/<int:request_id>', methods=['POST'])
 @login_required
+@role_required(RoleEnum.STAFF)
 def reject_request(request_id):
     reason = request.form.get('reject_reason', 'Không rõ lý do')
     StaffService.process_reject(request_id, reason)
@@ -71,6 +78,7 @@ def reject_request(request_id):
 
 @staff_bp.route('/requests')
 @login_required
+@role_required(RoleEnum.STAFF)
 def staff_requests():
     pending_requests = BorrowRequest.query.filter_by(status=RequestStatusEnum.Pending).all()
     return render_template('staff/staff_requests.html', pending_requests=pending_requests)
@@ -78,6 +86,7 @@ def staff_requests():
 
 @staff_bp.route('/run-overdue-check')
 @login_required
+@role_required(RoleEnum.STAFF)
 def run_overdue_check():
 
     count = StaffService.notify_overdue_slips()
@@ -92,6 +101,7 @@ def run_overdue_check():
 
 @staff_bp.route('/report-incident/<int:slip_id>', methods=['POST'])
 @login_required
+@role_required(RoleEnum.STAFF)
 def report_incident(slip_id):
 
     damage_ratio = request.form.get('damage_ratio')
@@ -106,6 +116,7 @@ def report_incident(slip_id):
 
 @staff_bp.route('/incident-report/<int:slip_id>')
 @login_required
+@role_required(RoleEnum.STAFF)
 def incident_report_page(slip_id):
     from app.models import BorrowSlip
     slip = BorrowSlip.query.get_or_404(slip_id)
@@ -114,6 +125,7 @@ def incident_report_page(slip_id):
 
 @staff_bp.route('/manage-books')
 @login_required
+@role_required(RoleEnum.STAFF)
 def manage_books():
     page = request.args.get('page', 1, type=int)
     search = request.args.get('search', '')
@@ -136,6 +148,7 @@ def manage_books():
 
 @staff_bp.route('/add-book', methods=['POST'])
 @login_required
+@role_required(RoleEnum.STAFF)
 def add_book():
     data = request.form.to_dict()
     image_file = request.files.get('image')
@@ -147,6 +160,7 @@ def add_book():
 
 @staff_bp.route('/edit-book/<int:id>', methods=['POST'])
 @login_required
+@role_required(RoleEnum.STAFF)
 def edit_book(id):
     data = request.form.to_dict()
     image_file = request.files.get('image')
@@ -156,6 +170,7 @@ def edit_book(id):
 
 @staff_bp.route('/delete-book/<int:id>', methods=['POST'])
 @login_required
+@role_required(RoleEnum.STAFF)
 def delete_book(id):
     result = StaffService.delete_book(id)
     if result == True:
@@ -188,6 +203,7 @@ def get_book_api(id):
 
 @staff_bp.route('/create-borrow')
 @login_required
+@role_required(RoleEnum.STAFF)
 def create_borrow():
     books = Book.query.filter(Book.available_quantity > 0).all()
     return render_template('staff/create_borrow.html', books=books)
@@ -195,6 +211,7 @@ def create_borrow():
 
 @staff_bp.route('/api/check-reader')
 @login_required
+@role_required(RoleEnum.STAFF)
 def check_reader():
     try:
         q = request.args.get('phone')
@@ -215,6 +232,7 @@ def check_reader():
 
 @staff_bp.route('/api/quick-register', methods=['POST'])
 @login_required
+@role_required(RoleEnum.STAFF)
 def api_quick_register():
     data = request.json
     try:
@@ -332,3 +350,128 @@ def api_create_borrow_slip():
     except Exception as e:
         db.session.rollback()
         return jsonify({"success": False, "message": str(e)}), 500
+
+
+@staff_bp.route('/manage-categories')
+@login_required
+@role_required(RoleEnum.STAFF)
+def manage_categories():
+    categories = Category.query.all()
+    return render_template('staff/manage_categories.html', categories=categories)
+
+
+@staff_bp.route('/add-category', methods=['POST'])
+@login_required
+@role_required(RoleEnum.STAFF)
+def add_category():
+    name = request.form.get('name', '').strip()
+    if not name:
+        flash('Tên thể loại không được để trống!', 'danger')
+        return redirect(url_for('staff.manage_categories'))
+
+    existing = Category.query.filter_by(name=name).first()
+    if existing:
+        flash('Thể loại này đã tồn tại!', 'warning')
+        return redirect(url_for('staff.manage_categories'))
+
+    new_cat = Category(name=name)
+    db.session.add(new_cat)
+    db.session.commit()
+    flash(f'Đã thêm thể loại "{name}" thành công!', 'success')
+    return redirect(url_for('staff.manage_categories'))
+
+
+@staff_bp.route('/edit-category/<int:id>', methods=['POST'])
+@login_required
+@role_required(RoleEnum.STAFF)
+def edit_category(id):
+    category = Category.query.get_or_404(id)
+    new_name = request.form.get('name', '').strip()
+
+    if new_name:
+        existing = Category.query.filter(Category.name == new_name, Category.id != id).first()
+        if existing:
+            flash('Tên thể loại đã tồn tại!', 'warning')
+        else:
+            category.name = new_name
+            db.session.commit()
+            flash('Cập nhật thể loại thành công!', 'success')
+
+    return redirect(url_for('staff.manage_categories'))
+
+
+@staff_bp.route('/delete-category/<int:id>', methods=['POST'])
+@login_required
+@role_required(RoleEnum.STAFF)
+def delete_category(id):
+    category = Category.query.get_or_404(id)
+
+    if category.books:
+        flash(f'Không thể xóa vì vẫn còn {len(category.books)} cuốn sách thuộc thể loại này!', 'danger')
+    else:
+        db.session.delete(category)
+        db.session.commit()
+        flash('Đã xóa thể loại thành công!', 'success')
+
+    return redirect(url_for('staff.manage_categories'))
+
+
+@staff_bp.route('/invoices')
+@login_required
+@role_required(RoleEnum.STAFF)
+def manage_invoices():
+    # Lấy tham số lọc từ URL
+    status_filter = request.args.get('status', 'all')
+    search_query = request.args.get('search', '').strip()
+
+    query = Invoice.query.join(BorrowSlip).join(User)
+
+    if status_filter != 'all':
+        query = query.filter(Invoice.status == InvoiceStatusEnum[status_filter])
+
+    if search_query:
+        query = query.filter(
+            or_(
+                User.first_name.contains(search_query),
+                User.last_name.contains(search_query),
+                Invoice.id == search_query if search_query.isdigit() else False
+            )
+        )
+
+    invoices = query.order_by(Invoice.issue_date.desc()).all()
+
+    return render_template('staff/manage_invoices.html',
+                           invoices=invoices,
+                           status_filter=status_filter,
+                           search_query=search_query)
+
+
+@staff_bp.route('/api/invoice/<int:id>')
+def get_invoice_api(id):
+    inv = Invoice.query.get_or_404(id)
+    slip = inv.borrow_slip
+    user = slip.user
+
+    # Tìm thông tin sự cố (Incident) liên quan đến phiếu mượn này nếu có
+    incident = IncidentReport.query.filter_by(borrow_slip_id=slip.id).first()
+
+    return jsonify({
+        "id": inv.id,
+        "amount": inv.amount,
+        "date": inv.issue_date.strftime('%d/%m/%Y %H:%M'),
+        "status": inv.status.name,
+        "status_val": inv.status.value,
+
+        # Độc giả
+        "user_name": f"{user.last_name} {user.first_name}",
+        "user_phone": user.phone_number or "Chưa cập nhật",
+        "user_email": user.email,
+
+        # Sách & Phiếu mượn
+        "book_title": slip.book.title,
+        "slip_id": slip.id,
+        "due_date": slip.due_date.strftime('%d/%m/%Y'),
+
+        # Lý do chi tiết
+        "incident_desc": incident.description if incident else "Phạt quá hạn trả sách"
+    })

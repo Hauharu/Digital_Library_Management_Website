@@ -125,7 +125,8 @@ body {
 .table-wrapper-premium {
     background: white;
     border-radius: var(--radius-lg);
-    overflow: hidden;
+    /* Bỏ overflow: hidden để không bị che dropdown */
+    overflow: visible; 
     border: 1px solid #e2e8f0;
 }
 

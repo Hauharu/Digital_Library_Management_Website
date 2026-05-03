@@ -12,7 +12,7 @@
     --text-main: #1e293b;
     --text-muted: #64748b;
     --border-color: #e2e8f0;
-    --shadow: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 body {
@@ -144,7 +144,7 @@ body {
     visibility: visible !important;
     filter: none !important;
     color: #ffffff !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn-action.approve {
@@ -157,7 +157,7 @@ body {
 
 .btn-action:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     filter: brightness(1.1) !important;
 }
 
@@ -186,20 +186,58 @@ body {
     font-size: 0.75rem;
 }
 
-.bg-primary-subtle { background-color: #eef2ff; }
-.bg-info-subtle { background-color: #ecfeff; }
-.bg-success-subtle { background-color: #f0fdf4; }
-.bg-danger-subtle { background-color: #fef2f2 !important; }
-.x-small { font-size: 0.75rem; }
-.nav-pills .nav-link { color: #6c757d; font-weight: 600; border-radius: 8px; }
-.nav-pills .nav-link.active { background-color: #0d6efd; }
-.table thead { font-size: 0.85rem; text-uppercase: uppercase; letter-spacing: 0.5px; }
+.bg-primary-subtle {
+    background-color: #eef2ff;
+}
+
+.bg-info-subtle {
+    background-color: #ecfeff;
+}
+
+.bg-success-subtle {
+    background-color: #f0fdf4;
+}
+
+.bg-danger-subtle {
+    background-color: #fef2f2 !important;
+}
+
+.x-small {
+    font-size: 0.75rem;
+}
+
+.nav-pills .nav-link {
+    color: #6c757d;
+    font-weight: 600;
+    border-radius: 8px;
+}
+
+.nav-pills .nav-link.active {
+    background-color: #0d6efd;
+}
+
+.table thead {
+    font-size: 0.85rem;
+    text-uppercase: uppercase;
+    letter-spacing: 0.5px;
+}
 
 /* Màu sắc nhẹ nhàng cho Badge */
-.bg-soft-primary { background-color: #e0ebff; }
-.bg-soft-info { background-color: #e0f7fa; }
-.bg-soft-danger { background-color: #ffebee; }
-.bg-soft-warning { background-color: #fffde7; }
+.bg-soft-primary {
+    background-color: #e0ebff;
+}
+
+.bg-soft-info {
+    background-color: #e0f7fa;
+}
+
+.bg-soft-danger {
+    background-color: #ffebee;
+}
+
+.bg-soft-warning {
+    background-color: #fffde7;
+}
 
 /* Avatar ký tự thay cho ảnh nếu lỗi */
 .avatar-sm-text {
@@ -237,39 +275,207 @@ body {
     border: none;
 }
 
-.x-small { font-size: 11px; }
+.x-small {
+    font-size: 11px;
+}
 
 /* Custom Styles for Staff Order Management */
 .avatar-circle {
-    width: 35px; height: 35px;
-    background-color: #4e73df; color: white;
-    border-radius: 50%; display: flex;
-    align-items: center; justify-content: center;
-    font-weight: bold; font-size: 14px;
+    width: 35px;
+    height: 35px;
+    background-color: #4e73df;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
 }
 
 /* Badge Styles */
-.badge-soft-primary { background-color: #e8f0fe; color: #1a73e8; }
-.badge-soft-danger { background-color: #fce8e6; color: #d93025; }
+.badge-soft-primary {
+    background-color: #e8f0fe;
+    color: #1a73e8;
+}
+
+.badge-soft-danger {
+    background-color: #fce8e6;
+    color: #d93025;
+}
 
 /* Table styling */
-.table thead th { border-bottom: none; }
-.table tbody td { border-bottom: 1px solid #f8f9fa; }
+.table thead th {
+    border-bottom: none;
+}
+
+.table tbody td {
+    border-bottom: 1px solid #f8f9fa;
+}
 
 /* Nút icon */
 .btn-icon {
-    width: 32px; height: 32px;
-    padding: 0; display: inline-flex;
-    align-items: center; justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 8px;
 }
 
 /* Hiệu ứng nháy nhẹ cho báo trả sách */
 @keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-}
-.animate-pulse { animation: pulse 2s infinite; }
+    0% {
+        opacity: 1;
+    }
 
-.x-small { font-size: 11px; }
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s infinite;
+}
+
+.x-small {
+    font-size: 11px;
+}
+
+/* Notification Dropdown Styles (Premium Match) */
+.notification-dropdown {
+    overflow: hidden;
+    animation: slideInDropdown 0.3s ease-out;
+}
+
+@keyframes slideInDropdown {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.notification-list {
+    max-height: 380px;
+    overflow-y: auto;
+}
+
+.notification-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+.notification-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 20px;
+    gap: 15px;
+    transition: all 0.2s;
+    border-bottom: 1px solid #f1f5f9;
+    text-decoration: none !important;
+    color: inherit;
+}
+
+.notification-item:hover {
+    background-color: #f8fafc;
+}
+
+.notification-item.unread {
+    background-color: #f0f7ff;
+}
+
+.notification-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #e0ebff;
+    color: #3b82f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.notification-item.unread .notification-icon {
+    background: #dbeafe;
+}
+
+.notification-content {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.notification-content .title {
+    display: block;
+    font-weight: 600;
+    font-size: 13px;
+    color: #1e293b;
+    line-height: 1.4;
+    margin-bottom: 2px;
+}
+
+.notification-content .time {
+    display: block;
+    font-size: 11.5px;
+    color: #64748b;
+}
+
+.notification-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+}
+
+.notification-header span {
+    font-size: 14.5px;
+    color: #1e293b;
+}
+
+.notification-header a {
+    font-size: 12.5px;
+    color: #3b82f6;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.notification-header a:hover {
+    text-decoration: underline;
+}
+
+.notification-footer {
+    padding: 12px;
+    text-align: center;
+    background: #fff;
+    border-top: 1px solid #f1f5f9;
+}
+
+.notification-footer a {
+    font-size: 13px;
+    color: #3b82f6;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.notification-footer a:hover {
+    color: #2563eb;
+}
+
+.no-caret::after {
+    display: none !important;
+}
+

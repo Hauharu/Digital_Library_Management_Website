@@ -38,8 +38,18 @@ class StaffService:
 
         for slip in active_slips:
             slip.is_late = slip.due_date < today
-            slip.fine = (today - slip.due_date).days * 5000 if slip.is_late else 0
-            # Lấy lịch sử 5 lần trả gần nhất của user này
+            overdue_fine = (today - slip.due_date).days * 5000 if slip.is_late else 0
+
+            unpaid_invoices = [inv for inv in slip.invoices if inv.status.name in ['Pending', 'Offline', 'Overdue']]
+            
+            if unpaid_invoices:
+                from app.services.payment_service import PaymentService
+                for inv in unpaid_invoices:
+                    PaymentService.sync_invoice_amount(inv)
+                slip.fine = sum(inv.amount for inv in unpaid_invoices)
+            else:
+                slip.fine = overdue_fine
+
             slip.user_history = BorrowSlip.query.filter_by(
                 user_id=slip.user_id, status=BorrowStatusEnum.Returned
             ).order_by(BorrowSlip.return_date.desc()).limit(5).all()
@@ -56,13 +66,27 @@ class StaffService:
         if now.date() > slip.due_date:
             days_late = (now.date() - slip.due_date).days
             fine_amount = days_late * 5000
-            new_invoice = Invoice(amount=fine_amount, issue_date=now, status=InvoiceStatusEnum.Paid,
-                                  borrow_slip_id=slip.id)
-            db.session.add(new_invoice)
+            
+            # Kiểm tra xem đã có hóa đơn (ví dụ do báo sự cố trước đó) chưa
+            existing_invoice = Invoice.query.filter_by(borrow_slip_id=slip.id).first()
+            if existing_invoice:
+                existing_invoice.amount += fine_amount
+                existing_invoice.updated_at = now
+            else:
+                new_invoice = Invoice(amount=fine_amount, issue_date=now, status=InvoiceStatusEnum.Paid,
+                                      borrow_slip_id=slip.id)
+                db.session.add(new_invoice)
 
         slip.status = BorrowStatusEnum.Returned
         slip.return_date = now.date()
-        book.available_quantity += slip.quantity
+        
+        # Kiểm tra an toàn: Không để số lượng hiện có vượt quá tổng số lượng trong kho
+        new_available = book.available_quantity + slip.quantity
+        if new_available > book.total_quantity:
+            book.available_quantity = book.total_quantity
+        else:
+            book.available_quantity = new_available
+            
         db.session.commit()
 
         # Gửi Email qua EmailService
@@ -105,7 +129,12 @@ class StaffService:
         unread_count = Notification.query.filter_by(user_id=borrow_req.user_id, is_read=False).count()
         socketio.emit('update_notifications', {
             'unread_count': unread_count,
-            'new_notification': {'title': notif.title, 'time': 'Vừa xong', 'id': notif.id}
+            'new_notification': {
+                'title': notif.title, 
+                'content': notif.content,
+                'time': 'Vừa xong', 
+                'id': notif.id
+            }
         }, room=f"user_{borrow_req.user_id}")
 
         # Email thông báo
@@ -133,7 +162,11 @@ class StaffService:
         unread_count = Notification.query.filter_by(user_id=req.user_id, is_read=False).count()
         socketio.emit('update_notifications', {
             'unread_count': unread_count,
-            'new_notification': {'title': notif.title, 'time': 'Vừa xong'}
+            'new_notification': {
+                'title': notif.title,
+                'content': notif.content,
+                'time': 'Vừa xong'
+            }
         }, room=f"user_{req.user_id}")
 
         # Email
