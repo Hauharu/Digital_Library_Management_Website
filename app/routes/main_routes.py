@@ -19,7 +19,6 @@ from app.services.payment_service import PaymentService
 main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
-@role_required(RoleEnum.READER)
 def index():
     featured_books = Book.query.order_by(Book.view_count.desc()).limit(10).all()
     related_books = Book.query.order_by(db.func.random()).limit(10).all()
