@@ -2,21 +2,24 @@ pipeline {
     agent any
 
     stages {
-        stage('Clone') {
+        stage('Install Python') {
             steps {
-                echo 'Cloning...'
+                sh '''
+                apt update
+                apt install -y python3 python3-pip
+                '''
             }
         }
 
-        stage('Install') {
+        stage('Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt || true'
+                sh 'pip3 install -r requirements.txt || true'
             }
         }
 
         stage('Test') {
             steps {
-                sh 'python -m unittest || true'
+                sh 'python3 -m unittest || true'
             }
         }
 
