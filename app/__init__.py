@@ -15,7 +15,7 @@ from flask_apscheduler import APScheduler
 db = SQLAlchemy()
 login_manager = LoginManager()
 bcrypt = Bcrypt()
-socketio = SocketIO(cors_allowed_origins="*", async_mode='eventlet')
+socketio = SocketIO()
 migrate = Migrate()
 mail = Mail()
 oauth = OAuth()
@@ -39,7 +39,7 @@ def create_app(config_name=None):
     login_manager.login_message = "Vui lòng đăng nhập để tiếp tục."
 
     bcrypt.init_app(app)
-    socketio.init_app(app)
+    socketio.init_app(app,async_mode='eventlet')
     migrate.init_app(app, db)
     mail.init_app(app)
     oauth.init_app(app)

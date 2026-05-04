@@ -3,13 +3,15 @@ from flask_login import login_required, current_user, logout_user
 from app.services.borrow_service import BorrowService
 from app.services.email_service import EmailService
 from app.services.payment_service import PaymentService
-from app.models import User, RequestStatusEnum, BorrowStatusEnum, GenderEnum, Book, Invoice, Payment, PaymentMethodEnum, InvoiceStatusEnum, PaymentStatusEnum
+from app.models import User, RequestStatusEnum, BorrowStatusEnum, GenderEnum, Book, Invoice, Payment, PaymentMethodEnum, InvoiceStatusEnum, RoleEnum
 from app import db, bcrypt
 from datetime import datetime, date
+from app.decorators import role_required
 user_bp = Blueprint('user', __name__, url_prefix='/user')
 
 @user_bp.route("/profile")
 @login_required
+@role_required(RoleEnum.READER)
 def user_profile():
     user = current_user 
 
@@ -39,6 +41,7 @@ def user_profile():
 
 @user_bp.route("/profile/update", methods=["POST"])
 @login_required
+@role_required(RoleEnum.READER)
 def update_profile():
     full_name = request.form.get('full_name', '').strip()
     phone_number = request.form.get('phone_number', '').strip()
@@ -69,6 +72,7 @@ def update_profile():
 
 @user_bp.route("/profile/password", methods=["POST"])
 @login_required
+@role_required(RoleEnum.READER)
 def update_password():
     current_password = request.form.get('current_password')
     new_password = request.form.get('new_password')
@@ -98,6 +102,7 @@ def update_password():
 
 @user_bp.route("/notifications")
 @login_required
+@role_required(RoleEnum.READER)
 def notifications():
     from app.models import Notification
     all_notifications = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.sent_date.desc()).all()
@@ -122,6 +127,7 @@ def notifications():
 
 @user_bp.route("/notifications/delete/<int:notif_id>", methods=["POST"])
 @login_required
+@role_required(RoleEnum.READER)
 def delete_notification(notif_id):
     from app.models import Notification
     notif = Notification.query.get_or_404(notif_id)
@@ -134,6 +140,7 @@ def delete_notification(notif_id):
 
 @user_bp.route("/notifications/delete-all", methods=["POST"])
 @login_required
+@role_required(RoleEnum.READER)
 def delete_all_notifications():
     from app.models import Notification
     Notification.query.filter_by(user_id=current_user.id).delete()
@@ -142,6 +149,7 @@ def delete_all_notifications():
 
 @user_bp.route('/borrow/<int:book_id>', methods=['GET', 'POST'])
 @login_required
+@role_required(RoleEnum.READER)
 def borrow_book(book_id):
     book = Book.query.get_or_404(book_id)
     quantity_available = book.available_quantity or 0
@@ -196,6 +204,7 @@ def borrow_book(book_id):
 
 @user_bp.route("/payment/select/<int:invoice_id>")
 @login_required
+@role_required(RoleEnum.READER)
 def select_payment_method(invoice_id):
     invoice = Invoice.query.get_or_404(invoice_id)
     if invoice.borrow_slip.user_id != current_user.id:
@@ -212,6 +221,7 @@ def select_payment_method(invoice_id):
 
 @user_bp.route("/payment/vnpay/<int:invoice_id>")
 @login_required
+@role_required(RoleEnum.READER)
 def process_vnpay(invoice_id):
     invoice = Invoice.query.get_or_404(invoice_id)
     PaymentService.sync_invoice_amount(invoice)

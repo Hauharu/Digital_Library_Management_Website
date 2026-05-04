@@ -1,84 +1,79 @@
-.action-btn-group {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
+/* --- Library Styles --- */
+.book-cover-sm {
+    width: 48px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 6px;
 }
 
-.btn-action-lib {
-    width: 36px !important;
-    height: 36px !important;
-    display: inline-flex !important;
+.book-cover-placeholder {
+    width: 48px;
+    height: 64px;
+    background: #f1f5f9;
+    border-radius: 6px;
+    display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 10px !important;
-    border: none !important;
-    transition: all 0.2s;
-    cursor: pointer;
+    color: #cbd5e1;
+}
+
+/* Nút bấm kiểu hiện đại (Sử dụng CSS của bạn và làm đẹp thêm) */
+.btn-action-lib {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
+    border: none;
 }
 
 .btn-edit-lib {
-    background-color: var(--primary-light) !important;
-    color: var(--primary) !important;
+    background-color: #eef2ff;
+    color: #4f46e5;
 }
 
 .btn-edit-lib:hover {
-    background-color: var(--primary) !important;
-    color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    background-color: #4f46e5;
+    color: white;
+    transform: translateY(-2px);
 }
 
 .btn-delete-lib {
-    background-color: #fef2f2 !important;
-    color: var(--danger) !important;
-}
-.btn-close-lib {
-    background-color: #fef2f2 !important;
-    color: var(--danger) !important;
+    background-color: #fef2f2;
+    color: #ef4444;
 }
 
 .btn-delete-lib:hover {
-    background-color: var(--danger) !important;
-    color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    background-color: #ef4444;
+    color: white;
+    transform: translateY(-2px);
 }
 
-.btn-filter {
-    background-color: var(--primary) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 10px !important;
+/* Badge màu mềm (Soft Badges) */
+.badge-soft-primary {
+    background-color: #eef2ff;
+    color: #4f46e5;
     font-weight: 600;
 }
 
-.btn-refresh {
-    background-color: #ffffff !important;
-    color: var(--text-muted) !important;
-    border: 1px solid var(--border-color) !important;
-    border-radius: 10px !important;
+/* Header Table */
+.table thead th {
+    background-color: #f8fafc;
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: none;
 }
 
-.badge-soft-primary { background-color: var(--primary-light); color: var(--primary); }
-.badge-soft-success { background-color: #f0fdf4; color: var(--success); }
-.badge-soft-danger { background-color: #fef2f2; color: var(--danger); }
-
-.btn-light {
-    background-color: #f8f9fa !important;
-    color: var(--text-muted) !important;
-    border: 1px solid var(--border-color) !important;
-
+/* Custom Table Row */
+.table tbody tr {
+    border-bottom: 1px solid #f1f5f9;
 }
-
-
-.btn-view-lib {
-    background-color: #f0fdfa !important;
-    color: #0d9488 !important;
-    border: 1px solid rgba(13, 148, 136, 0.2) !important;
+.table tbody tr:last-child {
+    border-bottom: none;
 }
-
-.btn-view-lib:hover {
-    background-color: #0d9488 !important;
-    color: white !important;
-    box-shadow: 0 4px 8px rgba(13, 148, 136, 0.2);
-}
-
