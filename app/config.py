@@ -6,17 +6,33 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', '12b23b02a8ceeb2cf3386bb33d4d8f31')
-    
-    _db_user = os.getenv('DB_USER', 'root')
-    _db_pass = quote_plus(os.getenv('DB_PASSWORD', 'admin'))
-    _db_host = os.getenv('DB_HOST', 'localhost')
-    _db_port = os.getenv('DB_PORT', '3306')
-    _db_name = os.getenv('DB_NAME', 'library_db')
-    
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        'DATABASE_URI',
-        f'mysql+pymysql://{_db_user}:{_db_pass}@{_db_host}:{_db_port}/{_db_name}'
-    )
+
+    # 1. Lấy link tổng quát trước (Ưu tiên biến này trên Render)
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URI')
+
+    # 2. Nếu không có link tổng, thì mới xây dựng từ các biến lẻ (Dùng cho Local)
+    if not SQLALCHEMY_DATABASE_URI:
+        _db_user = os.getenv('DB_USER', 'root')
+        _db_pass = quote_plus(os.getenv('DB_PASSWORD', 'admin'))
+        _db_host = os.getenv('DB_HOST', 'localhost')
+        _db_port = os.getenv('DB_PORT', '3306')
+        _db_name = os.getenv('DB_NAME', 'library_db')
+
+        SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://{_db_user}:{_db_pass}@{_db_host}:{_db_port}/{_db_name}'
+
+    # 3. Cấu hình thêm cho SQLAlchemy để bắt buộc dùng driver pymysql và hỗ trợ SSL của Aiven
+    if "mysql" in SQLALCHEMY_DATABASE_URI and "pymysql" not in SQLALCHEMY_DATABASE_URI:
+        SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace("mysql://", "mysql+pymysql://")
+
+    # Cấu hình Engine để vượt qua kiểm tra SSL của Aiven
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "connect_args": {
+            "ssl": {
+                "ca": None  # Aiven tự cấp chứng chỉ, để None là driver tự nhận diện
+            }
+        },
+        "pool_recycle": 280,  # Tự động làm mới kết nối tránh bị Aiven ngắt (timeout)
+    }
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME")

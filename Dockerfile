@@ -21,4 +21,4 @@ COPY . .
 # Chạy Flask
 EXPOSE 5000
 
-CMD ["python", "app.py"]
+CMD ["python", "index.py"]
