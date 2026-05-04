@@ -7,17 +7,23 @@ load_dotenv()
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', '12b23b02a8ceeb2cf3386bb33d4d8f31')
     
+    # Try MySQL first, fallback to SQLite for testing
     _db_user = os.getenv('DB_USER', 'root')
-    _db_pass = quote_plus(os.getenv('DB_PASSWORD', 'admin'))
-    _db_pass = quote_plus(os.getenv('DB_PASSWORD', '1234578@'))
-    _db_host = os.getenv('DB_HOST', 'localhost')
+    _db_pass = quote_plus(os.getenv('DB_PASSWORD', '123456'))
+    _db_host = os.getenv('DB_HOST', '127.0.0.1')
     _db_port = os.getenv('DB_PORT', '3306')
     _db_name = os.getenv('DB_NAME', 'library_db')
     
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        'DATABASE_URI',
-        f'mysql+pymysql://{_db_user}:{_db_pass}@{_db_host}:{_db_port}/{_db_name}'
-    )
+    # Use MySQL by default, SQLite only for testing
+    if os.getenv('USE_SQLITE', 'false').lower() == 'true':
+        SQLALCHEMY_DATABASE_URI = 'sqlite:///library_test.db'
+        print("Using SQLite database for testing")
+    else:
+        SQLALCHEMY_DATABASE_URI = os.getenv(
+            'DATABASE_URI',
+            f'mysql+pymysql://root:123456@127.0.0.1:3306/library_db'
+        )
+        print("Using MySQL database")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME")
