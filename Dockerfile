@@ -21,4 +21,4 @@ COPY . .
 # Chạy Flask
 EXPOSE 5000
 
-CMD ["python", "index.py"]
+CMD ["gunicorn", "--worker-class", "eventlet", "-w", "1", "--bind", "0.0.0.0:10000", "index:app"]

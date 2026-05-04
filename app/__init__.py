@@ -15,7 +15,7 @@ from flask_apscheduler import APScheduler
 db = SQLAlchemy()
 login_manager = LoginManager()
 bcrypt = Bcrypt()
-socketio = SocketIO(cors_allowed_origins="*", async_mode='eventlet')
+socketio = SocketIO(app, async_mode='eventlet')
 migrate = Migrate()
 mail = Mail()
 oauth = OAuth()
