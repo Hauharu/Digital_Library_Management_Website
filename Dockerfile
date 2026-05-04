@@ -1,18 +1,24 @@
-# Sử dụng Python image chính thức
-FROM python:3.9-slim
+FROM python:3.12-slim
 
 # Thiết lập thư mục làm việc
 WORKDIR /app
 
-# Sao chép file requirements trước để tận dụng cache của Docker
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Cài đặt các công cụ build cần thiết (nếu có thư viện C)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-# Sao chép toàn bộ mã nguồn vào container
+# Sao chép file requirements
+COPY requirements.txt .
+
+# Nâng cấp pip và cài đặt thư viện
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Sao chép toàn bộ mã nguồn
 COPY . .
 
-# Chạy Flask (cổng 5000 là mặc định)
+# Chạy Flask
 EXPOSE 5000
 
-# Lệnh chạy ứng dụng
 CMD ["python", "app.py"]
