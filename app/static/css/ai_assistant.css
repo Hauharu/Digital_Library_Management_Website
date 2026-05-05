@@ -1,0 +1,208 @@
+/* AI Assistant Floating Button */
+.ai-assistant-fab {
+    position: fixed;
+    bottom: 0px; /* Sát mép dưới hơn */
+    right: 20px;
+    z-index: 9999;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ai-assistant-fab:hover {
+    transform: scale(1.05) translateY(-5px);
+}
+
+.ai-assistant-fab img {
+    width: 250px; /* Phóng lớn nhân vật hơn nữa */
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+}
+
+/* Chat Window */
+.ai-chat-window {
+    position: fixed;
+    bottom: 110px;
+    right: 25px;
+    width: 380px;
+    height: 550px;
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 10000;
+    border: 1px solid rgba(0,0,0,0.05);
+    animation: slideUp 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.ai-chat-window.active {
+    display: flex;
+}
+
+.ai-chat-header {
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    color: #fff;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ai-chat-header h5 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ai-chat-messages .message.bot ul {
+    margin-bottom: 0;
+    padding-left: 20px;
+}
+
+.ai-chat-messages .message.bot li {
+    margin-bottom: 5px;
+}
+
+.ai-chat-messages .message.bot a {
+    color: #ffd700;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.ai-chat-messages .message.bot p {
+    margin-bottom: 10px;
+}
+
+.ai-chat-close {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.ai-chat-close:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.ai-chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Scrollbar */
+.ai-chat-messages::-webkit-scrollbar {
+    width: 5px;
+}
+.ai-chat-messages::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+
+.message {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    position: relative;
+}
+
+.message.bot {
+    align-self: flex-start;
+    background: #fff;
+    color: #1e293b;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.message.user {
+    align-self: flex-end;
+    background: #6366f1;
+    color: #fff;
+    border-bottom-right-radius: 4px;
+}
+
+.ai-chat-input-area {
+    padding: 20px;
+    background: #fff;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    gap: 10px;
+}
+
+.ai-chat-input-area input {
+    flex: 1;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 10px 15px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.ai-chat-input-area input:focus {
+    border-color: #6366f1;
+}
+
+.ai-chat-send {
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.ai-chat-send:hover {
+    background: #4f46e5;
+    transform: translateY(-2px);
+}
+
+/* Typing indicator */
+.typing-dots {
+    display: flex;
+    gap: 4px;
+}
+.typing-dots span {
+    width: 6px;
+    height: 6px;
+    background: #cbd5e1;
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+.typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+.typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+}

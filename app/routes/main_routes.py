@@ -33,9 +33,14 @@ def index():
 
         recommended_books = RecommendationService.get_recommendations(current_user.id, limit=10)
 
+    # Lấy sách mới trong vòng 24 giờ qua
+    one_day_ago = datetime.now() - timedelta(days=1)
+    new_books = Book.query.filter(Book.created_at >= one_day_ago).order_by(Book.created_at.desc()).limit(10).all()
+
     return render_template('index.html',
                            featured_books=featured_books,
                            related_books=related_books,
+                           new_books=new_books,
                            recommended_books=recommended_books,
                            user_fav_ids=user_fav_ids)
 
@@ -45,6 +50,7 @@ def index():
 def book_list():
     page = request.args.get('page', 1, type=int)
     category_id = request.args.get('category_id', type=int)
+    sort = request.args.get('sort', '')
     per_page = 10
     
     query = Book.query
@@ -52,10 +58,18 @@ def book_list():
     if category_id:
         category = Category.query.get(category_id)
         query = query.filter_by(category_id=category_id)
+    
+    # Xử lý lọc/sắp xếp
+    if sort == 'new':
+        # Lọc chỉ lấy sách trong vòng 24h qua
+        one_day_ago = datetime.now() - timedelta(days=1)
+        query = query.filter(Book.created_at >= one_day_ago).order_by(Book.created_at.desc())
+    else:
+        query = query.order_by(Book.id.desc())
         
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     books = pagination.items
-    return render_template('book/book_list.html', books=books, pagination=pagination, category=category)
+    return render_template('book/book_list.html', books=books, pagination=pagination, category=category, sort=sort, now=datetime.now())
 
 
 @main_bp.route('/categories')

@@ -21,6 +21,8 @@
 
     <!-- CSS -->
     <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ai_assistant.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <!-- Socket.IO Global -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
@@ -85,6 +87,32 @@
             });
         });
     </script>
+    <!-- AI Assistant -->
+    <div class="ai-assistant-fab" id="aiAssistantFab">
+        <img src="/static/gif/preny_2.gif" alt="AI Assistant">
+    </div>
+
+    <div class="ai-chat-window" id="aiChatWindow">
+        <div class="ai-chat-header">
+            <h5><i class="fa-solid fa-robot"></i> Trợ lý OUBOOK</h5>
+            <button class="ai-chat-close" id="aiChatClose">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="ai-chat-messages" id="aiChatMessages">
+            <div class="message bot">
+                Chào bạn! Mình là trợ lý AI của thư viện OU. Bạn cần mình giúp gì về sách hay quy định mượn trả không?
+            </div>
+        </div>
+        <div class="ai-chat-input-area">
+            <input type="text" id="aiChatInput" placeholder="Nhập câu hỏi tại đây...">
+            <button class="ai-chat-send" id="aiChatSend">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/ai_assistant.js') }}"></script>
 </body>
 
 </html>

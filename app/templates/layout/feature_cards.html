@@ -10,7 +10,8 @@
         </div>
 
         <div class="col-6 col-md-3">
-            <a href="#" class="nav-card">
+            <a href="{{ url_for('main.book_list', sort='new') }}"
+                class="nav-card {{ 'active' if request.args.get('sort') == 'new' }}">
                 <div class="icon-wrapper">
                     <i class="fa-solid fa-bolt"></i>
                 </div>
@@ -19,7 +20,8 @@
         </div>
 
         <div class="col-6 col-md-3">
-            <a href="{{ url_for('main.book_list') }}" class="nav-card {{ 'active' if request.endpoint == 'main.book_list' }}">
+            <a href="{{ url_for('main.book_list') }}"
+                class="nav-card {{ 'active' if request.endpoint == 'main.book_list' and not request.args.get('sort') }}">
                 <div class="icon-wrapper">
                     <i class="fa-solid fa-book-bookmark"></i>
                 </div>
@@ -28,7 +30,8 @@
         </div>
 
         <div class="col-6 col-md-3">
-            <a href="{{ url_for('main.categories') }}" class="nav-card {{ 'active' if request.endpoint == 'main.categories' }}">
+            <a href="{{ url_for('main.categories') }}"
+                class="nav-card {{ 'active' if request.endpoint == 'main.categories' }}">
                 <div class="icon-wrapper">
                     <i class="fa-solid fa-layer-group"></i>
                 </div>

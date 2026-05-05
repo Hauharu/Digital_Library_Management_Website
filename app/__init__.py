@@ -75,12 +75,14 @@ def create_app(config_name=None):
     from app.routes.user_routes import user_bp
     from app.routes.admin_routes import admin_bp
     from app.routes.staff_routes import staff_bp
+    from app.routes.ai_routes import ai_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(staff_bp)
+    app.register_blueprint(ai_bp, url_prefix='/ai')
 
     @app.template_filter('time_ago')
     def time_ago_filter(dt):

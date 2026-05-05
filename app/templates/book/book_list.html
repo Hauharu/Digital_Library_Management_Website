@@ -14,18 +14,27 @@
             <a href="{{ url_for('main.categories') }}" style="color: #6b7280; text-decoration: none;">Danh mục</a>
             <i class="fa-solid fa-chevron-right separator" style="font-size: 12px; margin: 0 8px; color: #d1d5db;"></i>
             <span style="color: #111827; font-weight: 600;">{{ category.name }}</span>
+            {% elif sort == 'new' %}
+            <span style="color: #111827; font-weight: 600;">Sách mới</span>
             {% else %}
             <span style="color: #111827; font-weight: 600;">Danh sách</span>
             {% endif %}
         </div>
         <h1 style="font-size: 22px; font-weight: 700; color: #111827; margin: 0;">
-            {% if category %}{{ category.name|upper }}{% else %}TẤT CẢ SÁCH{% endif %}
+            {% if category %}
+                {{ category.name|upper }}
+            {% elif sort == 'new' %}
+                SÁCH MỚI CẬP NHẬT - {{ now.strftime('%d/%m/%Y') }}
+            {% else %}
+                TẤT CẢ SÁCH
+            {% endif %}
         </h1>
     </div>
 
     <div class="book-grid">
         {% for book in books %}
-        <article class="book-card">
+        <article class="book-card position-relative">
+            {% if sort == 'new' %}<div class="new-badge" style="position: absolute; top: 10px; left: 10px; background: #ef4444; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 1;">NEW</div>{% endif %}
             <img src="{{ book.image }}" alt="{{ book.title }}">
             <h3>{{ book.title }}</h3>
             <p>{{ book.author }}</p>
@@ -49,7 +58,7 @@
     <!-- Phân trang -->
     <div class="pagination-container">
         {% if pagination.has_prev %}
-        <a href="{{ url_for('main.book_list', page=pagination.prev_num, category_id=category.id if category else None) }}"
+        <a href="{{ url_for('main.book_list', page=pagination.prev_num, category_id=category.id if category else None, sort=sort) }}"
             class="page-link">&laquo; Trước</a>
         {% endif %}
 
@@ -58,7 +67,7 @@
         {% if pagination.page == page_num %}
         <span class="page-link active">{{ page_num }}</span>
         {% else %}
-        <a href="{{ url_for('main.book_list', page=page_num, category_id=category.id if category else None) }}"
+        <a href="{{ url_for('main.book_list', page=page_num, category_id=category.id if category else None, sort=sort) }}"
             class="page-link">{{ page_num }}</a>
         {% endif %}
         {% else %}
@@ -67,7 +76,7 @@
         {% endfor %}
 
         {% if pagination.has_next %}
-        <a href="{{ url_for('main.book_list', page=pagination.next_num, category_id=category.id if category else None) }}"
+        <a href="{{ url_for('main.book_list', page=pagination.next_num, category_id=category.id if category else None, sort=sort) }}"
             class="page-link">Sau &raquo;</a>
         {% endif %}
     </div>
