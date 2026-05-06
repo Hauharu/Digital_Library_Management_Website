@@ -23,7 +23,7 @@
                     <label class="text-muted x-small fw-bold mb-1">NĂM</label>
                     <select name="year" class="form-select form-select-sm border-light-subtle rounded-3">
                         {% for y in range(2023, datetime.now().year + 1) %}
-                        <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>Năm {{ y }}</option>
+                        <option value="{{ y }}" {% if y==current_year %}selected{% endif %}>Năm {{ y }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -32,7 +32,7 @@
                     <select name="month" class="form-select form-select-sm border-light-subtle rounded-3">
                         <option value="">Tất cả các tháng</option>
                         {% for m in range(1, 13) %}
-                        <option value="{{ m }}" {% if m == current_month %}selected{% endif %}>Tháng {{ m }}</option>
+                        <option value="{{ m }}" {% if m==current_month %}selected{% endif %}>Tháng {{ m }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -47,19 +47,22 @@
 
     <div class="row g-3 mb-4">
         <div class="col-md-6">
-            <div class="stat-card-v2 border-0 shadow-sm bg-primary text-white p-4 rounded-4 position-relative overflow-hidden">
+            <div
+                class="stat-card-v2 border-0 shadow-sm bg-primary text-white p-4 rounded-4 position-relative overflow-hidden">
                 <div class="position-relative z-1">
                     <span class="x-small fw-bold opacity-75">TỔNG DOANH THU KỲ NÀY</span>
                     <h2 class="mb-0 fw-bold mt-2">{{ "{:,.0f}".format(total_revenue) }}đ</h2>
                 </div>
-                <i class="fa-solid fa-wallet position-absolute end-0 bottom-0 mb-n3 me-n2 opacity-25" style="font-size: 5rem;"></i>
+                <i class="fa-solid fa-wallet position-absolute end-0 bottom-0 mb-n3 me-n2 opacity-25"
+                    style="font-size: 5rem;"></i>
             </div>
         </div>
         <div class="col-md-6">
             <div class="stat-card-v2 bg-white border-0 shadow-sm p-4 rounded-4 border-start border-success border-4">
                 <span class="text-muted x-small fw-bold">TRUNG BÌNH GIAO DỊCH</span>
                 <h2 class="mb-0 fw-bold text-dark mt-2">{{ "{:,.0f}".format(avg_payment) }}đ</h2>
-                <div class="small mt-2 text-success fw-semibold">Dựa trên {{ payments|length }} giao dịch thành công</div>
+                <div class="small mt-2 text-success fw-semibold">Dựa trên {{ payments|length }} giao dịch thành công
+                </div>
             </div>
         </div>
     </div>
@@ -69,7 +72,8 @@
             <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h6 class="fw-bold mb-0">Xu hướng doanh thu</h6>
-                    <span class="badge bg-primary-subtle text-primary">Dữ liệu {{ current_month if current_month else 'năm ' ~ current_year }}</span>
+                    <span class="badge bg-primary-subtle text-primary">Dữ liệu {{ current_month if current_month else
+                        'năm ' ~ current_year }}</span>
                 </div>
                 <div style="height: 350px;">
                     <canvas id="revenueChart"></canvas>
@@ -93,7 +97,8 @@
                             <span class="x-small text-muted">{{ "{:,.0f}".format(book.revenue) }}đ</span>
                         </div>
                         <div class="text-end">
-                            <span class="badge bg-success-subtle text-success x-small">+{{ ((book.revenue / total_revenue) * 100)|round(1) if total_revenue > 0 else 0 }}%</span>
+                            <span class="badge bg-success-subtle text-success x-small">+{{ ((book.revenue /
+                                total_revenue) * 100)|round(1) if total_revenue > 0 else 0 }}%</span>
                         </div>
                     </div>
                     {% endfor %}
@@ -125,7 +130,10 @@
                                 </td>
                             </tr>
                             {% else %}
-                            <tr><td colspan="4" class="text-center py-4 text-muted">Không tìm thấy dữ liệu giao dịch.</td></tr>
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">Không tìm thấy dữ liệu giao dịch.
+                                </td>
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -139,12 +147,12 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('revenueChart').getContext('2d');
-    
-    // Labels và Data lấy từ backend truyền qua
-    const labels = [{% for row in chart_data %}"{{ row.date }}",{% endfor %}];
-    const data = [{% for row in chart_data %}{{ row.total }},{% endfor %}];
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+
+        // Labels và Data lấy từ backend truyền qua
+        const labels = [{% for row in chart_data %}"{{ row.date }}", {% endfor %}];
+    const data = [{% for row in chart_data %}{ { row.total } }, {% endfor %}];
 
     new Chart(ctx, {
         type: 'line',
@@ -175,9 +183,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             },
             scales: {
-                y: { 
+                y: {
                     grid: { borderDash: [5, 5], color: '#f1f5f9' },
-                    ticks: { callback: (v) => v >= 1000 ? v/1000 + 'K' : v }
+                    ticks: { callback: (v) => v >= 1000 ? v / 1000 + 'K' : v }
                 },
                 x: { grid: { display: false } }
             }

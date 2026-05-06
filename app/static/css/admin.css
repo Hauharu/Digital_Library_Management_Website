@@ -143,8 +143,15 @@ body {
 }
 
 @keyframes slideIn {
-    from { transform: translateY(10px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from {
+        transform: translateY(10px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 .notification-list {
@@ -228,6 +235,17 @@ body {
     text-decoration: none !important;
 }
 
-.btn-edit:hover { background: #dbeafe; color: #2563eb; }
-.btn-delete:hover { background: #fee2e2; color: #dc2626; }
-.btn-view:hover { background: #f1f5f9; color: #334155; }
+.btn-edit:hover {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.btn-delete:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.btn-view:hover {
+    background: #f1f5f9;
+    color: #334155;
+}
