@@ -43,23 +43,41 @@
     </table>
 </div>
 
+    <!-- Edit Category Modal -->
+    <div class="modal fade" id="editCategoryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-warning text-dark border-0 py-3">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-pen-to-square me-2"></i>Chỉnh sửa thể loại</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="editCategoryForm" method="POST">
+                    <div class="modal-body py-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Tên thể loại mới</label>
+                            <input type="text" name="name" id="editCategoryName" class="form-control form-control-lg shadow-sm" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pb-4">
+                        <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-warning px-4 fw-bold">Lưu thay đổi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-function editCategory(id, oldName) {
-    let newName = prompt("Nhập tên mới cho thể loại:", oldName);
-    if (newName && newName !== oldName) {
-        let form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/staff/edit-category/' + id;
-        
-        let input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'name';
-        input.value = newName;
-        
-        form.appendChild(input);
-        document.body.appendChild(form);
-        form.submit();
-    }
+function editCategory(id, name) {
+    const modal = new bootstrap.Modal(document.getElementById('editCategoryModal'));
+    const form = document.getElementById('editCategoryForm');
+    const input = document.getElementById('editCategoryName');
+    
+    input.value = name;
+    form.action = '/staff/edit-category/' + id;
+    
+    modal.show();
 }
 </script>
 {% endblock %}
