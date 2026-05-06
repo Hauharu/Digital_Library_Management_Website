@@ -78,7 +78,7 @@
 
         <div class="main-wrapper flex-grow-1">
 
-            <header class="staff-topbar bg-white border-bottom px-4 d-flex align-items-center justify-content-between">
+            <header class="staff-topbar bg-white border-bottom px-5 d-flex align-items-center justify-content-between">
                 <div class="search-bar-staff d-none d-md-flex">
                     {% if request.endpoint == 'staff.staff_profile' %}
                     <a href="{{ url_for('main.staff_dashboard') }}" class="text-decoration-none text-primary fw-bold">
@@ -87,7 +87,7 @@
                     {% endif %}
                 </div>
 
-                <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3 me-2">
                     <!-- Thông báo Bell cho Staff -->
                     <div class="dropdown">
                         <button class="btn btn-link text-muted p-0 position-relative shadow-none no-caret" type="button"
@@ -133,15 +133,15 @@
 
                     <div class="user-info dropdown">
                         <div class="d-flex align-items-center gap-2" style="cursor: pointer;" data-bs-toggle="dropdown">
-                            <div class="text-end d-none d-sm-block">
-                                <p class="mb-0 fw-bold small text-dark">{{ current_user.last_name }} {{
+                            <img src="{{ current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}"
+                                class="user-avatar" alt="avatar">
+                            <div class="d-flex flex-column align-items-start d-none d-sm-flex">
+                                <p class="mb-0 fw-semibold small text-dark ms-2">{{ current_user.last_name }} {{
                                     current_user.first_name
                                     }}</p>
-                                <p class="mb-0 text-muted x-small">Thủ thư hệ thống</p>
+                                <span
+                                    class="badge bg-primary-soft text-primary rounded-pill x-small px-2 py-0">STAFF</span>
                             </div>
-                            <img src="{{ current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}"
-                                class="rounded-circle border" width="38" height="38" alt="avatar"
-                                style="object-fit: cover;">
                         </div>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
                             <li><a class="dropdown-item small py-2" href="{{ url_for('staff.staff_profile') }}"><i
@@ -225,10 +225,10 @@
     </script>
     <script>
         // Tự động ẩn thông báo sau 3 giây
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
-                setTimeout(function() {
+            alerts.forEach(function (alert) {
+                setTimeout(function () {
                     const bsAlert = new bootstrap.Alert(alert);
                     alert.classList.add('fade');
                     setTimeout(() => alert.remove(), 500);

@@ -41,13 +41,13 @@
         </aside>
 
         <div class="main-wrapper flex-grow-1">
-            <header class="staff-topbar d-flex align-items-center justify-content-between px-4">
+            <header class="staff-topbar d-flex align-items-center justify-content-between px-5">
                 <div class="search-bar-staff d-none d-md-flex">
                     <i class="fa-solid fa-magnifying-glass text-muted me-2"></i>
                     <input type="text" placeholder="Tìm kiếm tài khoản, hóa đơn...">
                 </div>
 
-                <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3 me-2">
                     <div class="dropdown">
                         <button class="btn btn-link text-muted p-0 position-relative shadow-none no-caret" type="button" data-bs-toggle="dropdown">
                             <i class="fa-solid fa-bell fs-5"></i>
@@ -80,11 +80,11 @@
 
                     <div class="user-info dropdown">
                         <div class="d-flex align-items-center gap-2 cursor-pointer" data-bs-toggle="dropdown">
-                            <div class="text-end d-none d-sm-block">
-                                <p class="mb-0 fw-bold small text-dark">{{ current_user.last_name }} {{ current_user.first_name }}</p>
-                                <span class="badge-admin">Administrator</span>
+                            <img src="{{ current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}" class="user-avatar" alt="avatar">
+                            <div class="d-flex flex-column align-items-start d-none d-sm-flex">
+                                <p class="mb-0 fw-semibold small text-dark ms-2">{{ current_user.last_name }} {{ current_user.first_name }}</p>
+                                <span class="badge-admin">ADMINISTRATOR</span>
                             </div>
-                            <img src="{{ current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}" class="rounded-circle border" width="38" height="38">
                         </div>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
                             <li><a class="dropdown-item small py-2" href="/admin/profile"><i class="fa-solid fa-id-card me-2 text-primary"></i>Hồ sơ Admin</a></li>
