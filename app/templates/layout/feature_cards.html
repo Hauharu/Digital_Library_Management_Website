@@ -21,7 +21,7 @@
 
         <div class="col-6 col-md-3">
             <a href="{{ url_for('main.book_list') }}"
-                class="nav-card {{ 'active' if (request.endpoint == 'main.book_list' and not request.args.get('sort') and not request.args.get('category_id')) or (request.endpoint == 'main.book_detail' and request.args.get('from') == 'list') }}">
+                class="nav-card {{ 'active' if (request.endpoint == 'main.book_list' and not request.args.get('sort') and not request.args.get('category_id')) or (request.endpoint == 'main.book_detail' and request.args.get('from') in ['list', 'recommendation', 'search']) }}">
                 <div class="icon-wrapper">
                     <i class="fa-solid fa-book-bookmark"></i>
                 </div>
