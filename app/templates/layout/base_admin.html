@@ -13,24 +13,24 @@
     <div class="d-flex">
         <aside class="staff-sidebar shadow-sm">
             <div class="sidebar-header p-4 text-center">
-                <div class="d-flex align-items-center justify-content-center gap-2">
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="d-flex align-items-center justify-content-center gap-2 text-decoration-none">
                     <i class="fa-solid fa-shield-halved text-primary fs-4"></i>
                     <span class="fw-bold fs-5 text-dark">OU BOOK</span>
-                </div>
+                </a>
             </div>
             <nav class="sidebar-nav px-3">
                 <p class="nav-label">TỔNG QUAN</p>
-                <a href="/admin/dashboard" class="nav-item {{ 'active' if 'dashboard' in request.path }}">
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-item {{ 'active' if request.endpoint == 'admin.admin_dashboard' }}">
                     <i class="fa-solid fa-gauge-high"></i> Bảng điều khiển
                 </a>
-                <a href="/admin/revenue_report" class="nav-item">
+                <a href="{{ url_for('admin.revenue_report') }}" class="nav-item {{ 'active' if request.endpoint == 'admin.revenue_report' }}">
                     <i class="fa-solid fa-chart-line"></i> Báo cáo doanh thu
                 </a>
                 <p class="nav-label">QUẢN TRỊ</p>
-                <a href="/admin/users" class="nav-item {{ 'active' if 'users' in request.path }}">
+                <a href="{{ url_for('admin.manage_users') }}" class="nav-item {{ 'active' if request.endpoint == 'admin.manage_users' }}">
                     <i class="fa-solid fa-users-gear"></i> Quản lý người dùng
                 </a>
-                <a href="/admin/books" class="nav-item">
+                <a href="{{ url_for('admin.manage_books') }}" class="nav-item {{ 'active' if request.endpoint == 'admin.manage_books' }}">
                     <i class="fa-solid fa-book"></i> Kho sách hệ thống
                 </a>
                 <p class="nav-label">HỆ THỐNG</p>

@@ -23,42 +23,49 @@
 
         <aside class="staff-sidebar shadow-sm">
             <div class="sidebar-header p-4">
-                <div class="d-flex align-items-center gap-2">
+                <a href="{{ url_for('main.staff_dashboard') }}"
+                    class="d-flex align-items-center gap-2 text-decoration-none">
                     <i class="fa-solid fa-book-open text-primary fs-4"></i>
                     <span class="fw-bold fs-5 text-dark">OU BOOK</span>
-                </div>
+                </a>
             </div>
 
             <nav class="sidebar-nav px-3">
                 <p class="nav-label text-muted small fw-bold text-uppercase mb-2 ps-2">Chính</p>
                 <a href="{{ url_for('main.staff_dashboard') }}"
-                    class="nav-item {{ 'active' if request.endpoint == 'staff.dashboard' }}">
+                    class="nav-item {{ 'active' if request.endpoint == 'main.staff_dashboard' }}">
                     <i class="fa-solid fa-chart-pie"></i> Dashboard
                 </a>
-                <a href="/staff/create-borrow" class="nav-item {{ 'active' if 'create-borrow' in request.path }}">
+                <a href="{{ url_for('staff.create_borrow') }}"
+                    class="nav-item {{ 'active' if request.endpoint == 'staff.create_borrow' }}">
                     <i class="fa-solid fa-book-open"></i>
                     <span>Mượn tại quầy</span>
                 </a>
 
                 <p class="nav-label text-muted small fw-bold text-uppercase mt-4 mb-2 ps-2">Nghiệp vụ</p>
-                <a href="/staff/manage-books" class="nav-item {{ 'active' if 'books' in request.path }}">
+                <a href="{{ url_for('staff.manage_books') }}"
+                    class="nav-item {{ 'active' if request.endpoint == 'staff.manage_books' }}">
                     <i class="fa-solid fa-book"></i> Quản lý sách
                 </a>
 
 
-                <a href="/staff/requests" class="nav-item">
+                <a href="{{ url_for('staff.staff_requests') }}"
+                    class="nav-item {{ 'active' if request.endpoint == 'staff.staff_requests' }}">
                     <i class="fa-solid fa-clipboard-check"></i> Duyệt mượn
                     {% if pending_count > 0 %}
                     <span class="badge bg-danger rounded-pill ms-auto">{{ pending_count }}</span>
                     {% endif %}
                 </a>
-                <a href="/staff/orders" class="nav-item">
+                <a href="{{ url_for('staff.manage_orders') }}"
+                    class="nav-item {{ 'active' if request.endpoint == 'staff.manage_orders' }}">
                     <i class="fa-solid fa-right-left"></i> Quản lý mượn trả sách
                 </a>
-                <a href="/staff/invoices" class="nav-item">
+                <a href="{{ url_for('staff.manage_invoices') }}"
+                    class="nav-item {{ 'active' if request.endpoint == 'staff.manage_invoices' }}">
                     <i class="fa-solid fa-file-invoice-dollar"></i> Hóa đơn & Phạt
                 </a>
-                <a href="/staff/manage-categories" class="nav-item">
+                <a href="{{ url_for('staff.manage_categories') }}"
+                    class="nav-item {{ 'active' if request.endpoint == 'staff.manage_categories' }}">
                     <i class="fa-solid fa-tags"></i> Thể loại sách
                 </a>
 
@@ -131,7 +138,8 @@
                                 <p class="mb-0 text-muted x-small">Thủ thư hệ thống</p>
                             </div>
                             <img src="{{ current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}"
-                                class="rounded-circle border" width="38" height="38" alt="avatar">
+                                class="rounded-circle border" width="38" height="38" alt="avatar"
+                                style="object-fit: cover;">
                         </div>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
                             <li><a class="dropdown-item small py-2" href="/staff/profile"><i
