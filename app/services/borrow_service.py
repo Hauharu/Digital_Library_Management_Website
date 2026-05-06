@@ -48,18 +48,18 @@ class BorrowService:
         # Thông báo cho tất cả Staff/Admin
         from app.models import User, RoleEnum, Notification
         from app import socketio
-        staff_users = User.query.filter(User.role.in_([RoleEnum.STAFF, RoleEnum.ADMIN])).all()
+        staff_users = User.query.filter(User.role == RoleEnum.STAFF).all()
         for staff in staff_users:
             notif = Notification(
                 user_id=staff.id,
                 title="Yêu cầu mượn mới",
                 content=f"Độc giả {user.last_name} {user.first_name} yêu cầu mượn '{book.title}'",
-                type="SYSTEM"
+                type="BORROW_REQUEST"
             )
             db.session.add(notif)
         
         db.session.commit()
-
+        
         # Thông báo cho chính người dùng
         notif_user = Notification(
             user_id=user.id,
@@ -75,22 +75,27 @@ class BorrowService:
         socketio.emit('update_notifications', {
             'unread_count': unread_count_user,
             'new_notification': {
-                'title': "Yêu cầu mượn đã gửi",
+                'title': notif_user.title,
+                'content': notif_user.content,
+                'type': notif_user.type,
                 'time': 'Vừa xong',
                 'id': notif_user.id
             }
         }, room=f"user_{user.id}")
 
-        # Emit socket cho từng staff (nếu họ đang online)
+        # Emit socket cho từng staff/admin (nếu họ đang online)
         for staff in staff_users:
+            # Lấy thông báo tương ứng của staff này
+            staff_notif = Notification.query.filter_by(user_id=staff.id).order_by(Notification.sent_date.desc()).first()
             unread_count = Notification.query.filter_by(user_id=staff.id, is_read=False).count()
             socketio.emit('update_notifications', {
                 'unread_count': unread_count,
                 'new_notification': {
-                    'title': "Yêu cầu mượn mới",
-                    'content': f"Độc giả {user.last_name} {user.first_name} yêu cầu mượn '{book.title}'",
+                    'title': staff_notif.title,
+                    'content': staff_notif.content,
+                    'type': staff_notif.type,
                     'time': 'Vừa xong',
-                    'id': None
+                    'id': staff_notif.id
                 }
             }, room=f"user_{staff.id}")
 

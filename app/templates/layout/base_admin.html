@@ -80,6 +80,9 @@
                                 <div class="p-4 text-center text-muted small">Không có thông báo mới</div>
                                 {% endfor %}
                             </div>
+                            <div class="notification-footer">
+                                <a href="{{ url_for('user.notifications') }}">Xem tất cả thông báo</a>
+                            </div>
                         </div>
                     </div>
 
@@ -127,12 +130,15 @@
             if (list) {
                 const empty = list.querySelector('.text-center');
                 if (empty) empty.remove();
+                
+                const newNotif = data.new_notification;
+                const linkUrl = newNotif.type === 'BORROW_REQUEST' ? '/staff/requests' : `/user/notifications?id=${newNotif.id}`;
                 const itemHtml = `
-                    <a href="/user/notifications?id=${data.new_notification.id}" class="notification-item unread">
-                        <div class="notification-icon"><i class="fa-solid fa-info-circle"></i></div>
+                    <a href="${linkUrl}" class="notification-item unread">
+                        <div class="notification-icon"><i class="fa-solid ${newNotif.type === 'FAVORITE' ? 'fa-heart text-danger' : (newNotif.type === 'WARNING' ? 'fa-triangle-exclamation text-warning' : (newNotif.type === 'BORROW_REQUEST' ? 'fa-clipboard-list text-primary' : 'fa-info-circle'))}"></i></div>
                         <div class="notification-content">
-                            <span class="title fw-semibold small">${data.new_notification.title}</span>
-                            <span class="time text-muted" style="font-size: 11px;">Vừa xong</span>
+                            <div class="title fw-semibold small">${newNotif.title}</div>
+                            <div class="time text-muted" style="font-size: 11px;">${newNotif.time || 'Vừa xong'}</div>
                         </div>
                     </a>`;
                 list.insertAdjacentHTML('afterbegin', itemHtml);
@@ -148,5 +154,6 @@
             });
         });
     </script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

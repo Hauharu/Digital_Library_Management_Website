@@ -249,3 +249,21 @@ body {
     background: #f1f5f9;
     color: #334155;
 }
+
+.notification-footer {
+    padding: 12px;
+    text-align: center;
+    background: #fff;
+    border-top: 1px solid #f1f5f9;
+}
+
+.notification-footer a {
+    font-size: 13px;
+    color: #3b82f6;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.notification-footer a:hover {
+    color: #2563eb;
+}

@@ -161,6 +161,7 @@ class StaffService:
             'new_notification': {
                 'title': notif.title, 
                 'content': notif.content,
+                'type': notif.type,
                 'time': 'Vừa xong', 
                 'id': notif.id
             }
@@ -194,7 +195,9 @@ class StaffService:
             'new_notification': {
                 'title': notif.title,
                 'content': notif.content,
-                'time': 'Vừa xong'
+                'type': notif.type,
+                'time': 'Vừa xong',
+                'id': notif.id
             }
         }, room=f"user_{req.user_id}")
 

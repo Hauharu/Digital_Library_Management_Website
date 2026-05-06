@@ -256,14 +256,14 @@
                 const itemHtml = `
                     <a href="/user/notifications?id=${newNotif.id}" class="notification-item unread">
                         <div class="notification-icon">
-                            <i class="fa-solid ${newNotif.type === 'FAVORITE' ? 'fa-heart text-danger' : 'fa-info-circle'}"></i>
+                            <i class="fa-solid ${newNotif.type === 'FAVORITE' ? 'fa-heart text-danger' : (newNotif.type === 'WARNING' ? 'fa-triangle-exclamation text-warning' : 'fa-info-circle')}"></i>
                         </div>
                         <div class="notification-content">
                             <span class="title fw-bold d-block">${newNotif.title}</span>
                             <span class="text-muted small d-block text-truncate" style="max-width: 250px;">
-                                ${newNotif.content.replace(/<[^>]*>?/gm, '')}
+                                ${(newNotif.content || '').replace(/<[^>]*>?/gm, '')}
                             </span>
-                            <span class="time">${newNotif.time}</span>
+                            <span class="time">${newNotif.time || 'Vừa xong'}</span>
                         </div>
                     </a>
                 `;

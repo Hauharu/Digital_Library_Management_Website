@@ -103,7 +103,7 @@ def update_password():
 
 @user_bp.route("/notifications")
 @login_required
-@role_required(RoleEnum.READER)
+@role_required(RoleEnum.READER, RoleEnum.STAFF, RoleEnum.ADMIN)
 def notifications():
     from app.models import Notification
     all_notifications = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.sent_date.desc()).all()
@@ -128,7 +128,7 @@ def notifications():
 
 @user_bp.route("/notifications/delete/<int:notif_id>", methods=["POST"])
 @login_required
-@role_required(RoleEnum.READER)
+@role_required(RoleEnum.READER, RoleEnum.STAFF, RoleEnum.ADMIN)
 def delete_notification(notif_id):
     from app.models import Notification
     notif = Notification.query.get_or_404(notif_id)
@@ -141,7 +141,7 @@ def delete_notification(notif_id):
 
 @user_bp.route("/notifications/delete-all", methods=["POST"])
 @login_required
-@role_required(RoleEnum.READER)
+@role_required(RoleEnum.READER, RoleEnum.STAFF, RoleEnum.ADMIN)
 def delete_all_notifications():
     from app.models import Notification
     Notification.query.filter_by(user_id=current_user.id).delete()

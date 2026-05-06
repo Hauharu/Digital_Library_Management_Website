@@ -197,14 +197,16 @@
                 const empty = list.querySelector('.text-center');
                 if (empty) empty.remove();
 
+                const newNotif = data.new_notification;
+                const linkUrl = newNotif.type === 'BORROW_REQUEST' ? '/staff/requests' : `/user/notifications?id=${newNotif.id}`;
                 const itemHtml = `
-                    <a href="/user/notifications?id=${data.new_notification.id}" class="notification-item unread">
+                    <a href="${linkUrl}" class="notification-item unread">
                         <div class="notification-icon">
-                            <i class="fa-solid fa-info-circle"></i>
+                            <i class="fa-solid ${newNotif.type === 'FAVORITE' ? 'fa-heart text-danger' : (newNotif.type === 'WARNING' ? 'fa-triangle-exclamation text-warning' : (newNotif.type === 'BORROW_REQUEST' ? 'fa-clipboard-list text-primary' : 'fa-info-circle'))}"></i>
                         </div>
                         <div class="notification-content">
-                            <span class="title">${data.new_notification.title}</span>
-                            <span class="time">Vừa xong</span>
+                            <span class="title">${newNotif.title}</span>
+                            <span class="time">${newNotif.time || 'Vừa xong'}</span>
                         </div>
                     </a>
                 `;

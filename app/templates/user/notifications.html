@@ -1,4 +1,4 @@
-{% extends 'layout/base.html' %}
+{% extends 'layout/base_admin.html' if current_user.role.name == 'ADMIN' else ('layout/base_staff.html' if current_user.role.name == 'STAFF' else 'layout/base.html') %}
 
 {% block title %}Thông báo của bạn{% endblock %}
 
@@ -72,53 +72,11 @@
     </div>
 </div>
 
+{% block extra_js %}
 <script>
     // --- Hàm xóa thông báo đơn lẻ ---
-    function deleteNotification(id) {
-        if (!confirm('Bạn có muốn xóa thông báo này không?')) return;
-
-        fetch(`/user/notifications/delete/${id}`, {
-            method: 'POST',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                const el = document.getElementById(`notif-container-${id}`);
-                el.style.transition = 'all 0.3s ease';
-                el.style.transform = 'translateX(-20px)';
-                el.style.opacity = '0';
-                setTimeout(() => {
-                    el.remove();
-                    if (window.location.search.includes(`id=${id}`) || window.location.href.endsWith(`id=${id}`)) {
-                        window.location.href = "{{ url_for('user.notifications') }}";
-                    }
-                }, 300);
-            }
-        })
-        .catch(err => console.error(err));
-    }
-
-    // --- Hàm xóa tất cả thông báo ---
-    function deleteAllNotifications() {
-        if (!confirm('Bạn có chắc chắn muốn xóa TẤT CẢ thông báo?')) return;
-
-        fetch(`/user/notifications/delete-all`, {
-            method: 'POST',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                const list = document.querySelector('.sidebar-list');
-                list.style.transition = 'all 0.5s ease';
-                list.style.opacity = '0';
-                setTimeout(() => {
-                    window.location.href = "{{ url_for('user.notifications') }}";
-                }, 500);
-            }
-        })
-        .catch(err => console.error(err));
+...
     }
 </script>
+{% endblock %}
 {% endblock %}
