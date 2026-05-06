@@ -1,7 +1,7 @@
 <section class="feature-navigation mb-5">
     <div class="row g-3 justify-content-center">
         <div class="col-6 col-md-3">
-            <a href="{{ url_for('main.index') }}" class="nav-card {{ 'active' if request.endpoint == 'main.index' }}">
+            <a href="{{ url_for('main.index') }}" class="nav-card {{ 'active' if request.endpoint == 'main.index' or (request.endpoint == 'main.book_detail' and request.args.get('from') == 'featured') }}">
                 <div class="icon-wrapper">
                     <i class="fa-solid fa-fire-flame-curved"></i>
                 </div>
@@ -11,7 +11,7 @@
 
         <div class="col-6 col-md-3">
             <a href="{{ url_for('main.book_list', sort='new') }}"
-                class="nav-card {{ 'active' if request.args.get('sort') == 'new' }}">
+                class="nav-card {{ 'active' if request.args.get('sort') == 'new' or (request.endpoint == 'main.book_detail' and request.args.get('from') == 'new') }}">
                 <div class="icon-wrapper">
                     <i class="fa-solid fa-bolt"></i>
                 </div>
@@ -21,7 +21,7 @@
 
         <div class="col-6 col-md-3">
             <a href="{{ url_for('main.book_list') }}"
-                class="nav-card {{ 'active' if request.endpoint == 'main.book_list' and not request.args.get('sort') }}">
+                class="nav-card {{ 'active' if (request.endpoint == 'main.book_list' and not request.args.get('sort') and not request.args.get('category_id')) or (request.endpoint == 'main.book_detail' and request.args.get('from') == 'list') }}">
                 <div class="icon-wrapper">
                     <i class="fa-solid fa-book-bookmark"></i>
                 </div>
@@ -31,7 +31,7 @@
 
         <div class="col-6 col-md-3">
             <a href="{{ url_for('main.categories') }}"
-                class="nav-card {{ 'active' if request.endpoint == 'main.categories' }}">
+                class="nav-card {{ 'active' if request.endpoint == 'main.categories' or (request.endpoint == 'main.book_list' and request.args.get('category_id')) or (request.endpoint == 'main.book_detail' and request.args.get('from') == 'category') }}">
                 <div class="icon-wrapper">
                     <i class="fa-solid fa-layer-group"></i>
                 </div>

@@ -49,7 +49,7 @@
                 </div>
             </div>
             <button type="button"
-                onclick="window.location.href='/book-detail/{{ book.id }}?from={{ 'category' if category else 'list' }}'">CHI
+                onclick="window.location.href='/book-detail/{{ book.id }}?from={{ 'category' if category else ('new' if sort == 'new' else 'list') }}'">CHI
                 TIẾT</button>
         </article>
         {% endfor %}
