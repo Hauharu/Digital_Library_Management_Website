@@ -258,3 +258,58 @@ def revenue_report():
                            top_books=top_books,
                            current_year=year,
                            current_month=month)
+
+@admin_bp.route('/profile')
+@login_required
+@role_required(RoleEnum.ADMIN)
+def admin_profile():
+    return render_template('admin/admin_profile.html')
+
+@admin_bp.route('/profile/update', methods=['POST'])
+@login_required
+@role_required(RoleEnum.ADMIN)
+def update_profile():
+    full_name = request.form.get('full_name')
+    phone_number = request.form.get('phone_number')
+    gender_str = request.form.get('gender')
+    
+    if not full_name:
+        flash("Họ và tên không được để trống", "danger")
+        return redirect(url_for('admin.admin_profile'))
+        
+    names = full_name.split()
+    if len(names) > 1:
+        current_user.first_name = names[-1]
+        current_user.last_name = " ".join(names[:-1])
+    else:
+        current_user.first_name = full_name
+        current_user.last_name = ""
+        
+    current_user.phone_number = phone_number
+    current_user.gender = GenderEnum.MALE if gender_str == 'Nam' else GenderEnum.FEMALE
+    
+    db.session.commit()
+    flash("Cập nhật hồ sơ thành công!", "success")
+    return redirect(url_for('admin.admin_profile'))
+
+@admin_bp.route('/profile/password', methods=['POST'])
+@login_required
+@role_required(RoleEnum.ADMIN)
+def update_password():
+    current_pw = request.form.get('current_password')
+    new_pw = request.form.get('new_password')
+    confirm_pw = request.form.get('confirm_password')
+    
+    from app import bcrypt
+    if not bcrypt.check_password_hash(current_user.password, current_pw):
+        flash("Mật khẩu hiện tại không chính xác", "danger")
+        return redirect(url_for('admin.admin_profile'))
+        
+    if new_pw != confirm_pw:
+        flash("Mật khẩu mới không khớp", "danger")
+        return redirect(url_for('admin.admin_profile'))
+        
+    current_user.password = bcrypt.generate_password_hash(new_pw).decode('utf-8')
+    db.session.commit()
+    flash("Đổi mật khẩu thành công!", "success")
+    return redirect(url_for('admin.admin_profile'))

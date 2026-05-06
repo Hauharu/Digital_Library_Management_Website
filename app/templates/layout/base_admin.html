@@ -11,6 +11,7 @@
 </head>
 <body>
     <div class="d-flex">
+        {% if request.endpoint != 'admin.admin_profile' %}
         <aside class="staff-sidebar shadow-sm">
             <div class="sidebar-header p-4 text-center">
                 <a href="{{ url_for('admin.admin_dashboard') }}" class="d-flex align-items-center justify-content-center gap-2 text-decoration-none">
@@ -39,12 +40,19 @@
                 </a>
             </nav>
         </aside>
+        {% endif %}
 
         <div class="main-wrapper flex-grow-1">
             <header class="staff-topbar d-flex align-items-center justify-content-between px-5">
                 <div class="search-bar-staff d-none d-md-flex">
+                    {% if request.endpoint == 'admin.admin_profile' %}
+                    <a href="{{ url_for('admin.admin_dashboard') }}" class="text-decoration-none text-primary fw-bold">
+                        <i class="fa-solid fa-arrow-left me-2"></i>Quay lại Bảng điều khiển
+                    </a>
+                    {% else %}
                     <i class="fa-solid fa-magnifying-glass text-muted me-2"></i>
                     <input type="text" placeholder="Tìm kiếm tài khoản, hóa đơn...">
+                    {% endif %}
                 </div>
 
                 <div class="d-flex align-items-center gap-3 me-2">
@@ -79,7 +87,7 @@
                     </div>
 
                     <div class="user-info dropdown">
-                        <div class="d-flex align-items-center gap-2 cursor-pointer" data-bs-toggle="dropdown">
+                        <div class="d-flex align-items-center gap-2" style="cursor: pointer;" data-bs-toggle="dropdown">
                             <img src="{{ current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}" class="user-avatar" alt="avatar">
                             <div class="d-flex flex-column align-items-start d-none d-sm-flex">
                                 <p class="mb-0 fw-semibold small text-dark ms-2">{{ current_user.last_name }} {{ current_user.first_name }}</p>
@@ -87,9 +95,11 @@
                             </div>
                         </div>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
-                            <li><a class="dropdown-item small py-2" href="/admin/profile"><i class="fa-solid fa-id-card me-2 text-primary"></i>Hồ sơ Admin</a></li>
+                            <li><a class="dropdown-item small py-2" href="{{ url_for('admin.admin_profile') }}"><i
+                                        class="fa-solid fa-user-gear me-2 text-primary"></i>Hồ sơ cá nhân</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item small py-2 text-danger" href="{{ url_for('auth.logout') }}"><i class="fa-solid fa-sign-out me-2"></i>Đăng xuất</a></li>
+                            <li><a class="dropdown-item small py-2 text-danger" href="{{ url_for('auth.logout') }}"><i
+                                        class="fa-solid fa-sign-out me-2"></i>Đăng xuất</a></li>
                         </ul>
                     </div>
                 </div>
