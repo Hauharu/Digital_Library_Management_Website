@@ -42,7 +42,7 @@
                     <tr>
                         <td class="ps-4">
                             <div class="d-flex align-items-center">
-                                <img src="{{ staff.avatar }}" class="rounded-circle me-3" width="40" height="40">
+                                <img src="{{ staff.avatar if staff.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}" class="rounded-circle me-3" width="40" height="40">
                                 <span class="fw-bold">{{ staff.last_name }} {{ staff.first_name }}</span>
                             </div>
                         </td>

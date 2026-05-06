@@ -24,7 +24,10 @@ async function checkReader() {
             document.getElementById('reader-name-display').innerText = data.name;
             document.getElementById('reader-phone-display').innerText = `${data.phone || ''} ${data.email}`;
             document.getElementById('selected-user-id').value = data.id;
-            document.getElementById('reader-avatar').innerText = data.name.charAt(0).toUpperCase();
+            
+            const avatarImg = document.getElementById('reader-avatar');
+            const defaultAvatar = 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png';
+            avatarImg.src = data.avatar || defaultAvatar;
 
             // Render Dashboard nhỏ
             const statusBox = document.getElementById('reader-status-box');

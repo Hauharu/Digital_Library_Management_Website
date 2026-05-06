@@ -136,7 +136,7 @@
                 <div class="card-body p-0">
                     {% for user in recent_users %}
                     <div class="d-flex align-items-center p-3 border-bottom-dashed">
-                        <img src="{{ user.avatar }}" class="rounded-circle me-3 border" width="40" height="40" style="object-fit: cover;">
+                        <img src="{{ user.avatar if user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}" class="rounded-circle me-3 border" width="40" height="40" style="object-fit: cover;">
                         <div class="flex-grow-1">
                             <h6 class="small fw-bold mb-0">{{ user.last_name }} {{ user.first_name }}</h6>
                             <span class="x-small text-muted">{{ user.email }}</span>

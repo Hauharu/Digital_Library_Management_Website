@@ -30,10 +30,8 @@
                 <tr>
                     <td class="ps-4">
                         <div class="d-flex align-items-center">
-                            <div class="avatar-circle me-3 bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center"
-                                 style="width: 40px; height: 40px; border-radius: 50%;">
-                                {{ req.reader.first_name[0]|upper }}
-                            </div>
+                            <img src="{{ req.reader.avatar if req.reader.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}" 
+                                 class="rounded-circle me-3 border" width="40" height="40" style="object-fit: cover;">
                             <div>
                                 <div class="fw-bold text-dark">{{ req.reader.last_name }} {{ req.reader.first_name }}
                                 </div>

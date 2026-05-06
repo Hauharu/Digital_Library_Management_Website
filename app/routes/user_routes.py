@@ -33,7 +33,8 @@ def user_profile():
         "pending_books": active_requests,
         "email": user.email,
         "phone_number": user.phone_number or "",
-        "gender": "Nam" if user.gender and user.gender.name == "MALE" else ("Nữ" if user.gender and user.gender.name == "FEMALE" else "Khác")
+        "gender": "Nam" if user.gender and user.gender.name == "MALE" else ("Nữ" if user.gender and user.gender.name == "FEMALE" else "Khác"),
+        "avatar": user.avatar
     }
     
     return render_template("user/user_profile.html", user_info=user_data)
@@ -287,3 +288,26 @@ def process_offline(invoice_id):
     else:
         flash(message, "danger")
     return redirect(url_for('main.borrow_history'))
+    
+@user_bp.route("/profile/avatar", methods=["POST"])
+@login_required
+def update_avatar():
+    import cloudinary.uploader
+    if 'avatar' not in request.files:
+        flash("Không có tệp nào được chọn!", "warning")
+        return redirect(url_for('user.user_profile'))
+    
+    file = request.files['avatar']
+    if file.filename == '':
+        flash("Chưa có tệp nào được chọn!", "warning")
+        return redirect(url_for('user.user_profile'))
+    
+    try:
+        upload_result = cloudinary.uploader.upload(file, folder="library/avatars")
+        current_user.avatar = upload_result.get('secure_url')
+        db.session.commit()
+        flash("Cập nhật ảnh đại diện thành công!", "success")
+    except Exception as e:
+        flash(f"Lỗi khi tải ảnh lên: {str(e)}", "danger")
+        
+    return redirect(url_for('user.user_profile'))

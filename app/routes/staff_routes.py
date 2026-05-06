@@ -246,7 +246,8 @@ def check_reader():
                 "name": f"{user.last_name} {user.first_name}",
                 "id": user.id,
                 "email": user.email,
-                "phone": user.phone_number
+                "phone": user.phone_number,
+                "avatar": user.avatar
             })
         return jsonify({"exists": False})
     except Exception as e:
@@ -316,7 +317,8 @@ def api_quick_register():
             "id": new_user.id,
             "name": f"{l_name} {f_name}",
             "phone": new_user.phone_number or "N/A",
-            "email": new_user.email
+            "email": new_user.email,
+            "avatar": new_user.avatar
         })
 
     except Exception as e:

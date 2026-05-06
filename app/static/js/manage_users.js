@@ -35,7 +35,8 @@ async function openViewUserModal(userId) {
         const res = await fetch(`/admin/api/user/${userId}`);
         const user = await res.json();
 
-        document.getElementById('v-avatar').src = user.avatar;
+        const defaultAvatar = 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png';
+        document.getElementById('v-avatar').src = user.avatar || defaultAvatar;
         document.getElementById('v-full-name').innerText = `${user.last_name} ${user.first_name}`;
         document.getElementById('v-role').innerText = user.role;
         document.getElementById('v-username').innerText = user.username;

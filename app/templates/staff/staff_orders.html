@@ -80,10 +80,8 @@
                     </td>
                     <td>
                         <div class="d-flex align-items-center">
-                            <div class="avatar-circle me-3 bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center"
-                                 style="width: 40px; height: 40px; border-radius: 50%;">
-                                {{ slip.user.first_name[0]|upper if slip.user.first_name else 'U' }}
-                            </div>
+                            <img src="{{ slip.user.avatar if slip.user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}" 
+                                 class="rounded-circle me-3 border" width="40" height="40" style="object-fit: cover;">
                             <div>
                                 <div class="fw-bold text-dark fs-6">{{ slip.user.last_name }} {{ slip.user.first_name }}</div>
                                 <div class="text-muted small"><i class="fa-solid fa-envelope me-1"></i>{{ slip.user.email }}</div>
