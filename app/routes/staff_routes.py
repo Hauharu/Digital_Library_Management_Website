@@ -500,3 +500,57 @@ def get_invoice_api(id):
         # Lý do chi tiết
         "incident_desc": incident.description if incident else "Phạt quá hạn trả sách"
     })
+
+@staff_bp.route('/profile')
+@login_required
+@role_required(RoleEnum.STAFF)
+def staff_profile():
+    return render_template('staff/staff_profile.html')
+
+@staff_bp.route('/profile/update', methods=['POST'])
+@login_required
+@role_required(RoleEnum.STAFF)
+def update_profile():
+    full_name = request.form.get('full_name')
+    phone_number = request.form.get('phone_number')
+    gender_str = request.form.get('gender')
+    
+    if not full_name:
+        flash("Họ và tên không được để trống", "danger")
+        return redirect(url_for('staff.staff_profile'))
+        
+    names = full_name.split()
+    if len(names) > 1:
+        current_user.first_name = names[-1]
+        current_user.last_name = " ".join(names[:-1])
+    else:
+        current_user.first_name = full_name
+        current_user.last_name = ""
+        
+    current_user.phone_number = phone_number
+    current_user.gender = GenderEnum.Male if gender_str == 'Nam' else GenderEnum.Female
+    
+    db.session.commit()
+    flash("Cập nhật hồ sơ thành công!", "success")
+    return redirect(url_for('staff.staff_profile'))
+
+@staff_bp.route('/profile/password', methods=['POST'])
+@login_required
+@role_required(RoleEnum.STAFF)
+def update_password():
+    current_pw = request.form.get('current_password')
+    new_pw = request.form.get('new_password')
+    confirm_pw = request.form.get('confirm_password')
+    
+    if not current_user.check_password(current_pw):
+        flash("Mật khẩu hiện tại không chính xác", "danger")
+        return redirect(url_for('staff.staff_profile'))
+        
+    if new_pw != confirm_pw:
+        flash("Mật khẩu mới không khớp", "danger")
+        return redirect(url_for('staff.staff_profile'))
+        
+    current_user.set_password(new_pw)
+    db.session.commit()
+    flash("Đổi mật khẩu thành công!", "success")
+    return redirect(url_for('staff.staff_profile'))

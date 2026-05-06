@@ -14,7 +14,7 @@
     background: white;
     border-radius: 24px;
     border: 1px solid var(--glass-border);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
     overflow: hidden;
 }
 
@@ -37,7 +37,7 @@
     border-radius: 16px;
     padding: 20px;
     margin-top: -30px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     border: 1px solid #eee;
 }
 
@@ -59,7 +59,8 @@
     padding: 40px;
 }
 
-.custom-select, .custom-input {
+.custom-select,
+.custom-input {
     border: 2px solid #edf2f4;
     border-radius: 12px;
     padding: 12px 15px;
@@ -67,7 +68,8 @@
     transition: all 0.3s ease;
 }
 
-.custom-select:focus, .custom-input:focus {
+.custom-select:focus,
+.custom-input:focus {
     border-color: var(--premium-red);
     box-shadow: 0 0 0 4px rgba(217, 4, 41, 0.1);
 }

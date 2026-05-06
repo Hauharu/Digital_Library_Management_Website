@@ -25,7 +25,8 @@
                                     <div class="d-flex gap-4">
                                         <div>
                                             <div class="info-label">Độc giả</div>
-                                            <div class="fw-bold">{{ slip.user.last_name }} {{ slip.user.first_name }}</div>
+                                            <div class="fw-bold">{{ slip.user.last_name }} {{ slip.user.first_name }}
+                                            </div>
                                         </div>
                                         <div>
                                             <div class="info-label">Giá bìa gốc</div>
@@ -35,7 +36,7 @@
                                 </div>
                                 <div class="col-md-4 text-end d-none d-md-block">
                                     <img src="{{ slip.book.image or url_for('static', filename='images/sachmau.png') }}"
-                                         style="width: 80px; height: 110px; object-fit: cover; border-radius: 8px;">
+                                        style="width: 80px; height: 110px; object-fit: cover; border-radius: 8px;">
                                 </div>
                             </div>
                         </div>
@@ -46,10 +47,8 @@
                             <div class="row g-4">
                                 <div class="col-12">
                                     <label class="form-label fw-bold">Mức độ thiệt hại</label>
-                                    <select name="damage_ratio" id="damageRatio"
-                                            class="form-select custom-select"
-                                            data-book-price="{{ slip.book.price }}"
-                                            onchange="calculateFine()">
+                                    <select name="damage_ratio" id="damageRatio" class="form-select custom-select"
+                                        data-book-price="{{ slip.book.price }}" onchange="calculateFine()">
                                         <option value="0.3">Hư hỏng nhẹ (Rách bìa, vẽ bậy) - Phạt 30%</option>
                                         <option value="0.5">Hư hỏng vừa (Mất trang, bẩn nặng) - Phạt 50%</option>
                                         <option value="1.0">Mất sách / Hư hỏng nặng - Phạt 100%</option>
@@ -61,18 +60,23 @@
                                     <label class="form-label fw-bold">Số tiền phạt dự kiến (VNĐ)</label>
                                     <div class="input-group">
                                         <span class="input-group-text border-0 bg-light fw-bold">₫</span>
-                                        <input type="number" name="fine_amount" id="fineAmount" class="form-control custom-input" required readonly>
+                                        <input type="number" name="fine_amount" id="fineAmount"
+                                            class="form-control custom-input" required readonly>
                                     </div>
                                 </div>
 
                                 <div class="col-12">
                                     <label class="form-label fw-bold">Ghi chú chi tiết tình trạng</label>
-                                    <textarea name="description" class="form-control custom-input" rows="4" required></textarea>
+                                    <textarea name="description" class="form-control custom-input" rows="4"
+                                        required></textarea>
                                 </div>
 
                                 <div class="col-12 mt-5">
-                                    <button type="submit" class="btn btn-submit w-100 shadow-lg">Xác nhận & Xuất hóa đơn</button>
-                                    <a href="{{ url_for('staff.manage_orders') }}" class="btn btn-link w-100 mt-2 text-muted fw-bold text-decoration-none">Hủy bỏ</a>
+                                    <button type="submit" class="btn btn-submit w-100 shadow-lg">Xác nhận & Xuất hóa
+                                        đơn</button>
+                                    <a href="{{ url_for('staff.manage_orders') }}"
+                                        class="btn btn-link w-100 mt-2 text-muted fw-bold text-decoration-none">Hủy
+                                        bỏ</a>
                                 </div>
                             </div>
                         </form>

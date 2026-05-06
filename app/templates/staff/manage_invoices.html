@@ -63,7 +63,7 @@
                                      class="rounded-circle me-3 border" width="35" height="35" style="object-fit: cover;">
                                 <div>
                                     <div class="fw-bold text-dark">{{ inv.borrow_slip.user.last_name }} {{ inv.borrow_slip.user.first_name }}</div>
-                                    <div class="text-muted small">{{ inv.borrow_slip.user.phone_number or 'N/A' }}</div>
+                                    <div class="text-muted small">{{ inv.borrow_slip.user.phone_number if inv.borrow_slip.user.phone_number else (inv.borrow_slip.user.email or inv.borrow_slip.user.username) }}</div>
                                 </div>
                             </div>
                         </td>

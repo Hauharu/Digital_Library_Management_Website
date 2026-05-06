@@ -295,12 +295,12 @@ def update_avatar():
     import cloudinary.uploader
     if 'avatar' not in request.files:
         flash("Không có tệp nào được chọn!", "warning")
-        return redirect(url_for('user.user_profile'))
+        return redirect(request.referrer or url_for('user.user_profile'))
     
     file = request.files['avatar']
     if file.filename == '':
         flash("Chưa có tệp nào được chọn!", "warning")
-        return redirect(url_for('user.user_profile'))
+        return redirect(request.referrer or url_for('user.user_profile'))
     
     try:
         upload_result = cloudinary.uploader.upload(file, folder="library/avatars")
@@ -310,4 +310,4 @@ def update_avatar():
     except Exception as e:
         flash(f"Lỗi khi tải ảnh lên: {str(e)}", "danger")
         
-    return redirect(url_for('user.user_profile'))
+    return redirect(request.referrer or url_for('user.user_profile'))

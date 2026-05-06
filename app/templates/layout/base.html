@@ -77,12 +77,22 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Xử lý Flash Toast
             const toasts = document.querySelectorAll('.flash-toast');
             toasts.forEach(function (toast) {
                 setTimeout(() => toast.classList.add('flash-toast-show'), 50);
                 setTimeout(function () {
                     toast.classList.remove('flash-toast-show');
                     setTimeout(function () { toast.remove(); }, 500);
+                }, 3000);
+            });
+
+            // Xử lý Alert thông thường
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    alert.classList.add('fade');
+                    setTimeout(() => alert.remove(), 500);
                 }, 3000);
             });
         });
