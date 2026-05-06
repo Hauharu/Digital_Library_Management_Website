@@ -51,6 +51,7 @@ body {
     border-radius: 12px;
     font-weight: 500;
     font-size: 0.9rem;
+    white-space: nowrap;
     transition: all 0.2s;
     outline: none !important;
 }

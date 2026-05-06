@@ -45,6 +45,7 @@ body {
     text-decoration: none !important;
     border-radius: 10px;
     font-weight: 500;
+    white-space: nowrap;
     transition: all 0.2s;
 }
 

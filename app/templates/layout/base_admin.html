@@ -13,8 +13,8 @@
     <div class="d-flex">
         {% if request.endpoint != 'admin.admin_profile' %}
         <aside class="staff-sidebar shadow-sm">
-            <div class="sidebar-header p-4 text-center">
-                <a href="{{ url_for('admin.admin_dashboard') }}" class="d-flex align-items-center justify-content-center gap-2 text-decoration-none">
+            <div class="sidebar-header p-4">
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="d-flex align-items-center gap-2 text-decoration-none">
                     <i class="fa-solid fa-shield-halved text-primary fs-4"></i>
                     <span class="fw-bold fs-5 text-dark">OU BOOK</span>
                 </a>
@@ -49,9 +49,6 @@
                     <a href="{{ url_for('admin.admin_dashboard') }}" class="text-decoration-none text-primary fw-bold">
                         <i class="fa-solid fa-arrow-left me-2"></i>Quay lại Bảng điều khiển
                     </a>
-                    {% else %}
-                    <i class="fa-solid fa-magnifying-glass text-muted me-2"></i>
-                    <input type="text" placeholder="Tìm kiếm tài khoản, hóa đơn...">
                     {% endif %}
                 </div>
 

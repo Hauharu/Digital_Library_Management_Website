@@ -115,7 +115,55 @@ def manage_books():
     per_page = 10
     pagination = Book.query.order_by(Book.id.desc()).paginate(page=page, per_page=per_page, error_out=False)
     books = pagination.items
-    return render_template('admin/manage_books.html', books=books, pagination=pagination)
+    categories = Category.query.all()
+    return render_template('admin/manage_books.html', books=books, pagination=pagination, categories=categories)
+
+@admin_bp.route('/edit-book/<int:id>', methods=['POST'])
+@login_required
+@role_required(RoleEnum.ADMIN)
+def edit_book(id):
+    from app.services.staff_service import StaffService
+    data = request.form.to_dict()
+    image_file = request.files.get('image')
+    if StaffService.update_book(id, data, image_file):
+        flash('Cập nhật thông tin thành công!', 'success')
+    return redirect(url_for('admin.manage_books'))
+
+@admin_bp.route('/delete-book/<int:id>', methods=['POST'])
+@login_required
+@role_required(RoleEnum.ADMIN)
+def delete_book(id):
+    from app.services.staff_service import StaffService
+    result = StaffService.delete_book(id)
+    if result == True:
+        flash('Đã xóa sách thành công!', 'success')
+    elif result == "cannot_delete_borrowed":
+        flash('Không thể xóa vì sách đang có người mượn!', 'warning')
+    else:
+        flash('Lỗi hệ thống khi xóa sách.', 'danger')
+    return redirect(url_for('admin.manage_books'))
+
+@admin_bp.route('/api/book/<int:id>')
+@login_required
+@role_required(RoleEnum.ADMIN)
+def get_book_api(id):
+    book = Book.query.get_or_404(id)
+    return jsonify({
+        "id": book.id,
+        "title": book.title,
+        "author": book.author,
+        "category_id": book.category_id,
+        "category_name": book.category.name if book.category else "Chưa phân loại",
+        "isbn": book.isbn,
+        "language": book.language,
+        "publication_info": book.publication_info,
+        "price": book.price,
+        "total_quantity": book.total_quantity,
+        "available_quantity": book.available_quantity,
+        "description": book.description,
+        "image": book.image
+    })
+
 
 
 @admin_bp.route('/users')

@@ -30,37 +30,38 @@
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="bg-light">
-                    <tr>
-                        <th class="ps-4">Nhân viên</th>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th class="text-end pe-4">Thao tác</th>
-                    </tr>
+                        <tr>
+                            <th class="ps-4">Nhân viên</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th class="text-end pe-4">Thao tác</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    {% for staff in staff_list %}
-                    <tr>
-                        <td class="ps-4">
-                            <div class="d-flex align-items-center">
-                                <img src="{{ staff.avatar if staff.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}" class="rounded-circle me-3" width="40" height="40">
-                                <span class="fw-bold">{{ staff.last_name }} {{ staff.first_name }}</span>
-                            </div>
-                        </td>
-                        <td><span class="badge bg-light text-dark border">{{ staff.username }}</span></td>
-                        <td class="small">{{ staff.email }}</td>
-                        <td class="text-end pe-4">
-                            <button class="btn btn-sm btn-light border" onclick="openViewUserModal('{{ staff.id }}')"><i
-                                    class="fas fa-eye"></i></button>
-                            <button class="btn btn-sm btn-primary" onclick="openEditUserModal('{{ staff.id }}')"><i
-                                    class="fas fa-edit"></i></button>
-                            {% if staff.id != current_user.id %}
-                            <button class="btn btn-sm btn-outline-danger border-0"
+                        {% for staff in staff_list %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ staff.avatar if staff.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}"
+                                        class="rounded-circle me-3" width="40" height="40">
+                                    <span class="fw-bold">{{ staff.last_name }} {{ staff.first_name }}</span>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-light text-dark border">{{ staff.username }}</span></td>
+                            <td class="small">{{ staff.email }}</td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-sm btn-light border"
+                                    onclick="openViewUserModal('{{ staff.id }}')"><i class="fas fa-eye"></i></button>
+                                <button class="btn btn-sm btn-primary" onclick="openEditUserModal('{{ staff.id }}')"><i
+                                        class="fas fa-edit"></i></button>
+                                {% if staff.id != current_user.id %}
+                                <button class="btn btn-sm btn-outline-danger border-0"
                                     onclick="confirmDeleteUser('{{ staff.id }}')"><i class="fas fa-trash"></i></button>
-                            {% endif %}
-                        </td>
+                                {% endif %}
+                            </td>
 
-                    </tr>
-                    {% endfor %}
+                        </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -70,33 +71,34 @@
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="bg-light">
-                    <tr>
-                        <th class="ps-4">Độc giả</th>
-                        <th>SĐT</th>
-                        <th>Sách đang mượn</th>
-                        <th class="text-end pe-4">Thao tác</th>
-                    </tr>
+                        <tr>
+                            <th class="ps-4">Độc giả</th>
+                            <th>SĐT</th>
+                            <th>Sách đang mượn</th>
+                            <th class="text-end pe-4">Thao tác</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    {% for reader in readers %}
-                    <tr>
-                        <td class="ps-4 fw-bold">{{ reader.last_name }} {{ reader.first_name }}</td>
-                        <td>{{ reader.phone_number or '---' }}</td>
-                        <td class="text-center">
-                        <span class="badge bg-info-subtle text-info rounded-pill px-3">
-                            {{ reader.borrow_slips|length }} cuốn
-                        </span>
-                        </td>
-                        <td class="text-end pe-4">
-                            <button class="btn btn-sm btn-light border" onclick="openViewUserModal('{{ reader.id }}')">
-                                <i class="fas fa-eye"></i></button>
-                            <button class="btn btn-sm btn-primary" onclick="openEditUserModal('{{ reader.id }}')"><i
-                                    class="fas fa-edit"></i></button>
-                            <button class="btn btn-sm btn-danger" onclick="confirmDeleteUser('{{ reader.id }}')"><i
-                                    class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                    {% endfor %}
+                        {% for reader in readers %}
+                        <tr>
+                            <td class="ps-4 fw-bold">{{ reader.last_name }} {{ reader.first_name }}</td>
+                            <td>{{ reader.phone_number or '---' }}</td>
+                            <td class="text-center">
+                                <span class="badge bg-info-subtle text-info rounded-pill px-3">
+                                    {{ reader.borrow_slips|length }} cuốn
+                                </span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-sm btn-light border"
+                                    onclick="openViewUserModal('{{ reader.id }}')">
+                                    <i class="fas fa-eye"></i></button>
+                                <button class="btn btn-sm btn-primary" onclick="openEditUserModal('{{ reader.id }}')"><i
+                                        class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-danger" onclick="confirmDeleteUser('{{ reader.id }}')"><i
+                                        class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -106,14 +108,14 @@
                 <ul class="pagination justify-content-center">
                     <li class="page-item {{ 'disabled' if not reader_pagination.has_prev }}">
                         <a class="page-link border-0 shadow-sm rounded-start-pill px-3"
-                           href="{{ url_for('admin.manage_users', page=reader_pagination.prev_num) }}">Trước</a>
+                            href="{{ url_for('admin.manage_users', page=reader_pagination.prev_num) }}">Trước</a>
                     </li>
 
                     {% for p in reader_pagination.iter_pages() %}
                     {% if p %}
                     <li class="page-item {{ 'active' if p == reader_pagination.page }}">
                         <a class="page-link border-0 shadow-sm mx-1 rounded-3"
-                           href="{{ url_for('admin.manage_users', page=p) }}">{{ p }}</a>
+                            href="{{ url_for('admin.manage_users', page=p) }}">{{ p }}</a>
                     </li>
                     {% else %}
                     <li class="page-item disabled"><span class="page-link border-0">...</span></li>
@@ -122,7 +124,7 @@
 
                     <li class="page-item {{ 'disabled' if not reader_pagination.has_next }}">
                         <a class="page-link border-0 shadow-sm rounded-end-pill px-3"
-                           href="{{ url_for('admin.manage_users', page=reader_pagination.next_num) }}">Sau</a>
+                            href="{{ url_for('admin.manage_users', page=reader_pagination.next_num) }}">Sau</a>
                     </li>
                 </ul>
             </nav>
@@ -189,23 +191,31 @@
 <div class="modal fade" id="viewUserModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-4">
-            <div class="modal-body p-4 text-center">
-                <img id="v-avatar" src="" class="rounded-circle mb-3 border p-1" width="100" height="100">
-                <h4 id="v-full-name" class="fw-bold mb-1"></h4>
-                <p id="v-role" class="badge bg-soft-primary text-primary mb-4"></p>
+            <div class="modal-body p-4 text-start">
+                <div class="d-flex align-items-center mb-4">
+                    <img id="v-avatar" src="" class="rounded-circle me-3 border p-1" width="80" height="80" style="object-fit: cover;">
+                    <div>
+                        <h4 id="v-full-name" class="fw-bold mb-1"></h4>
+                        <p id="v-role" class="badge bg-primary-soft text-primary mb-0"></p>
+                    </div>
+                </div>
 
                 <div class="text-start bg-light p-3 rounded-3">
-                    <div class="d-flex justify-content-between mb-2 small">
-                        <span class="text-muted">Username:</span> <span id="v-username" class="fw-bold"></span>
+                    <div class="mb-2 small d-flex">
+                        <span class="text-muted me-2" style="min-width: 100px;">Username:</span>
+                        <span id="v-username" class="fw-bold text-dark"></span>
                     </div>
-                    <div class="d-flex justify-content-between mb-2 small">
-                        <span class="text-muted">Email:</span> <span id="v-email" class="fw-bold"></span>
+                    <div class="mb-2 small d-flex">
+                        <span class="text-muted me-2" style="min-width: 100px;">Email:</span>
+                        <span id="v-email" class="fw-bold text-dark"></span>
                     </div>
-                    <div class="d-flex justify-content-between mb-2 small">
-                        <span class="text-muted">Số điện thoại:</span> <span id="v-phone" class="fw-bold"></span>
+                    <div class="mb-2 small d-flex">
+                        <span class="text-muted me-2" style="min-width: 100px;">Số điện thoại:</span>
+                        <span id="v-phone" class="fw-bold text-dark"></span>
                     </div>
-                    <div class="d-flex justify-content-between small">
-                        <span class="text-muted">Trạng thái:</span> <span id="v-status" class="text-success fw-bold">Hoạt động</span>
+                    <div class="small d-flex">
+                        <span class="text-muted me-2" style="min-width: 100px;">Trạng thái:</span>
+                        <span id="v-status" class="text-success fw-bold">Hoạt động</span>
                     </div>
                 </div>
                 <button class="btn btn-dark w-100 rounded-pill mt-4" data-bs-dismiss="modal">Đóng cửa sổ</button>
