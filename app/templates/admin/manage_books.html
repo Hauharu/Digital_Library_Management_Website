@@ -28,11 +28,9 @@
                     <tr>
                         <td class="ps-4">
                             {% if book.image %}
-                            <img src="{{ book.image }}" alt="{{ book.title }}" class="rounded shadow-sm"
-                                style="width: 50px; height: 70px; object-fit: cover;">
+                            <img src="{{ book.image }}" alt="{{ book.title }}" class="rounded shadow-sm book-img-small">
                             {% else %}
-                            <div class="bg-light rounded d-flex align-items-center justify-content-center shadow-sm"
-                                style="width: 50px; height: 70px;">
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center shadow-sm book-img-placeholder">
                                 <i class="fas fa-image text-muted"></i>
                             </div>
                             {% endif %}
@@ -225,9 +223,7 @@ function confirmDelete(bookId) {
 </script>
 {% endblock %}
 
-<style>
-    .bg-primary-soft { background-color: rgba(13, 110, 253, 0.1); color: #0d6efd; }
-    .action-btn-group { display: flex; gap: 5px; justify-content: flex-end; }
-    .text-navy { color: #001f3f; }
-</style>
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
 {% endblock %}

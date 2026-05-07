@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,31 +8,39 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+
 </head>
+
 <body>
     <div class="d-flex">
         {% if request.endpoint != 'admin.admin_profile' %}
         <aside class="staff-sidebar shadow-sm">
             <div class="sidebar-header p-4">
-                <a href="{{ url_for('admin.admin_dashboard') }}" class="d-flex align-items-center gap-2 text-decoration-none">
+                <a href="{{ url_for('admin.admin_dashboard') }}"
+                    class="d-flex align-items-center gap-2 text-decoration-none">
                     <i class="fa-solid fa-shield-halved text-primary fs-4"></i>
                     <span class="fw-bold fs-5 text-dark">OU BOOK</span>
                 </a>
             </div>
             <nav class="sidebar-nav px-3">
                 <p class="nav-label">TỔNG QUAN</p>
-                <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-item {{ 'active' if request.endpoint == 'admin.admin_dashboard' }}">
+                <a href="{{ url_for('admin.admin_dashboard') }}"
+                    class="nav-item {{ 'active' if request.endpoint == 'admin.admin_dashboard' }}">
                     <i class="fa-solid fa-gauge-high"></i> Bảng điều khiển
                 </a>
-                <a href="{{ url_for('admin.revenue_report') }}" class="nav-item {{ 'active' if request.endpoint == 'admin.revenue_report' }}">
+                <a href="{{ url_for('admin.revenue_report') }}"
+                    class="nav-item {{ 'active' if request.endpoint == 'admin.revenue_report' }}">
                     <i class="fa-solid fa-chart-line"></i> Báo cáo doanh thu
                 </a>
                 <p class="nav-label">QUẢN TRỊ</p>
-                <a href="{{ url_for('admin.manage_users') }}" class="nav-item {{ 'active' if request.endpoint == 'admin.manage_users' }}">
+                <a href="{{ url_for('admin.manage_users') }}"
+                    class="nav-item {{ 'active' if request.endpoint == 'admin.manage_users' }}">
                     <i class="fa-solid fa-users-gear"></i> Quản lý người dùng
                 </a>
-                <a href="{{ url_for('admin.manage_books') }}" class="nav-item {{ 'active' if request.endpoint == 'admin.manage_books' }}">
+                <a href="{{ url_for('admin.manage_books') }}"
+                    class="nav-item {{ 'active' if request.endpoint == 'admin.manage_books' }}">
                     <i class="fa-solid fa-book"></i> Kho sách hệ thống
                 </a>
                 <p class="nav-label">HỆ THỐNG</p>
@@ -54,26 +63,33 @@
 
                 <div class="d-flex align-items-center gap-3 me-2">
                     <div class="dropdown">
-                        <button class="btn btn-link text-muted p-0 position-relative shadow-none no-caret" type="button" data-bs-toggle="dropdown">
+                        <button class="btn btn-link text-muted p-0 position-relative shadow-none no-caret" type="button"
+                            data-bs-toggle="dropdown">
                             <i class="fa-solid fa-bell fs-5"></i>
                             {% if unread_count > 0 %}
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger badge-count" style="font-size: 10px;">
+                            <span
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger badge-count"
+                                style="font-size: 10px;">
                                 {{ unread_count }}
                             </span>
                             {% endif %}
                         </button>
-                        <div class="dropdown-menu dropdown-menu-end notification-dropdown border-0 shadow-lg mt-3 p-0 rounded-4" style="width: 320px;">
+                        <div class="dropdown-menu dropdown-menu-end notification-dropdown border-0 shadow-lg mt-3 p-0 rounded-4"
+                            style="width: 320px;">
                             <div class="notification-header">
                                 <span class="fw-bold">Thông báo</span>
-                                <a href="/notifications/mark-all-read?ajax=1" class="small text-decoration-none mark-all-read">Đọc tất cả</a>
+                                <a href="/notifications/mark-all-read?ajax=1"
+                                    class="small text-decoration-none mark-all-read">Đọc tất cả</a>
                             </div>
                             <div class="notification-list">
                                 {% for notif in notifications %}
-                                <a href="{{ url_for('user.notifications') }}?id={{ notif.id }}" class="notification-item {{ 'unread' if not notif.is_read else '' }}">
+                                <a href="{{ url_for('user.notifications') }}?id={{ notif.id }}"
+                                    class="notification-item {{ 'unread' if not notif.is_read else '' }}">
                                     <div class="notification-icon"><i class="fa-solid fa-info-circle"></i></div>
                                     <div class="notification-content">
                                         <div class="title fw-semibold small">{{ notif.title }}</div>
-                                        <div class="time text-muted" style="font-size: 11px;">{{ notif.sent_date | time_ago }}</div>
+                                        <div class="time text-muted" style="font-size: 11px;">{{ notif.sent_date |
+                                            time_ago }}</div>
                                     </div>
                                 </a>
                                 {% else %}
@@ -88,16 +104,20 @@
 
                     <div class="user-info dropdown">
                         <div class="d-flex align-items-center gap-2" style="cursor: pointer;" data-bs-toggle="dropdown">
-                            <img src="{{ current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}" class="user-avatar" alt="avatar">
+                            <img src="{{ current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}"
+                                class="user-avatar" alt="avatar">
                             <div class="d-flex flex-column align-items-start d-none d-sm-flex">
-                                <p class="mb-0 fw-semibold small text-dark ms-2">{{ current_user.last_name }} {{ current_user.first_name }}</p>
+                                <p class="mb-0 fw-semibold small text-dark ms-2">{{ current_user.last_name }} {{
+                                    current_user.first_name }}</p>
                                 <span class="badge-admin">ADMINISTRATOR</span>
                             </div>
                         </div>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
                             <li><a class="dropdown-item small py-2" href="{{ url_for('admin.admin_profile') }}"><i
                                         class="fa-solid fa-user-gear me-2 text-primary"></i>Hồ sơ cá nhân</a></li>
-                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li><a class="dropdown-item small py-2 text-danger" href="{{ url_for('auth.logout') }}"><i
                                         class="fa-solid fa-sign-out me-2"></i>Đăng xuất</a></li>
                         </ul>
@@ -130,7 +150,7 @@
             if (list) {
                 const empty = list.querySelector('.text-center');
                 if (empty) empty.remove();
-                
+
                 const newNotif = data.new_notification;
                 const linkUrl = newNotif.type === 'BORROW_REQUEST' ? '/staff/requests' : `/user/notifications?id=${newNotif.id}`;
                 const itemHtml = `
@@ -156,4 +176,5 @@
     </script>
     {% block extra_js %}{% endblock %}
 </body>
+
 </html>

@@ -1,18 +1,9 @@
 {% extends 'base.html' %}
 {% block title %}Quản lý thư viện - Yêu cầu mượn sách{% endblock %}
 {% block content %}
-<style>
-.card-link{ text-decoration:none; color:inherit; }
-.card-link .card{ cursor:pointer; transition:.2s; }
-.card-link .card:hover{ transform:translateY(-2px); box-shadow:0 4px 8px rgba(0,0,0,.1); }
-.card.active{ border:2px solid #007bff; background:#f4f9ff; }
-.actions form{ display:inline-block; margin-right:4px; }
-.status-badge{display:inline-block;font-size:11px;font-weight:600;padding:4px 10px;border-radius:14px;letter-spacing:.4px;}
-.status-pending{background:#ffe8a3;color:#7a5600;}
-.status-approved{background:#c5f3d0;color:#155f26;}
-.status-rejected{background:#f9c5c1;color:#8a1f18;}
-.status-converted{background:#d0e7ff;color:#0d518c;}
-</style>
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
 {% include 'partials/header.html' %}
 <div class="admin-layout">
   {% include 'admin_templates/partials/sidebar.html' %}

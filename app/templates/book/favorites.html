@@ -5,13 +5,17 @@
 {# Làm trống block features để bỏ sidebar (Sách mới, Danh mục...) #}
 {% block features %}{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/favorites.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="container py-5">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb" style="background: transparent; padding: 0;">
-            <li class="breadcrumb-item"><a href="/" class="text-decoration-none" style="color: #6b7280;">Trang chủ</a></li>
-            <li class="breadcrumb-item active" style="color: #111827; font-weight: 600;">Sách yêu thích</li>
+        <ol class="breadcrumb breadcrumb-container">
+            <li class="breadcrumb-item"><a href="/" class="breadcrumb-link">Trang chủ</a></li>
+            <li class="breadcrumb-item active breadcrumb-active">Sách yêu thích</li>
         </ol>
     </nav>
 
@@ -34,7 +38,7 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="bg-light">
                         <tr>
-                            <th class="ps-4 py-3 text-uppercase small fw-bold" style="width: 35%;">Thông tin sách</th>
+                            <th class="ps-4 py-3 text-uppercase small fw-bold w-35p">Thông tin sách</th>
                             <th class="py-3 text-uppercase small fw-bold">Thể loại</th>
                             <th class="py-3 text-uppercase small fw-bold">Tác giả</th>
                             <th class="py-3 text-uppercase small fw-bold text-center">Xem</th>
@@ -99,52 +103,7 @@
     </div>
 </div>
 
-<style>
-    body { background-color: #f8fafc; }
-    
-    .favorite-row { transition: all 0.3s ease; border-bottom: 1px solid #f1f5f9; }
-    .favorite-row:hover { background-color: #fcfcfc; }
 
-    .favorite-cover img {
-        width: 55px;
-        height: 78px;
-        object-fit: cover;
-        border-radius: 6px;
-    }
-
-    .favorite-title { font-size: 16px; font-weight: 700; color: #111827; }
-    .favorite-title:hover { color: #2563eb !important; }
-
-    .empty-heart-container {
-        font-size: 80px;
-        width: 120px;
-        height: 120px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #fff1f2;
-        border-radius: 50%;
-    }
-
-    .table thead th {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: #64748b;
-        font-weight: 700;
-        border-top: none;
-        padding-top: 15px;
-        padding-bottom: 15px;
-    }
-
-    .badge { font-size: 0.75rem; }
-    .btn-light { background-color: #ffffff; border: 1px solid #e2e8f0 !important; }
-    .btn-light:hover {
-        background-color: #f8fafc !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important;
-    }
-</style>
 
 <script>
 function removeFavoriteItem(bookId) {

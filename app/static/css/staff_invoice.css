@@ -116,7 +116,14 @@
 .btn-light {
     background-color: #f8f9fa !important;
     color: var(--text-muted) !important;
-    border: 1px solid var(--border-color) !important;
+    border: 1px solid #e2e8f0 !important;
+}
 
-}
-}
+.bg-f8 { background-color: #f8fafc; }
+.min-h-100 { min-height: 100vh; }
+.rounded-15 { border-radius: 15px; }
+.rounded-10 { border-radius: 10px; }
+.rounded-start-10 { border-radius: 10px 0 0 10px; }
+.rounded-end-10 { border-radius: 0 10px 10px 0; }
+.max-w-150 { max-width: 150px; }
+.object-fit-cover { object-fit: cover; }

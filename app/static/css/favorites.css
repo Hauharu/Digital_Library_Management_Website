@@ -1,0 +1,50 @@
+body { background-color: #f8fafc; }
+
+.favorite-row { transition: all 0.3s ease; border-bottom: 1px solid #f1f5f9; }
+.favorite-row:hover { background-color: #fcfcfc; }
+
+.favorite-cover img {
+    width: 55px;
+    height: 78px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.favorite-title { font-size: 16px; font-weight: 700; color: #111827; }
+.favorite-title:hover { color: #2563eb !important; }
+
+.empty-heart-container {
+    font-size: 80px;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff1f2;
+    border-radius: 50%;
+}
+
+.table thead th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+    font-weight: 700;
+    border-top: none;
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.badge { font-size: 0.75rem; }
+.btn-light { background-color: #ffffff; border: 1px solid #e2e8f0 !important; }
+.btn-light:hover {
+    background-color: #f8fafc !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important;
+}
+
+/* Breadcrumb utilities */
+.breadcrumb-container { background: transparent; padding: 0; }
+.breadcrumb-link { color: #6b7280; text-decoration: none; }
+.breadcrumb-active { color: #111827; font-weight: 600; }
+.w-35p { width: 35%; }

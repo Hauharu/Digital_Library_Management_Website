@@ -284,3 +284,9 @@ body {
     color: #1e293b !important;
     transform: translateY(-1px);
 }
+
+.title-large { font-size: 2.5rem; letter-spacing: -1px; }
+.mono-font { font-family: 'JetBrains Mono', monospace; }
+.book-cover-detail { width: 150px; height: 220px; object-fit: cover; border-radius: 10px; }
+.icon-circle-large { width: 80px; height: 80px; border-radius: 50%; }
+.fw-600 { font-weight: 600; }

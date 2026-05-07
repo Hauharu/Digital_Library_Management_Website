@@ -118,20 +118,9 @@
     </div>
 </div>
 
-<style>
-    /* Khử lỗi input group border */
-    .input-group-text { border-color: #dee2e6; transition: all 0.2s; }
-    .form-control, .form-select { border-color: #dee2e6; }
-
-    /* Hiệu ứng focus đồng bộ */
-    .input-group:focus-within .input-group-text {
-        border-color: #0d6efd;
-        background-color: #f8f9ff !important;
-    }
-    .form-control:focus, .form-select:focus {
-        border-color: #0d6efd;
-    }
-</style>
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
 
 <script>
     (function () {

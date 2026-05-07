@@ -9,7 +9,7 @@
 
     <div class="row mb-5 align-items-center">
         <div class="col-lg-6">
-            <h1 class="fw-600 text-dark mb-2" style="font-size: 2.5rem; letter-spacing: -1px;">Quản Lý Mượn - Trả Sách</h1>
+            <h1 class="fw-600 text-dark mb-2 title-large">Quản Lý Mượn - Trả Sách</h1>
             <p class="text-muted fs-5 mb-0">Hệ thống quản lý kho tri thức thư viện thời gian thực.</p>
         </div>
         <div class="col-lg-6">
@@ -50,7 +50,7 @@
             </div>
 
             <div class="col-xl-3 col-md-12 d-flex align-items-end">
-                <button type="submit" class="btn btn-filter-premium shadow-sm" style="width: 120px; height: 48px;">
+                <button type="submit" class="btn btn-filter-premium shadow-sm">
                     <i class="fa-solid fa-sliders me-2"></i>Lọc
                 </button>
             </div>
@@ -74,14 +74,14 @@
                 {% for slip in active_slips %}
                 <tr>
                     <td class="ps-4">
-                        <span class="badge bg-light text-dark fw-800 p-2 px-3 border" style="font-family: 'JetBrains Mono';">
+                        <span class="badge bg-light text-dark fw-800 p-2 px-3 border mono-font">
                             MS-{{ "%04d"|format(slip.id) }}
                         </span>
                     </td>
                     <td>
                         <div class="d-flex align-items-center">
                             <img src="{{ slip.user.avatar if slip.user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}" 
-                                 class="rounded-circle me-3 border" width="40" height="40" style="object-fit: cover;">
+                                 class="rounded-circle me-3 border object-fit-cover" width="40" height="40">
                             <div>
                                 <div class="fw-bold text-dark fs-6">{{ slip.user.last_name }} {{ slip.user.first_name }}</div>
                                 <div class="text-muted small"><i class="fa-solid fa-envelope me-1"></i>{{ slip.user.email }}</div>
@@ -166,7 +166,7 @@
                                 <div class="row g-0">
                                     <div class="col-lg-4 border-end">
                                         <div class="book-info-card m-4 text-center">
-                                            <img src="{{ slip.book.image or url_for('static', filename='images/sachmau.png') }}" class="book-cover-large mb-4" style="width: 150px; height: 220px; object-fit: cover; border-radius: 10px;">
+                                            <img src="{{ slip.book.image or url_for('static', filename='images/sachmau.png') }}" class="book-cover-large mb-4 book-cover-detail">
                                             <h4 class="fw-bold">{{ slip.book.title }}</h4>
                                             <div class="info-list mt-4 text-start">
                                                 <p><strong>Ngày mượn:</strong> {{ slip.borrow_date.strftime('%d/%m/%Y') }}</p>
@@ -209,7 +209,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow-2xl border-0">
             <div class="modal-body text-center p-5">
-                <div class="icon-circle bg-success-subtle text-success mx-auto mb-4 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; border-radius: 50%;">
+                <div class="icon-circle bg-success-subtle text-success mx-auto mb-4 d-flex align-items-center justify-content-center icon-circle-large">
                     <i class="fa-solid fa-book-open-reader fa-2x"></i>
                 </div>
                 <h3 class="fw-900 mb-3 text-dark">Thu hồi sách về kho?</h3>

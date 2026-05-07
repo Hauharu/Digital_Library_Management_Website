@@ -265,7 +265,8 @@
 }
 
 .password-toggle:hover {
-    color: #881642; /* ou-primary */
+    color: #881642;
+    /* ou-primary */
 }
 
 /* --- FLASH TOAST PREMIUM (Center Screen) --- */
@@ -307,10 +308,21 @@
     opacity: 1;
 }
 
-.flash-toast-success { border-bottom: 5px solid #10b981; }
-.flash-toast-danger { border-bottom: 5px solid #ef4444; }
-.flash-toast-warning { border-bottom: 5px solid #f59e0b; }
-.flash-toast-info { border-bottom: 5px solid #3b82f6; }
+.flash-toast-success {
+    border-bottom: 5px solid #10b981;
+}
+
+.flash-toast-danger {
+    border-bottom: 5px solid #ef4444;
+}
+
+.flash-toast-warning {
+    border-bottom: 5px solid #f59e0b;
+}
+
+.flash-toast-info {
+    border-bottom: 5px solid #3b82f6;
+}
 
 .flash-toast-icon {
     font-size: 26px;
@@ -323,10 +335,25 @@
     flex-shrink: 0;
 }
 
-.flash-toast-success .flash-toast-icon { background: #d1fae5; color: #059669; }
-.flash-toast-danger .flash-toast-icon { background: #fee2e2; color: #dc2626; }
-.flash-toast-warning .flash-toast-icon { background: #fef3c7; color: #d97706; }
-.flash-toast-info .flash-toast-icon { background: #dbeafe; color: #2563eb; }
+.flash-toast-success .flash-toast-icon {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.flash-toast-danger .flash-toast-icon {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.flash-toast-warning .flash-toast-icon {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.flash-toast-info .flash-toast-icon {
+    background: #dbeafe;
+    color: #2563eb;
+}
 
 .flash-toast-msg {
     color: #111827;
@@ -341,7 +368,7 @@
     left: 0;
     height: 5px;
     width: 100%;
-    background: rgba(0,0,0,0.05);
+    background: rgba(0, 0, 0, 0.05);
 }
 
 .flash-toast-progress::after {
@@ -355,8 +382,59 @@
 }
 
 @keyframes toastProgress {
-    from { width: 100%; }
-    to { width: 0%; }
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
 }
 
-
+/* Profile & Avatar Components */
+.avatar-container {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.avatar-container:hover .avatar-overlay {
+    opacity: 1;
+}
+
+.bg-admin-soft {
+    background-color: #fef2f2;
+}
+
+.text-admin {
+    color: #ef4444;
+}
+
+.bg-primary-soft {
+    background-color: #eff6ff;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.object-fit-cover {
+    object-fit: cover;
+}
+
+.w-20px {
+    width: 20px;
+}
