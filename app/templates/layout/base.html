@@ -97,6 +97,7 @@
             });
         });
     </script>
+    {% if request.endpoint == 'main.index' %}
     <!-- AI Assistant -->
     <div class="ai-assistant-fab" id="aiAssistantFab">
         <img src="/static/gif/preny_2.gif" alt="AI Assistant">
@@ -104,7 +105,7 @@
 
     <div class="ai-chat-window" id="aiChatWindow">
         <div class="ai-chat-header">
-            <h5><i class="fa-solid fa-robot"></i> Trợ lý OUBOOK</h5>
+            <h5><i class="fa-solid fa-robot"></i> Trợ lý OU BOOK</h5>
             <button class="ai-chat-close" id="aiChatClose">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -123,6 +124,7 @@
     </div>
 
     <script src="{{ url_for('static', filename='js/ai_assistant.js') }}"></script>
+    {% endif %}
 </body>
 
 </html>
