@@ -146,42 +146,55 @@ def create_app(config_name=None):
 
     return app
 
-# ================= SOCKET.IO EVENTS =================
+
 from flask_socketio import join_room, emit
 from flask_login import current_user
 from datetime import datetime
 
+
 @socketio.on('join')
 def on_join(data):
-    room = f"book_{data['book_id']}"
-    join_room(room)
+
+    if 'book_id' in data:
+        room = f"book_{data['book_id']}"
+        join_room(room)
+
+
+    if 'room' in data:
+        join_room(data['room'])
+
 
 @socketio.on('join_user')
 def on_join_user(data):
+
     if current_user.is_authenticated:
         room = f"user_{current_user.id}"
         join_room(room)
+
 
 @socketio.on('send_message')
 def handle_message(data):
     if not current_user.is_authenticated:
         return
-        
-    from app.models import Review, Book, ReviewLike, ReviewReply
-    from app import db
-    
-    book_id = data['book_id']
+
+    from app.models import Review, db
+
+    book_id = data.get('book_id')
     content = data.get('message')
-    rating = data.get('rating') 
-    
+    rating = data.get('rating')
+
+    if not book_id:
+        return
+
     try:
-        # Kiểm tra xem user đã đánh giá cuốn sách này chưa
+
         existing_rev = Review.query.filter_by(user_id=current_user.id, book_id=book_id).first()
-        
+
         if existing_rev:
             existing_rev.content = content
             existing_rev.rating = rating
             existing_rev.created_at = datetime.now()
+            existing_rev.is_read = False
             db.session.commit()
             msg_id = existing_rev.id
         else:
@@ -195,42 +208,38 @@ def handle_message(data):
             db.session.add(new_rev)
             db.session.commit()
             msg_id = new_rev.id
+
+        room = f"book_{book_id}"
+        full_name = f"{(current_user.last_name or '').strip()} {(current_user.first_name or '').strip()}".strip()
+        user_name = full_name or current_user.username
+
+        unread_count = Review.query.filter_by(is_read=False).count()
+
+        emit('receive_message', {
+            'message': content,
+            'user': user_name,
+            'avatar': current_user.avatar,
+            'time': datetime.now().strftime('%H:%M'),
+            'user_id': current_user.id,
+            'msg_id': msg_id,
+            'rating': rating
+        }, room=room)
+
+        emit('update_header_reviews', {
+            'unread_count': unread_count,
+            'new_review': {
+                'user': user_name,
+                'avatar': current_user.avatar or 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png',
+                'content': content,
+                'rating': rating,
+                'id': msg_id,
+                'book_id': book_id,
+                'time': 'Vừa xong'
+            }
+        }, broadcast=True)
+
     except Exception as e:
         db.session.rollback()
-        print(f"Lỗi DB: {str(e)}")
-        return
-    
-    room = f"book_{book_id}"
-    full_name = f"{(current_user.last_name or '').strip()} {(current_user.first_name or '').strip()}".strip()
-    user_name = full_name or current_user.username
-
-    # Tính toán số lượng chưa đọc mới để cập nhật Header real-time
-    unread_count = Review.query.filter_by(is_read=False).count()
-    
-    # 1. Gửi cho Box Chat (chỉ trong phòng của cuốn sách này)
-    emit('receive_message', {
-        'message': content,
-        'user': user_name,
-        'avatar': current_user.avatar,
-        'time': datetime.now().strftime('%H:%M'),
-        'user_id': current_user.id,
-        'msg_id': msg_id,
-        'rating': rating
-    }, room=room)
-
-    # 2. Gửi cho Header (toàn bộ các trang của tất cả người dùng)
-    emit('update_header_reviews', {
-        'unread_count': unread_count,
-        'new_review': {
-            'user': user_name,
-            'avatar': current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png',
-            'content': content,
-            'rating': rating,
-            'id': msg_id,
-            'book_id': book_id,
-            'time': 'Vừa xong'
-        }
-    }, broadcast=True)
 
 @socketio.on('delete_message')
 def handle_delete_message(data):

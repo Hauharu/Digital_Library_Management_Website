@@ -107,3 +107,38 @@ class BorrowService:
             ),
             'category': 'success'
         }
+
+    @staticmethod
+    def cancel_borrow_request(request_id, user_id):
+        from app.models import BorrowRequest, Notification, User, RoleEnum
+        req = BorrowRequest.query.filter_by(
+            id=request_id,
+            user_id=user_id,
+            status=RequestStatusEnum.Pending
+        ).first()
+
+        if not req:
+            return False, "Không tìm thấy yêu cầu hoặc yêu cầu đã được xử lý."
+
+        try:
+
+            book_title = req.book.title
+
+            user_full_name = f"{req.reader.last_name} {req.reader.first_name}"
+
+            db.session.delete(req)
+
+            staffs = User.query.filter(User.role.in_([RoleEnum.STAFF, RoleEnum.ADMIN])).all()
+            for staff in staffs:
+                new_notif = Notification(
+                    user_id=staff.id,
+                    title="Hủy yêu cầu mượn",
+                    content=f"Độc giả {user_full_name} đã hủy yêu cầu mượn sách '{book_title}'.",
+                    type="SYSTEM"
+                )
+                db.session.add(new_notif)
+            db.session.commit()
+            return True, f"Đã hủy yêu cầu mượn sách '{book_title}' thành công."
+        except Exception as e:
+            db.session.rollback()
+

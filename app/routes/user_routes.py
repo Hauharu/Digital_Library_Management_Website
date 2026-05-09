@@ -311,3 +311,17 @@ def update_avatar():
         flash(f"Lỗi khi tải ảnh lên: {str(e)}", "danger")
         
     return redirect(request.referrer or url_for('user.user_profile'))
+
+
+@user_bp.route('/cancel-request/<int:request_id>', methods=['POST'])
+@login_required
+def cancel_request(request_id):
+
+    success, message = BorrowService.cancel_borrow_request(request_id, current_user.id)
+
+    if success:
+        flash(message, 'success')
+    else:
+        flash(message, 'danger')
+
+    return redirect(url_for('user.history'))

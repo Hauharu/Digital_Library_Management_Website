@@ -1,59 +1,26 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thư viện trực tuyến OU BOOK</title>
 
-    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 
-    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
 
-    <!-- CSS -->
     <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ai_assistant.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-    <!-- Socket.IO Global -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script>
-        const socket = io();
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
-<body class="d-flex flex-column min-vh-100" {% if current_user.is_authenticated %}data-user-id="{{ current_user.id }}"
-    {% endif %}>
-
-
-    <!-- Flash Toast Container (fixed overlay) -->
-    <div class="flash-toast-container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        {% for category, message in messages %}
-        <div class="flash-toast flash-toast-{{ category }}" role="alert">
-            <div class="flash-toast-icon">
-                {% if category == 'success' %}<i class="fa-solid fa-circle-check"></i>
-                {% elif category == 'danger' %}<i class="fa-solid fa-circle-xmark"></i>
-                {% elif category == 'warning' %}<i class="fa-solid fa-triangle-exclamation"></i>
-                {% else %}<i class="fa-solid fa-circle-info"></i>{% endif %}
-            </div>
-            <span class="flash-toast-msg">{{ message }}</span>
-            <div class="flash-toast-progress"></div>
-        </div>
-        {% endfor %}
-        {% endif %}
-        {% endwith %}
-    </div>
+<body class="d-flex flex-column min-vh-100" {% if current_user.is_authenticated %}data-user-id="{{ current_user.id }}"{% endif %}>
 
     {% include 'layout/header.html' %}
 
@@ -61,9 +28,9 @@
         {% block hero %}{% endblock %}
 
         {% block features %}
-        {% if request.blueprint not in ['auth', 'user'] and request.endpoint != 'main.all_reviews' %}
-        {% include 'layout/feature_cards.html' %}
-        {% endif %}
+            {% if request.blueprint not in ['auth', 'user'] and request.endpoint != 'main.all_reviews' %}
+                {% include 'layout/feature_cards.html' %}
+            {% endif %}
         {% endblock %}
 
         {% block content %}{% endblock %}
@@ -71,60 +38,94 @@
 
     {% include 'layout/footer.html' %}
 
-    <!-- JS Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/search.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ai_assistant.js') }}"></script>
 
     <script>
+        const socket = io();
+
         document.addEventListener('DOMContentLoaded', function () {
-            // Xử lý Flash Toast
-            const toasts = document.querySelectorAll('.flash-toast');
-            toasts.forEach(function (toast) {
-                setTimeout(() => toast.classList.add('flash-toast-show'), 50);
-                setTimeout(function () {
-                    toast.classList.remove('flash-toast-show');
-                    setTimeout(function () { toast.remove(); }, 500);
-                }, 3000);
+
+            // 1. Socket Join Room (Gửi thêm room để tránh lỗi KeyError ở backend)
+            {% if current_user.is_authenticated %}
+                socket.on('connect', function() {
+                    socket.emit('join', {
+                        room: "user_{{ current_user.id }}",
+                        user_id: "{{ current_user.id }}"
+                    });
+                });
+            {% endif %}
+
+            // 2. Thay thế Flash Toast bằng SweetAlert2
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        Swal.fire({
+                            icon: '{{ "success" if category == "success" else "error" if category == "danger" else "warning" if category == "warning" else "info" }}',
+                            title: 'Thông báo',
+                            text: '{{ message }}',
+                            timer: 3000,
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timerProgressBar: true
+                        });
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            // 3. Socket: Nhận thông báo Real-time
+            socket.on('update_notifications', function(data) {
+                Swal.fire({
+                    icon: 'info',
+                    title: data.new_notification.title,
+                    text: data.new_notification.content.replace(/<[^>]*>?/gm, ''),
+                    footer: '<a href="/user/notifications" class="text-primary fw-bold">Xem chi tiết</a>',
+                    timer: 6000,
+                    toast: true,
+                    position: 'bottom-end',
+                    showConfirmButton: false,
+                    timerProgressBar: true
+                });
+
+                const bellBadge = document.querySelector('.notification-badge');
+                if (bellBadge) {
+                    bellBadge.innerText = data.unread_count;
+                    bellBadge.classList.remove('d-none');
+                }
             });
 
-            // Xử lý Alert thông thường
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
-                setTimeout(function() {
-                    alert.classList.add('fade');
-                    setTimeout(() => alert.remove(), 500);
-                }, 3000);
+            // 4. Socket: Thông báo thanh toán thành công
+            socket.on('payment_status_update', function(data) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: data.message,
+                    confirmButtonColor: '#3b82f6'
+                }).then(() => {
+                    location.reload();
+                });
             });
         });
     </script>
-    {% if request.endpoint == 'main.index' %}
-    <!-- AI Assistant -->
+
     <div class="ai-assistant-fab" id="aiAssistantFab">
         <img src="/static/gif/preny_2.gif" alt="AI Assistant">
     </div>
 
     <div class="ai-chat-window" id="aiChatWindow">
         <div class="ai-chat-header">
-            <h5><i class="fa-solid fa-robot"></i> Trợ lý OU BOOK</h5>
-            <button class="ai-chat-close" id="aiChatClose">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
+            <h5><i class="fa-solid fa-robot"></i> Trợ lý OUBOOK</h5>
+            <button class="ai-chat-close" id="aiChatClose"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="ai-chat-messages" id="aiChatMessages">
-            <div class="message bot">
-                Chào bạn! Mình là trợ lý AI của thư viện OU. Bạn cần mình giúp gì về sách hay quy định mượn trả không?
-            </div>
+            <div class="message bot">Chào bạn! Mình là trợ lý AI của thư viện OU. Bạn cần mình giúp gì không?</div>
         </div>
         <div class="ai-chat-input-area">
             <input type="text" id="aiChatInput" placeholder="Nhập câu hỏi tại đây...">
-            <button class="ai-chat-send" id="aiChatSend">
-                <i class="fa-solid fa-paper-plane"></i>
-            </button>
+            <button class="ai-chat-send" id="aiChatSend"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
-
-    <script src="{{ url_for('static', filename='js/ai_assistant.js') }}"></script>
-    {% endif %}
 </body>
-
 </html>

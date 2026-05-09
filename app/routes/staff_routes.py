@@ -63,7 +63,14 @@ def confirm_payment(invoice_id):
     )
     db.session.add(user_notif)
     db.session.commit()
-    
+    from app import socketio
+    user_id = invoice.borrow_slip.user_id
+
+    socketio.emit('payment_status_update', {
+        'invoice_id': invoice_id,
+        'new_status': 'Paid',
+        'message': f'Hóa đơn #{invoice_id} đã được xác nhận thanh toán tại quầy.'
+    }, room=f"user_{user_id}")
     # SocketIO
     user_unread = Notification.query.filter_by(user_id=invoice.borrow_slip.user_id, is_read=False).count()
     socketio.emit('update_notifications', {

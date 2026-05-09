@@ -52,13 +52,13 @@ def book_list():
     category_id = request.args.get('category_id', type=int)
     sort = request.args.get('sort', '')
     per_page = 10
-    
+
     query = Book.query
     category = None
     if category_id:
         category = Category.query.get(category_id)
         query = query.filter_by(category_id=category_id)
-    
+
     # Xử lý lọc/sắp xếp
     if sort == 'new':
         # Lọc chỉ lấy sách trong vòng 24h qua
@@ -66,7 +66,7 @@ def book_list():
         query = query.filter(Book.created_at >= one_day_ago).order_by(Book.created_at.desc())
     else:
         query = query.order_by(Book.id.desc())
-        
+
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     books = pagination.items
     return render_template('book/book_list.html', books=books, pagination=pagination, category=category, sort=sort, now=datetime.now())
@@ -88,12 +88,12 @@ def admin_redirect():
 def book_detail(book_id):
     source = request.args.get('from', 'list')
     book = Book.query.get_or_404(book_id)
-    
+
     if not hasattr(book, 'quantity'):
         setattr(book, 'quantity', book.available_quantity)
     if not hasattr(book, 'book_id'):
         setattr(book, 'book_id', book.id)
-            
+
     # Tăng lượt xem thực tế (tổng toàn hệ thống)
     if not book.view_count:
         book.view_count = 0
@@ -106,14 +106,14 @@ def book_detail(book_id):
         db.session.add(new_view)
 
     db.session.commit()
-            
+
     related_books = Book.query.filter(Book.id != book.id).all()
-    
+
     user_state = {
         'is_borrowing': False,
         'request_status': None
     }
-    
+
     if current_user.is_authenticated:
         active_slip = BorrowSlip.query.filter_by(
             user_id=current_user.id,
@@ -138,7 +138,7 @@ def book_detail(book_id):
                 user_state['request_status'] = (
                     'pending' if active_request.status == RequestStatusEnum.Pending else 'approved'
                 )
-            
+
     is_favorited = False
     if current_user.is_authenticated:
         from app.models import Favorite
@@ -148,7 +148,7 @@ def book_detail(book_id):
     from app.models import Review
     discussions = Review.query.filter_by(book_id=book.id).order_by(Review.created_at.asc()).all()
 
-    
+
     return render_template(
         'book/book_detail.html',
         book=book,
@@ -220,10 +220,10 @@ def search():
     search_query = request.args.get('q', '')
     category = request.args.get('category', '')
     language = request.args.get('language', '')
-    
+
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
-    
+
     filters = {}
     active_filter_labels = {}
 
@@ -238,16 +238,16 @@ def search():
     if language and language.strip():
         filters['language'] = language
         active_filter_labels['language'] = language
-    
+
     service = BookService()
-    
+
     if not search_query and not filters:
         pagination = BookService.search_books(page=page, per_page=per_page)
     else:
         pagination = BookService.search_books(keyword=search_query, filters=filters, page=page, per_page=per_page)
-    
+
     filter_options = service.get_filter_options()
-    
+
     template_data = {
         "search_query": search_query,
         "pagination": pagination,
@@ -299,7 +299,7 @@ def borrow_history():
 
     history = BorrowRequest.query.filter_by(user_id=current_user.id) \
         .order_by(BorrowRequest.created_at.desc()).all()
-    
+
     for req in history:
         if req.borrow_slip and req.borrow_slip.invoices:
             for inv in req.borrow_slip.invoices:
@@ -309,8 +309,8 @@ def borrow_history():
     full_name = f"{(current_user.last_name or '').strip()} {(current_user.first_name or '').strip()}".strip()
     user_display_name = full_name or current_user.username or current_user.email
 
-    return render_template('user/history.html', 
-                           history=history, 
+    return render_template('user/history.html',
+                           history=history,
                            user_display_name=user_display_name,
                            today=date.today())
 
@@ -404,7 +404,7 @@ def return_book(request_id):
         return redirect(url_for('main.borrow_history'))
 
     borrow_slip.return_requested = True
-    
+
     # Thông báo cho Staff
     from app.models import Notification
     from app import socketio
@@ -414,7 +414,7 @@ def return_book(request_id):
             user_id=staff.id,
             title="Yêu cầu trả sách",
             content=f"Độc giả {current_user.last_name} {current_user.first_name} muốn trả cuốn '{borrow_slip.book.title}'",
-            type="SYSTEM"
+            type="RETURN_REQUEST"
         )
         db.session.add(notif)
     db.session.commit()
@@ -451,7 +451,7 @@ def approve_return_request(request_id):
     borrow_slip.return_date = date.today()
     borrow_request.status = RequestStatusEnum.Completed
     borrow_request.book.available_quantity += (borrow_slip.quantity or 1)
-    
+
     # Thông báo cho User
     from app.models import Notification
     from app import socketio
@@ -485,11 +485,11 @@ def add_review(book_id):
     from app.models import Review
     content = request.form.get('content')
     rating = request.form.get('rating', type=int)
-    
+
     if not content or not rating:
         flash('Vui lòng nhập nội dung và chọn số sao.', 'warning')
         return redirect(url_for('main.book_detail', book_id=book_id))
-    
+
     existing_review = Review.query.filter_by(user_id=current_user.id, book_id=book_id).first()
     if existing_review:
         existing_review.content = content
@@ -504,7 +504,7 @@ def add_review(book_id):
         )
         db.session.add(new_review)
         flash('Cảm ơn bạn đã đánh giá sách!', 'success')
-        
+
     db.session.commit()
     return redirect(url_for('main.book_detail', book_id=book_id))
 
@@ -513,19 +513,19 @@ def all_reviews():
     from app.models import Review
     rev_id = request.args.get('id', type=int)
     is_ajax = request.args.get('ajax', type=int)
-    
+
     all_revs = Review.query.order_by(Review.created_at.desc()).all()
-    
+
     selected_rev = Review.query.get(rev_id) if rev_id else (all_revs[0] if all_revs else None)
-    
+
     # Đánh dấu là đã đọc nếu người dùng xem
     if selected_rev and not selected_rev.is_read:
         selected_rev.is_read = True
         db.session.commit()
-        
+
     if is_ajax:
         return render_template('user/partials/review_detail.html', selected_rev=selected_rev)
-        
+
     return render_template('user/reviews.html', all_reviews=all_revs, selected_rev=selected_rev)
 
 @main_bp.route('/reviews/mark-all-read')
@@ -556,7 +556,7 @@ def toggle_favorite(book_id):
 
     if favorite:
         db.session.delete(favorite)
-        
+
         # Thêm thông báo xóa khỏi yêu thích
         from app.models import Notification, Book
         from app import socketio
@@ -569,7 +569,7 @@ def toggle_favorite(book_id):
         )
         db.session.add(notif)
         db.session.commit()
-        
+
         # SocketIO
         unread_count = Notification.query.filter_by(user_id=current_user.id, is_read=False).count()
         socketio.emit('update_notifications', {
@@ -587,7 +587,7 @@ def toggle_favorite(book_id):
     else:
         new_favorite = Favorite(user_id=current_user.id, book_id=book_id)
         db.session.add(new_favorite)
-        
+
         # Thêm thông báo
         from app.models import Notification, Book
         from app import socketio
@@ -600,7 +600,7 @@ def toggle_favorite(book_id):
         )
         db.session.add(notif)
         db.session.commit()
-        
+
         # SocketIO
         unread_count = Notification.query.filter_by(user_id=current_user.id, is_read=False).count()
         socketio.emit('update_notifications', {
@@ -613,7 +613,7 @@ def toggle_favorite(book_id):
                 'type': 'FAVORITE'
             }
         }, room=f"user_{current_user.id}")
-        
+
         return jsonify({'status': 'added', 'message': 'Đã thêm vào danh sách yêu thích'})
 
 
