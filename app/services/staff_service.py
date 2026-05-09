@@ -103,7 +103,7 @@ class StaffService:
             notif = Notification(
                 user_id=slip.user_id,
                 title="Xác nhận trả sách & Phí phạt",
-                content=f"Đã nhận trả sách '{book.title}'. Tổng phạt: {total_fine_to_report:,.0f} VNĐ (Tối đa bằng giá trị sách).",
+                content=f"Đã nhận trả sách '{book.title}'. Tổng phạt: {total_fine_to_report:,.0f} VNĐ.",
                 type="FINE"
             )
             db.session.add(notif)

@@ -8,7 +8,6 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
@@ -20,11 +19,9 @@
 <body class="bg-light">
 
     <div class="d-flex">
-
         <aside class="staff-sidebar shadow-sm {{ 'd-none' if request.endpoint == 'staff.staff_profile' }}">
             <div class="sidebar-header p-4">
-                <a href="{{ url_for('main.staff_dashboard') }}"
-                    class="d-flex align-items-center gap-2 text-decoration-none">
+                <a href="{{ url_for('main.staff_dashboard') }}" class="d-flex align-items-center gap-2 text-decoration-none">
                     <i class="fa-solid fa-book-open text-primary fs-4"></i>
                     <span class="fw-bold fs-5 text-dark">OU BOOK</span>
                 </a>
@@ -32,44 +29,34 @@
 
             <nav class="sidebar-nav px-3">
                 <p class="nav-label text-muted small fw-bold text-uppercase mb-2 ps-2">Chính</p>
-                <a href="{{ url_for('main.staff_dashboard') }}"
-                    class="nav-item {{ 'active' if request.endpoint == 'main.staff_dashboard' }}">
+                <a href="{{ url_for('main.staff_dashboard') }}" class="nav-item {{ 'active' if request.endpoint == 'main.staff_dashboard' }}">
                     <i class="fa-solid fa-chart-pie"></i> Dashboard
                 </a>
-                <a href="{{ url_for('staff.create_borrow') }}"
-                    class="nav-item {{ 'active' if request.endpoint == 'staff.create_borrow' }}">
-                    <i class="fa-solid fa-book-open"></i>
-                    <span>Mượn tại quầy</span>
+                <a href="{{ url_for('staff.create_borrow') }}" class="nav-item {{ 'active' if request.endpoint == 'staff.create_borrow' }}">
+                    <i class="fa-solid fa-book-open"></i> <span>Mượn tại quầy</span>
                 </a>
 
                 <p class="nav-label text-muted small fw-bold text-uppercase mt-4 mb-2 ps-2">Nghiệp vụ</p>
-                <a href="{{ url_for('staff.manage_books') }}"
-                    class="nav-item {{ 'active' if request.endpoint == 'staff.manage_books' }}">
+                <a href="{{ url_for('staff.manage_books') }}" class="nav-item {{ 'active' if request.endpoint == 'staff.manage_books' }}">
                     <i class="fa-solid fa-book"></i> Quản lý sách
                 </a>
-
-
-                <a href="{{ url_for('staff.staff_requests') }}"
-                    class="nav-item {{ 'active' if request.endpoint == 'staff.staff_requests' }}">
+                <a href="{{ url_for('staff.staff_requests') }}" class="nav-item {{ 'active' if request.endpoint == 'staff.staff_requests' }}">
                     <i class="fa-solid fa-clipboard-check"></i> Duyệt mượn
                     {% if pending_count > 0 %}
                     <span class="badge bg-danger rounded-pill ms-auto">{{ pending_count }}</span>
                     {% endif %}
                 </a>
-                <a href="{{ url_for('staff.manage_orders') }}"
-                    class="nav-item {{ 'active' if request.endpoint == 'staff.manage_orders' }}">
-                    <i class="fa-solid fa-right-left"></i> Quản lý mượn trả sách
+                <a href="{{ url_for('staff.manage_orders') }}" class="nav-item {{ 'active' if request.endpoint == 'staff.manage_orders' }}">
+                    <i class="fa-solid fa-right-left"></i> Quản lý mượn trả
                 </a>
-                <a href="{{ url_for('staff.manage_invoices') }}"
-                    class="nav-item {{ 'active' if request.endpoint == 'staff.manage_invoices' }}">
+                <a href="{{ url_for('staff.manage_invoices') }}" class="nav-item {{ 'active' if request.endpoint == 'staff.manage_invoices' }}">
                     <i class="fa-solid fa-file-invoice-dollar"></i> Hóa đơn & Phạt
                 </a>
-                <a href="{{ url_for('staff.manage_categories') }}"
-                    class="nav-item {{ 'active' if request.endpoint == 'staff.manage_categories' }}">
+                <a href="{{ url_for('staff.manage_categories') }}" class="nav-item {{ 'active' if request.endpoint == 'staff.manage_categories' }}">
                     <i class="fa-solid fa-tags"></i> Thể loại sách
                 </a>
 
-                <p class="nav-label text-muted small fw-bold text-uppercase mt-4 mb-2 ps-2">Trạng thái</p>
+                <p class="nav-label text-muted small fw-bold text-uppercase mt-4 mb-2 ps-2">Hệ thống</p>
                 <a href="{{ url_for('auth.logout') }}" class="nav-item text-danger">
                     <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
                 </a>
@@ -77,95 +64,69 @@
         </aside>
 
         <div class="main-wrapper flex-grow-1">
-
             <header class="staff-topbar bg-white border-bottom px-5 d-flex align-items-center justify-content-between">
-                <div class="search-bar-staff d-none d-md-flex">
+                <div class="search-bar-staff">
                     {% if request.endpoint == 'staff.staff_profile' %}
                     <a href="{{ url_for('main.staff_dashboard') }}" class="text-decoration-none text-primary fw-bold">
-                        <i class="fa-solid fa-arrow-left me-2"></i>Quay lại Bảng điều khiển
+                        <i class="fa-solid fa-arrow-left me-2"></i>Bảng điều khiển
                     </a>
                     {% endif %}
                 </div>
 
-                <div class="d-flex align-items-center gap-3 me-2">
-                    <!-- Thông báo Bell cho Staff -->
+                <div class="d-flex align-items-center gap-4">
                     <div class="dropdown">
-                        <button class="btn btn-link text-muted p-0 position-relative shadow-none no-caret" type="button"
-                            data-bs-toggle="dropdown">
+                        <button class="btn btn-link text-muted p-0 position-relative shadow-none no-caret" type="button" data-bs-toggle="dropdown">
                             <i class="fa-solid fa-bell fs-5"></i>
                             {% if unread_count > 0 %}
-                            <span
-                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger badge-count"
-                                style="font-size: 10px;">
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger badge-count" style="font-size: 10px;">
                                 {{ unread_count }}
                             </span>
                             {% endif %}
                         </button>
-                        <div class="dropdown-menu dropdown-menu-end notification-dropdown border-0 shadow-lg mt-3 p-0 rounded-4"
-                            style="width: 320px;">
-                            <div class="notification-header">
+                        <div class="dropdown-menu dropdown-menu-end notification-dropdown border-0 shadow-lg mt-3 p-0 rounded-4" style="width: 320px;">
+                            <div class="notification-header d-flex justify-content-between align-items-center p-3 border-bottom">
                                 <span class="fw-bold">Thông báo</span>
-                                <a href="/notifications/mark-all-read?ajax=1"
-                                    class="small text-decoration-none mark-all-read">Đánh dấu đã đọc</a>
+                                <a href="/notifications/mark-all-read?ajax=1" class="small text-decoration-none mark-all-read">Đọc tất cả</a>
                             </div>
-                            <div class="notification-list">
+                            <div class="notification-list" style="max-height: 350px; overflow-y: auto;">
                                 {% for notif in notifications %}
-                                <a href="{{ url_for('user.notifications') }}?id={{ notif.id }}"
-                                    class="notification-item {{ 'unread' if not notif.is_read else '' }}">
+                                <a href="{{ url_for('user.notifications') }}?id={{ notif.id }}" class="notification-item {{ 'unread' if not notif.is_read else '' }}">
                                     <div class="notification-icon">
-                                        <i
-                                            class="fa-solid {{ 'fa-key' if notif.title and 'đăng nhập' in notif.title.lower() else 'fa-info-circle' }}"></i>
+                                        <i class="fa-solid fa-info-circle text-primary"></i>
                                     </div>
                                     <div class="notification-content">
                                         <span class="title">{{ notif.title }}</span>
-                                        <span class="time">{{ notif.sent_date | time_ago }}</span>
+                                        <span class="time small text-muted">{{ notif.sent_date | time_ago }}</span>
                                     </div>
                                 </a>
                                 {% else %}
                                 <div class="p-4 text-center text-muted small">Không có thông báo mới</div>
                                 {% endfor %}
                             </div>
-                            <div class="notification-footer">
-                                <a href="{{ url_for('user.notifications') }}">Xem tất cả thông báo</a>
+                            <div class="notification-footer p-2 text-center border-top">
+                                <a href="{{ url_for('user.notifications') }}" class="small text-decoration-none">Xem tất cả</a>
                             </div>
                         </div>
                     </div>
 
                     <div class="user-info dropdown">
                         <div class="d-flex align-items-center gap-2" style="cursor: pointer;" data-bs-toggle="dropdown">
-                            <img src="{{ current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}"
-                                class="user-avatar" alt="avatar">
-                            <div class="d-flex flex-column align-items-start d-none d-sm-flex">
-                                <p class="mb-0 fw-semibold small text-dark ms-2">{{ current_user.last_name }} {{
-                                    current_user.first_name
-                                    }}</p>
-                                <span
-                                    class="badge bg-primary-soft text-primary rounded-pill x-small px-2 py-0">STAFF</span>
+                            <img src="{{ current_user.avatar if current_user.avatar else 'https://res.cloudinary.com/dwwfgtxv4/image/upload/v1776585521/AnhDaiDien_nvnfre.png' }}" class="user-avatar rounded-circle border" width="35" height="35" alt="avatar">
+                            <div class="d-flex flex-column d-none d-sm-flex">
+                                <p class="mb-0 fw-semibold small text-dark">{{ current_user.last_name }} {{ current_user.first_name }}</p>
+                                <span class="badge bg-primary-subtle text-primary rounded-pill x-small px-2" style="font-size: 0.65rem;">STAFF</span>
                             </div>
                         </div>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
-                            <li><a class="dropdown-item small py-2" href="{{ url_for('staff.staff_profile') }}"><i
-                                        class="fa-solid fa-user-gear me-2 text-primary"></i>Hồ sơ cá nhân</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><a class="dropdown-item small py-2 text-danger" href="{{ url_for('auth.logout') }}"><i
-                                        class="fa-solid fa-power-off me-2"></i>Đăng xuất</a></li>
+                            <li><a class="dropdown-item small py-2" href="{{ url_for('staff.staff_profile') }}"><i class="fa-solid fa-user-gear me-2 text-primary"></i>Hồ sơ</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item small py-2 text-danger" href="{{ url_for('auth.logout') }}"><i class="fa-solid fa-power-off me-2"></i>Đăng xuất</a></li>
                         </ul>
                     </div>
+                </div>
             </header>
 
             <main class="p-4">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category }} fade show shadow-sm rounded-3">
-                    {{ message }}
-                </div>
-                {% endfor %}
-                {% endif %}
-                {% endwith %}
-
                 {% block content %}{% endblock %}
             </main>
         </div>
@@ -173,72 +134,90 @@
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         const socket = io();
-        const authUserId = "{{ current_user.id }}";
-        if (authUserId) {
-            socket.emit('join_user', { user_id: parseInt(authUserId) });
-        }
 
-        socket.on('update_notifications', function (data) {
-            const bellBtn = document.querySelector('i.fa-bell').parentElement;
-            let badge = bellBtn.querySelector('.badge-count');
-            if (data.unread_count > 0) {
-                if (badge) {
-                    badge.innerText = data.unread_count;
-                } else {
-                    bellBtn.insertAdjacentHTML('beforeend', `<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger badge-count" style="font-size: 10px;">${data.unread_count}</span>`);
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // 1. Join Room cá nhân để nhận Notify Real-time
+            {% if current_user.is_authenticated %}
+                socket.on('connect', function() {
+                    socket.emit('join', { room: "user_{{ current_user.id }}" });
+                });
+            {% endif %}
+
+            // 2. Chuyển Flash Messages (Redirect feedback) sang SweetAlert Toast
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        Swal.fire({
+                            icon: '{{ "success" if category == "success" else "error" if category == "danger" else "warning" if category == "warning" else "info" }}',
+                            title: 'Hệ thống',
+                            text: '{{ message }}',
+                            timer: 2500,
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timerProgressBar: true
+                        });
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            // 3. Socket: Cập nhật chuông thông báo (IM LẶNG - KHÔNG HIỆN POPUP)
+            socket.on('update_notifications', function (data) {
+                const bellIcon = document.querySelector('i.fa-bell');
+                if (bellIcon) {
+                    const bellBtn = bellIcon.parentElement;
+                    let badge = bellBtn.querySelector('.badge-count');
+
+                    if (data.unread_count > 0) {
+                        if (badge) {
+                            badge.innerText = data.unread_count;
+                        } else {
+                            bellBtn.insertAdjacentHTML('beforeend', `<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger badge-count" style="font-size: 10px;">${data.unread_count}</span>`);
+                        }
+                        // Hiệu ứng rung chuông nhẹ
+                        bellIcon.classList.add('fa-shake');
+                        setTimeout(() => bellIcon.classList.remove('fa-shake'), 800);
+                    }
                 }
-            }
 
-            // Thêm vào danh sách dropdown
-            const list = document.querySelector('.notification-list');
-            if (list) {
-                const empty = list.querySelector('.text-center');
-                if (empty) empty.remove();
+                // Cập nhật vào Dropdown List
+                const list = document.querySelector('.notification-list');
+                if (list && data.new_notification) {
+                    const empty = list.querySelector('.text-center');
+                    if (empty) empty.remove();
 
-                const newNotif = data.new_notification;
-                const linkUrl = newNotif.type === 'BORROW_REQUEST' ? '/staff/requests' : `/user/notifications?id=${newNotif.id}`;
-                const itemHtml = `
-                    <a href="${linkUrl}" class="notification-item unread">
-                        <div class="notification-icon">
-                            <i class="fa-solid ${newNotif.type === 'FAVORITE' ? 'fa-heart text-danger' : (newNotif.type === 'WARNING' ? 'fa-triangle-exclamation text-warning' : (newNotif.type === 'BORROW_REQUEST' ? 'fa-clipboard-list text-primary' : 'fa-info-circle'))}"></i>
-                        </div>
-                        <div class="notification-content">
-                            <span class="title">${newNotif.title}</span>
-                            <span class="time">${newNotif.time || 'Vừa xong'}</span>
-                        </div>
-                    </a>
-                `;
-                list.insertAdjacentHTML('afterbegin', itemHtml);
-            }
+                    const newNotif = data.new_notification;
+                    const itemHtml = `
+                        <a href="/user/notifications?id=${newNotif.id}" class="notification-item unread">
+                            <div class="notification-icon"><i class="fa-solid fa-info-circle text-primary"></i></div>
+                            <div class="notification-content">
+                                <span class="title">${newNotif.title}</span>
+                                <span class="time small">Vừa xong</span>
+                            </div>
+                        </a>
+                    `;
+                    list.insertAdjacentHTML('afterbegin', itemHtml);
+                }
+            });
         });
 
-        // Mark all as read logic
+        // Đánh dấu đã đọc
         document.querySelector('.mark-all-read')?.addEventListener('click', function (e) {
             e.preventDefault();
             fetch(this.href).then(res => res.json()).then(data => {
                 if (data.success) {
                     document.querySelector('.badge-count')?.remove();
-                    document.querySelectorAll('.notification-list .bg-light').forEach(el => el.classList.remove('bg-light'));
+                    document.querySelectorAll('.notification-item.unread').forEach(el => el.classList.remove('unread'));
                 }
             });
         });
     </script>
-    <script>
-        // Tự động ẩn thông báo sau 3 giây
-        document.addEventListener('DOMContentLoaded', function () {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function (alert) {
-                setTimeout(function () {
-                    const bsAlert = new bootstrap.Alert(alert);
-                    alert.classList.add('fade');
-                    setTimeout(() => alert.remove(), 500);
-                }, 3000);
-            });
-        });
-    </script>
+
     {% block extra_js %}{% endblock %}
 </body>
-
 </html>
