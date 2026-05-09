@@ -209,7 +209,6 @@ class Review(Base):
     content = db.Column(db.Text, nullable=True) 
     rating = db.Column(db.Integer, nullable=True) 
     is_read = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.now) 
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
@@ -242,7 +241,6 @@ class ReviewLike(Base):
 class ReviewReply(Base):
     __tablename__ = 'review_reply'
     content = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.now)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     review_id = db.Column(db.Integer, db.ForeignKey('review.id'), nullable=False)
@@ -257,7 +255,6 @@ class Favorite(Base):
     __table_args__ = (db.UniqueConstraint('user_id', 'book_id', name='unique_favorite'),)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.now)
 
     book = db.relationship('Book', backref='favorited_by', lazy='selectin')
     user = db.relationship('User', backref='favorites', lazy='selectin')
@@ -288,13 +285,11 @@ class ViewHistory(Base):
 
 
 
-class IncidentReport(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+class IncidentReport(Base):
     borrow_slip_id = db.Column(db.Integer, db.ForeignKey('borrow_slip.id'), nullable=False)
     type = db.Column(db.Enum(IncidentTypeEnum), nullable=False)
     description = db.Column(db.Text, nullable=False)
     fine_amount = db.Column(db.Float, default=0.0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     status = db.Column(db.String(20), default="Pending")
 
     borrow_slip = db.relationship('BorrowSlip', backref='incidents')
