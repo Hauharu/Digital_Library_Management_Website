@@ -40,14 +40,12 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/search.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/ai_assistant.js') }}"></script>
 
     <script>
         const socket = io();
 
         document.addEventListener('DOMContentLoaded', function () {
-
-            // 1. Socket Join Room (Gửi thêm room để tránh lỗi KeyError ở backend)
+            // 1. Socket Join Room
             {% if current_user.is_authenticated %}
                 socket.on('connect', function() {
                     socket.emit('join', {
@@ -57,14 +55,14 @@
                 });
             {% endif %}
 
-            // 2. Thay thế Flash Toast bằng SweetAlert2
+            // 2. Flash Message Toast
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
                         Swal.fire({
                             icon: '{{ "success" if category == "success" else "error" if category == "danger" else "warning" if category == "warning" else "info" }}',
                             title: 'Thông báo',
-                            text: '{{ message }}',
+                            text: '{{ message|safe }}',
                             timer: 3000,
                             toast: true,
                             position: 'top-end',
@@ -75,20 +73,8 @@
                 {% endif %}
             {% endwith %}
 
-            // 3. Socket: Nhận thông báo Real-time
+            // 3. Socket: Real-time Notify
             socket.on('update_notifications', function(data) {
-                Swal.fire({
-                    icon: 'info',
-                    title: data.new_notification.title,
-                    text: data.new_notification.content.replace(/<[^>]*>?/gm, ''),
-                    footer: '<a href="/user/notifications" class="text-primary fw-bold">Xem chi tiết</a>',
-                    timer: 6000,
-                    toast: true,
-                    position: 'bottom-end',
-                    showConfirmButton: false,
-                    timerProgressBar: true
-                });
-
                 const bellBadge = document.querySelector('.notification-badge');
                 if (bellBadge) {
                     bellBadge.innerText = data.unread_count;
@@ -96,7 +82,7 @@
                 }
             });
 
-            // 4. Socket: Thông báo thanh toán thành công
+            // 4. Socket: Payment Success
             socket.on('payment_status_update', function(data) {
                 Swal.fire({
                     icon: 'success',
@@ -110,6 +96,7 @@
         });
     </script>
 
+    {% if request.endpoint == 'main.index' %}
     <div class="ai-assistant-fab" id="aiAssistantFab">
         <img src="/static/gif/preny_2.gif" alt="AI Assistant">
     </div>
@@ -127,5 +114,8 @@
             <button class="ai-chat-send" id="aiChatSend"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
+    <script src="{{ url_for('static', filename='js/ai_assistant.js') }}"></script>
+    {% endif %}
+
 </body>
 </html>

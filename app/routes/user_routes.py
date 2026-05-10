@@ -324,4 +324,4 @@ def cancel_request(request_id):
     else:
         flash(message, 'danger')
 
-    return redirect(url_for('user.history'))
+    return redirect(url_for('main.borrow_history'))

@@ -48,7 +48,7 @@
                                 <div>
                                     <div class="fw-bold text-dark mb-1">{{ req.book.title }}</div>
                                     <div class="text-muted small"><i class="far fa-calendar-alt me-1"></i>Yêu cầu: {{
-                                         req.request_date.strftime('%d/%m/%Y') if req.request_date else 'N/A' }}
+                                        req.request_date.strftime('%d/%m/%Y') if req.request_date else 'N/A' }}
                                     </div>
                                 </div>
                             </div>
@@ -60,26 +60,26 @@
 
                         <td class="text-center">
                             {% if req.borrow_slip %}
-                                {% set slip = req.borrow_slip %}
-                                {% if slip.status.name == 'Returned' %}
-                                    <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3">Đã trả sách</span>
-                                {% elif slip.status.name == 'Lost' %}
-                                    <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-3">Đã báo mất</span>
-                                {% elif slip.status.name == 'Damaged' %}
-                                    <span class="badge rounded-pill bg-warning-subtle text-warning border border-warning-subtle px-3">Sách hư hỏng</span>
-                                {% elif slip.return_requested %}
-                                    <span class="badge rounded-pill bg-info-subtle text-info border border-info-subtle px-3">Đang duyệt trả sách</span>
-                                {% else %}
-                                    <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-3">Đã nhận sách</span>
-                                {% endif %}
+                            {% set slip = req.borrow_slip %}
+                            {% if slip.status.name == 'Returned' %}
+                            <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3">Đã trả sách</span>
+                            {% elif slip.status.name == 'Lost' %}
+                            <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-3">Đã báo mất</span>
+                            {% elif slip.status.name == 'Damaged' %}
+                            <span class="badge rounded-pill bg-warning-subtle text-warning border border-warning-subtle px-3">Sách hư hỏng</span>
+                            {% elif slip.return_requested %}
+                            <span class="badge rounded-pill bg-info-subtle text-info border border-info-subtle px-3">Đang duyệt trả sách</span>
                             {% else %}
-                                {% if req.status.name == 'Pending' %}
-                                    <span class="badge rounded-pill bg-warning-subtle text-warning border border-warning-subtle px-3">Đang chờ duyệt</span>
-                                {% elif req.status.name == 'Approved' %}
-                                    <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3">Đã duyệt</span>
-                                {% else %}
-                                    <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-3">{{ req.status.value }}</span>
-                                {% endif %}
+                            <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-3">Đã nhận sách</span>
+                            {% endif %}
+                            {% else %}
+                            {% if req.status.name == 'Pending' %}
+                            <span class="badge rounded-pill bg-warning-subtle text-warning border border-warning-subtle px-3">Đang chờ duyệt</span>
+                            {% elif req.status.name == 'Approved' %}
+                            <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3">Đã duyệt</span>
+                            {% else %}
+                            <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-3">{{ req.status.value }}</span>
+                            {% endif %}
                             {% endif %}
                         </td>
 
@@ -101,84 +101,92 @@
 
                         <td class="text-center">
                             {% if req.borrow_slip %}
-                                {% if req.borrow_slip.status.name == 'Borrowing' and not req.borrow_slip.return_requested %}
-                                <form method="post" action="{{ url_for('main.return_book', request_id=req.id) }}">
-                                    <button type="submit" class="btn btn-sm btn-primary">Yêu cầu trả sách</button>
-                                </form>
-                                {% elif req.borrow_slip.status.name == 'Borrowing' and req.borrow_slip.return_requested %}
-                                <button type="button" class="btn btn-sm btn-secondary" disabled>Đang duyệt trả</button>
-                                {% else %}
-                                <button type="button" class="btn btn-sm btn-secondary" disabled>Trả sách</button>
-                                {% endif %}
+                            {% if req.borrow_slip.status.name == 'Borrowing' and not req.borrow_slip.return_requested %}
+                            <form method="post" action="{{ url_for('main.return_book', request_id=req.id) }}">
+                                <button type="submit" class="btn btn-sm btn-primary">Yêu cầu trả sách</button>
+                            </form>
+                            {% elif req.borrow_slip.status.name == 'Borrowing' and req.borrow_slip.return_requested %}
+                            <button type="button" class="btn btn-sm btn-secondary" disabled>Đang duyệt trả</button>
                             {% else %}
-                                {% if req.status.name == 'Pending' %}
-                                <form method="post" action="{{ url_for('user.cancel_request', request_id=req.id) }}">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger px-3" onclick="return confirm('Bạn có chắc muốn hủy yêu cầu mượn này?')">Hủy yêu cầu</button>
-                                </form>
-                                {% else %}
-                                <button type="button" class="btn btn-sm btn-secondary" disabled>Trả sách</button>
-                                {% endif %}
+                            <button type="button" class="btn btn-sm btn-secondary" disabled>Trả sách</button>
+                            {% endif %}
+                            {% else %}
+                            {% if req.status.name == 'Pending' %}
+                            <form id="cancel-form-{{ req.id }}" method="post"
+                                  action="{{ url_for('user.cancel_request', request_id=req.id) }}">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-danger px-3 rounded-pill btn-confirm-cancel"
+                                        data-id="{{ req.id }}"
+                                        data-book="{{ req.book.title|e }}">
+                                    Hủy yêu cầu
+                                </button>
+                            </form>
+                            {% else %}
+                            <button type="button" class="btn btn-sm btn-secondary" disabled>Trả sách</button>
+                            {% endif %}
                             {% endif %}
                         </td>
 
                         <td class="ps-5">
                             {% if req.borrow_slip %}
-                                {% set slip = req.borrow_slip %}
+                            {% set slip = req.borrow_slip %}
 
-                                {# 1. Lấy tổng các invoice chưa thanh toán #}
-                                {% set unpaid_invoices = slip.invoices | selectattr('status.name', 'in', ['Pending', 'Offline', 'Overdue']) | list %}
-                                {% set total_fine = unpaid_invoices | sum(attribute='amount') %}
+                            {# 1. Lấy tổng các invoice chưa thanh toán #}
+                            {% set unpaid_invoices = slip.invoices | selectattr('status.name', 'in', ['Pending',
+                            'Offline', 'Overdue']) | list %}
+                            {% set total_fine = unpaid_invoices | sum(attribute='amount') %}
 
-                                {# 2. Nếu chưa có invoice mà quá hạn thì tính nhảy số (có chốt chặn giá sách) #}
-                                {% if total_fine == 0 and slip.status.name != 'Returned' and today > slip.due_date %}
-                                    {% set overdue_calc = (today - slip.due_date).days * 5000 %}
-                                    {% set book_price = req.book.price if req.book.price else 200000 %}
-                                    {% set total_fine = [overdue_calc, book_price] | min %}
-                                {% endif %}
+                            {# 2. Nếu chưa có invoice mà quá hạn thì tính nhảy số (có chốt chặn giá sách) #}
+                            {% if total_fine == 0 and slip.status.name != 'Returned' and today > slip.due_date %}
+                            {% set overdue_calc = (today - slip.due_date).days * 5000 %}
+                            {% set book_price = req.book.price if req.book.price else 200000 %}
+                            {% set total_fine = [overdue_calc, book_price] | min %}
+                            {% endif %}
 
-                                {% if total_fine > 0 %}
-                                    <div class="d-flex flex-column align-items-start gap-2">
+                            {% if total_fine > 0 %}
+                            <div class="d-flex flex-column align-items-start gap-2">
                                         <span class="fw-bold text-danger fs-6 mb-0">
                                             {{ "{:,.0f}".format(total_fine) }} VNĐ
                                         </span>
 
-                                        {% set first_unpaid = unpaid_invoices | first %}
-                                        {% if first_unpaid %}
-                                            {% if first_unpaid.status.name == 'Offline' %}
-                                                <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3">
+                                {% set first_unpaid = unpaid_invoices | first %}
+                                {% if first_unpaid %}
+                                {% if first_unpaid.status.name == 'Offline' %}
+                                <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3">
                                                     <i class="fas fa-clock me-1"></i> {{ first_unpaid.status.value }}
                                                 </span>
-                                                <a href="{{ url_for('user.select_payment_method', invoice_id=first_unpaid.id) }}"
-                                                   class="btn btn-sm btn-primary shadow-sm rounded-pill px-3 mt-1">
-                                                    <i class="fas fa-exchange-alt me-1"></i> Đổi phương thức
-                                                </a>
-                                            {% else %}
-                                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3">
+                                <a href="{{ url_for('user.select_payment_method', invoice_id=first_unpaid.id) }}"
+                                   class="btn btn-sm btn-primary shadow-sm rounded-pill px-3 mt-1">
+                                    <i class="fas fa-exchange-alt me-1"></i> Đổi phương thức
+                                </a>
+                                {% else %}
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3">
                                                     <i class="fas fa-exclamation-circle me-1"></i> {{ first_unpaid.status.value }}
                                                 </span>
-                                                <a href="{{ url_for('user.select_payment_method', invoice_id=first_unpaid.id) }}"
-                                                   class="btn btn-sm btn-danger shadow-sm rounded-pill px-4 py-2 mt-1">
-                                                    <i class="fas fa-credit-card me-1"></i> Thanh toán ngay
-                                                </a>
-                                            {% endif %}
-                                        {% else %}
-                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3">
+                                <a href="{{ url_for('user.select_payment_method', invoice_id=first_unpaid.id) }}"
+                                   class="btn btn-sm btn-danger shadow-sm rounded-pill px-4 py-2 mt-1">
+                                    <i class="fas fa-credit-card me-1"></i> Thanh toán ngay
+                                </a>
+                                {% endif %}
+                                {% else %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3">
                                                 <i class="fas fa-history me-1"></i> Quá hạn (Chờ trả sách)
                                             </span>
-                                        {% endif %}
-                                    </div>
-                                {% else %}
-                                    {% set paid_invoices = slip.invoices | selectattr('status.name', 'equalto', 'Paid') | list %}
-                                    {% if paid_invoices %}
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            {% set paid_invoices = slip.invoices | selectattr('status.name', 'equalto', 'Paid') | list
+                            %}
+                            {% if paid_invoices %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">
                                             <i class="fas fa-check-circle me-1"></i> {{ paid_invoices[0].status.value }}
                                         </span>
-                                    {% else %}
-                                        <span class="text-muted small italic">Không có</span>
-                                    {% endif %}
-                                {% endif %}
                             {% else %}
-                                <span class="text-muted small italic">Không có</span>
+                            <span class="text-muted small italic">Không có</span>
+                            {% endif %}
+                            {% endif %}
+                            {% else %}
+                            <span class="text-muted small italic">Không có</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -189,6 +197,44 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Bắt sự kiện khi click vào tất cả các nút có class .btn-confirm-cancel
+    const cancelButtons = document.querySelectorAll('.btn-confirm-cancel');
+
+    cancelButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const reqId = this.getAttribute('data-id');
+            const bookTitle = this.getAttribute('data-book');
+            const form = document.getElementById('cancel-form-' + reqId);
+
+            // Hiện Popup xác nhận của SweetAlert2
+            Swal.fire({
+                title: 'Xác nhận hủy?',
+                html: `Bạn có chắc chắn muốn hủy yêu cầu mượn cuốn sách:<br><b>${bookTitle}</b> không?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545', // Màu đỏ cho nút xác nhận
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Đúng, hãy hủy!',
+                cancelButtonText: 'Quay lại',
+                reverseButtons: true, // Đảo vị trí nút Hủy sang trái cho thuận tay
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp'
+                }
+            }).then((result) => {
+                // Nếu User bấm "Đúng, hãy hủy!"
+                if (result.isConfirmed) {
+                    form.submit(); // Lúc này mới thực hiện gửi lệnh POST lên Server
+                }
+            });
+        });
+    });
+});
+</script>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}">
 {% endblock %}
